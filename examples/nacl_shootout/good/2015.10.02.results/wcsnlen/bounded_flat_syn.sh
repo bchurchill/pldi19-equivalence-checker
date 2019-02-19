@@ -1,1 +1,0 @@
-../bounded_flat_syn.sh
