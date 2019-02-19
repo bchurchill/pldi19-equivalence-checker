@@ -23,6 +23,8 @@ using namespace std;
 using namespace x64asm;
 using namespace cpputil;
 
+#define DEBUG_IS_JUMP(X) { if(0) { X } }
+
 ostream& std::operator<<(ostream& strm, const stoke::ObligationChecker::Result& result) {
   return result.write_text(strm);
 }
@@ -136,25 +138,25 @@ ObligationChecker::JumpType ObligationChecker::is_jump(const Cfg& cfg, Cfg::id_t
   auto itr = cfg.succ_begin(block);
   if (itr == cfg.succ_end(block)) {
     // there are no successors
-    cout << "[is_jump] " << block << " NONE" << endl;
+    DEBUG_IS_JUMP(cout << "[is_jump] " << block << " NONE" << endl;)
     return JumpType::NONE;
   }
 
   itr++;
   if (itr == cfg.succ_end(block)) {
     // there is only only successor
-    cout << "[is_jump] " << block << " NONE" << endl;
+    DEBUG_IS_JUMP(cout << "[is_jump] " << block << " NONE" << endl;)
     return JumpType::NONE;
   }
 
   // ok, there are at least 2 successors
   auto next_block = P[i+1];
   if (next_block == block + 1) {
-    cout << "[is_jump] " << block << " FALL" << endl;
+    DEBUG_IS_JUMP(cout << "[is_jump] " << block << " FALL" << endl;)
     return JumpType::FALL_THROUGH;
   }
   else {
-    cout << "[is_jump] " << block << " JUMP" << endl;
+    DEBUG_IS_JUMP(cout << "[is_jump] " << block << " JUMP" << endl;)
     return JumpType::JUMP;
   }
 }

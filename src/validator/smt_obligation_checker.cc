@@ -44,8 +44,8 @@
 #define CONSTRAINT_DEBUG(X) { if(0) { X } }
 #define DEBUG_BUILDTC_FROM_ARRAY(X) { if(0) { X } }
 #define BUILD_TC_DEBUG(X) { if(0) { X } }
-#define DEBUG_ARM(X) { if(DO_DEBUG) { X } }
-#define DEBUG_CHECK_CEG(X) { if(1) { X } }
+#define DEBUG_ARM(X) { if(0) { X } }
+#define DEBUG_CHECK_CEG(X) { if(0) { X } }
 #define DEBUG_MAP_TC(X) {}
 #define ALIAS_DEBUG(X) {  }
 #define ALIAS_CASE_DEBUG(X) {  }
