@@ -19,4 +19,4 @@ tcgen:
 	cat tcs/tcgen.base tcs/tcgen2 > tcs/testcases.combo
 
 clean:
-	rm -rf opt1* opt3* *.pdf sage* stoke_sage* state* *.tmp
+	rm -rf opt1* opt3* *.pdf sage* stoke_sage* state* *.tmp tcs
