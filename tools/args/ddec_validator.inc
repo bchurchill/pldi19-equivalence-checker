@@ -62,6 +62,11 @@ cpputil::FlagArg& alignment_predicate_heap_arg =
   cpputil::FlagArg::create("alignment_predicate_heap")
   .description("Add heap equality to specified alignment predicate");
 
+cpputil::ValueArg<size_t>& training_set_size_arg =
+    cpputil::ValueArg<size_t>::create("training_set_size")
+    .usage("<int>")
+    .description("Number of test cases to use for building the PAA")
+    .default_val(20);
 
 } // namespace stoke
 

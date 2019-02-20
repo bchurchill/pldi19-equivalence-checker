@@ -37,7 +37,8 @@ public:
           sandbox_(sandbox),
           data_collector_(sandbox),
           invariant_learner_(inv),
-          alignment_predicate_()
+          alignment_predicate_(),
+          training_set_size_(20)
   {
     set_use_handhold(false);
   }
@@ -49,7 +50,8 @@ public:
     sandbox_(rhs.sandbox_),
     data_collector_(sandbox_),
     invariant_learner_(rhs.invariant_learner_),
-    use_handhold_(rhs.use_handhold_) {
+    use_handhold_(rhs.use_handhold_),
+    training_set_size_(rhs.training_set_size_) {
 
     target_bound_ = rhs.target_bound_;
     rewrite_bound_ = rhs.rewrite_bound_;
@@ -64,6 +66,11 @@ public:
 
   DdecValidator& set_use_handhold(bool b) {
     use_handhold_ = b;
+    return *this;
+  }
+
+  DdecValidator& set_training_set_size(size_t n) {
+    training_set_size_ = n;
     return *this;
   }
 
@@ -139,6 +146,8 @@ private:
   std::chrono::time_point<std::chrono::system_clock> benchmark_searchstart_;
   uint64_t benchmark_total_search_time_;
   bool benchmark_proof_succeeded_;
+
+  size_t training_set_size_;
 };
 
 } // namespace stoke

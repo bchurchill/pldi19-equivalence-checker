@@ -197,7 +197,7 @@ bool DdecValidator::build_dual_for_alignment_predicate(std::shared_ptr<Invariant
   bool found_loop = false;
   for(size_t i = 0; i < target_traces_.size(); ++i) {
     DEBUG_PAA_CONSTRUCTION(cout << "TRACE " << i << endl;)
-    if(i > 20)
+    if(i > training_set_size_)
       break;
 
     auto& target_trace = target_traces_[i];
@@ -759,10 +759,11 @@ bool DdecValidator::test_alignment_predicate(shared_ptr<Invariant> invariant) {
   dual.print_all();
 
   bool simplify_ok = dual.simplify();
+  /*
   if(!simplify_ok) {
     cout << "[test_alignment_predicate] Aborting. Simplify returned false" << endl;
     return false;
-  }
+  }*/
 
   cout << "TRYING THIS PAA!" << endl;
   dual.print_all();

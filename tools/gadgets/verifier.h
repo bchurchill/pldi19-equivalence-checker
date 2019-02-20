@@ -177,6 +177,7 @@ private:
       auto ddec = new DdecValidator(*oc_, sandbox, inv);
       ddec->set_bound(target_bound_arg.value(), rewrite_bound_arg.value());
       ddec->set_use_handhold(handhold_arg.value());
+      ddec->set_training_set_size(training_set_size_arg.value());
       auto align_pred = alignment_predicate_arg.value();
       if(align_pred.size()) {
         auto expr = ExprInvariant::parse(align_pred);

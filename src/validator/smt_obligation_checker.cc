@@ -96,15 +96,17 @@ map<K,V> append_maps(vector<map<K,V>> maps) {
 std::shared_ptr<Invariant> SmtObligationChecker::get_jump_inv(const Cfg& cfg, Cfg::id_type end_block, const CfgPath& p, bool is_rewrite) {
   auto jump_type = ObligationChecker::is_jump(cfg, end_block, p, p.size() - 1);
 
+  //cout << "get_jump_inv: end_block=" << end_block << " is_rewrite=" << is_rewrite << " path=" << p << endl;
   //cout << "get_jump_inv: jump type " << jump_type << endl;
 
   if (jump_type == SmtObligationChecker::JumpType::NONE) {
     return std::make_shared<TrueInvariant>();
   }
 
-  auto instr_count = cfg.num_instrs(end_block);
+  auto last_block = p[p.size()-1];
+  auto instr_count = cfg.num_instrs(last_block);
   assert(instr_count > 0);
-  auto jump_instr = cfg.get_code()[cfg.get_index(Cfg::loc_type(end_block, instr_count - 1))];
+  auto jump_instr = cfg.get_code()[cfg.get_index(Cfg::loc_type(last_block, instr_count - 1))];
 
   if (!jump_instr.is_jcc()) {
     //cout << "   get_jump_inv: no cond jump" << endl;
@@ -295,9 +297,7 @@ bool SmtObligationChecker::check_counterexample(
       cout << "  ACTUAL STATE " << endl << output << endl << endl;
       cout << diff_states(expected, output, false, true, x64asm::RegSet::universe());
       cout << "  CODE " << endl << unroll << endl << endl;
-      if(check_counterexamples_) {
-        return false;
-      }
+      return false;
     }
   }
 
@@ -325,7 +325,8 @@ bool SmtObligationChecker::check_counterexample(
 
 
 void SmtObligationChecker::build_circuit(const Cfg& cfg, Cfg::id_type bb, JumpType jump,
-                                      SymState& state, size_t& line_no, const LineMap& line_info, bool ignore_last_line) {
+                                      SymState& state, size_t& line_no, const LineMap& line_info, 
+                                      bool ignore_last_line) {
 
   if (cfg.num_instrs(bb) == 0)
     return;
@@ -446,7 +447,7 @@ bool SmtObligationChecker::generate_arm_testcases(
   CpuState target_tc;
   CpuState rewrite_tc;
 
-  assumption = simplifier_.simplify(assumption);
+  //assumption = simplifier_.simplify(assumption);
   bool assumption_sat = solver_.is_sat({assumption});
   bool ok = true;
   if(solver_.has_error() || !assumption_sat) {
@@ -678,15 +679,17 @@ void SmtObligationChecker::check(
 
   // Get the last jump conditions
   if (P.size() > 0) {
-    auto ji = get_jump_inv(target, target_block, P, true);
+    auto ji = get_jump_inv(target, target_block, P, false);
     size_t tmp_invariant_lineno = invariant_lineno;
     SymBool conj = (*ji)(state_t, state_t, tmp_invariant_lineno);
+    //cout << "LAST JUMP COND FOR TARGET: " << conj << endl;
     constraints.push_back(conj);
   }
   if (Q.size() > 0) {
     auto ji = get_jump_inv(rewrite, rewrite_block, Q, true);
     size_t tmp_invariant_lineno = invariant_lineno;
     SymBool conj = (*ji)(state_r, state_r, tmp_invariant_lineno);
+    //cout << "LAST JUMP COND FOR REWRITE: " << conj << endl;
     constraints.push_back(conj);
   }
 
@@ -706,7 +709,7 @@ void SmtObligationChecker::check(
     // also it seems unlikely this path is feasible given that nobody gave us
     // a test case for it...
     auto sat_start = system_clock::now();
-    simplifier_.simplify(constraints);
+    //simplifier_.simplify(constraints);
     if(!solver_.is_sat(constraints) && !solver_.has_error()) {
       cout << "We've finished early without modeling memory!" << endl;
       /** we're done, yo. */
@@ -968,7 +971,7 @@ void SmtObligationChecker::check(
 
   auto sat_start = system_clock::now();
 
-  simplifier_.simplify(constraints);
+  //simplifier_.simplify(constraints);
   bool is_sat = solver_.is_sat(constraints);
   uint64_t smt_duration = duration_cast<microseconds>(system_clock::now() - sat_start).count();
   uint64_t gen_duration = duration_cast<microseconds>(sat_start - start_time).count();

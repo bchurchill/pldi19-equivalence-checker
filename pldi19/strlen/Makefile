@@ -13,9 +13,11 @@ all:
 	stoke debug cfg --target $(REWRITE) -o $(NAME)_vec.pdf
 
 tcgen:
+	mkdir -p tcs
 	stoke_tcgen --target $(TARGET) --bound 4 --def_in $(DEF_INS) --live_out $(LIVE_OUTS) --output tcs/tcgen1 --mutants 4 --randomize_order
+	stoke_tcgen --target $(REWRITE) --bound 4 --def_in $(DEF_INS) --live_out $(LIVE_OUTS) --output tcs/tcgen.base --mutants 0 --randomize_order
 	stoke_tcgen --target $(REWRITE) --bound 4 --def_in $(DEF_INS) --live_out $(LIVE_OUTS) --output tcs/tcgen2 --mutants 4 --randomize_order
-	cat tcs/tcgen2 tcs/tcgen1 > tcs/testcases.combo
+	cat tcs/tcgen.base tcs/tcgen1 tcs/tcgen2 > tcs/testcases.combo
 
 clean:
 	rm -rf opt1* opt3* *.pdf sage* stoke_sage* state* *.tmp
