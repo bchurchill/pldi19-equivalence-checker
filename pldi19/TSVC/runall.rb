@@ -47,17 +47,15 @@ def check_file(s)
   end
 end
   
-def validate_all(filename, compiler)
-  File.readlines(filename).each do |line|
-    benchmark = line.strip
+def validate_all(benchmarks, compiler, dofork=true)
+  benchmarks.each do |benchmark|
     if compiler == :all or compiler == :gcc then
-      validate "baseline", "gcc", benchmark, true
+      validate "baseline", "gcc", benchmark, dofork
     end
     if compiler == :all or compiler == :llvm then
-      validate "baseline", "llvm", benchmark, true
+      validate "baseline", "llvm", benchmark, dofork
     end
   end
-  Process.waitall
 end
 
 def check_all_testcases(filename)
@@ -155,18 +153,19 @@ def validate(compiler1, compiler2, benchmark, dofork=false)
   io = "2> misc/#{name}.err | tee traces/#{name}"
   stoke_cmd = "stoke_debug_verify #{stoke_args.join(" ")}"
   time_cmd = "/usr/bin/time -o times/#{name} #{stoke_cmd} #{io}"
+  timeout_cmd = "timeout 10m #{time_cmd}"
 
   File.open("misc/#{name}.cmd", 'w') do |file|
     file.write(stoke_cmd)
   end
 
-  puts time_cmd
+  puts timeout_cmd
   if dofork
     Process.fork do
-      `#{time_cmd}`
+      `#{timeout_cmd}`
     end
   else
-    `#{time_cmd}`
+    `#{timeout_cmd}`
   end
 end
 
@@ -189,33 +188,35 @@ def update_options
   n
 end
 
-if ARGV[0] == "verify" then
-  n = update_options
-  if ARGV.size == n+3 then 
-    validate ARGV[n], ARGV[n+1], ARGV[n+2]
-  else
-    print_usage
-  end
-elsif ARGV[0] == "verify-all" then
-  n = update_options
-  validate_all ARGV[n], :all
-  while true do
-    sleep 10
-  end
-elsif ARGV[0] == "verify-llvm" then
-  n = update_options
-  validate_all ARGV[n], :llvm
-  while true do
-    sleep 10
-  end
-elsif ARGV[0] == "verify-gcc" then
-  n = update_options
-  validate_all ARGV[n], :gcc
-  while true do
-    sleep 10
-  end
-elsif ARGV[0] == "check-tc-all" then
-  check_all_testcases ARGV[1]
-else
-  print_usage
-end
+benchmarks = [
+  "s000",
+  "s1112",
+  "s112",
+  "s121",
+  "s1221",
+  "s122",
+  "s1251",
+  "s127",
+  "s1281",
+  "s1351",
+  "s162",
+  "s173",
+  "s176",
+  "s2244",
+  "s243",
+  "s251",
+  "s3251",
+  "s351",
+  "s452",
+  "s453",
+  "sum1d",
+  "vdotr",
+  "vpvpv",
+  "vpv",
+  "vpvts",
+  "vpvtv",
+  "vtv",
+  "vtvtv"
+]
+
+validate_all benchmarks, :all, false
