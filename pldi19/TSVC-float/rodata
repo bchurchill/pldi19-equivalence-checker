@@ -1,0 +1,111 @@
+Testcase 0:
+
+SIGNAL 0 [normal exit]
+
+%rax     df f1 66 b3 c9 a2 d2 f9
+%rcx     38 1a f1 c4 23 d8 d1 6c
+%rdx     f2 35 35 f5 5a 7b d6 3c
+%rbx     a3 48 26 71 dd f4 b5 0a
+%rsp     2a 33 24 a2 9c 81 5f 00
+%rbp     74 73 49 58 ef 54 09 fe
+%rsi     0d a6 88 bf af 22 4b 90
+%rdi     00 00 00 00 00 00 00 00
+%r8      d1 e6 a6 ee 62 c2 84 e2
+%r9      32 ef 62 2d 50 b0 e2 98
+%r10     f0 75 e5 00 63 f1 55 4f
+%r11     68 dd b7 c2 19 07 7b 17
+%r12     31 bd bf 92 74 40 6d a0
+%r13     9b 43 57 8c 64 25 cd e4
+%r14     55 59 fc af ef 49 58 d9
+%r15     25 f0 1a 59 49 88 90 c2
+
+%ymm0    a5 ec 98 00 b7 f1 2a 1f 0f 2a e3 f5 5a 8f 31 46 03 16 03 78 2a f5 3c ca ef dd 9c e5 58 7b 02 8d
+%ymm1    16 52 1f 08 9c 7e 24 8f 85 64 88 65 59 9d c4 7d 3f 70 72 72 c4 83 ec 30 7b d2 5a 0e 85 e1 a5 56
+%ymm2    ce 5a 8b 43 aa 83 94 77 18 e5 fa 34 3e f2 1b 6f d9 94 e0 fc 17 14 e9 b9 e5 17 e6 48 ba 3a a0 2c
+%ymm3    b2 42 ee 32 fa ae a6 bf ad 93 a0 74 54 69 73 c9 2b 24 4b e9 5b 91 13 5d 82 e1 58 0e 24 e0 41 51
+%ymm4    c2 1c f1 9b c3 e9 ca 21 cb d5 5d cb c3 d5 f1 6e a8 a8 2f 7c 10 15 d9 a3 7c 4a 02 dc 32 ad bf f9
+%ymm5    31 c9 ea 43 12 22 19 d9 2e ee 41 e8 bc 0f a3 3e 84 6d 54 ea 9e db 34 4a 15 36 e9 dd 3b 57 54 47
+%ymm6    5d d8 11 3f ba 93 4a b4 29 c1 f6 5f 8b b9 15 7e c1 98 e8 ff 05 a7 82 c1 e6 13 4b 9a 57 a7 e0 46
+%ymm7    92 38 a8 85 32 80 84 90 e9 1c b6 d8 68 e1 33 43 d4 75 c0 53 69 d8 ad 19 ba 59 42 bb 94 2d f1 60
+%ymm8    02 7a 2f 8e 86 b7 64 ba d6 74 60 d6 9c 83 5a 94 41 3e d3 4e c2 07 ed e8 31 b3 ff 2f 66 b1 78 23
+%ymm9    4b 84 68 3a 22 9f ec 39 d1 b3 cb 4e f6 be ed 33 a4 5e 2d 71 b9 d5 25 ba 4e 0c c4 f0 e8 3e 5d 11
+%ymm10   bc fc f6 d2 12 9d bf 4a 47 f0 fa 23 bd d7 dc f6 84 66 90 a8 95 d7 3c 25 e6 89 93 78 6c 27 15 ca
+%ymm11   a8 90 54 8f 49 b0 87 3c 23 e3 3d 60 4b 37 73 92 89 ee 0f df 73 0c a2 9d 69 0d 21 6d 4c d0 b3 a5
+%ymm12   e6 7d 53 ed e3 f0 7c fb 13 0c 8d 1b b7 cf d4 f3 c7 21 9a cf 16 ad f8 79 b4 73 f7 ab b1 a2 fa 91
+%ymm13   ae 1f b0 1c 7c f9 91 df 56 82 3f 6c d6 b4 b1 fc a7 75 03 a6 b2 47 7e fb 5c 20 04 fd 95 68 5d 7b
+%ymm14   04 a3 7a 0e 6b 93 73 bd ae 3e 5a 40 9c 7a 72 01 c7 94 66 a5 24 fb bb 1d 49 71 00 55 7c 05 16 ab
+%ymm15   1b 9b 78 f2 e9 96 50 77 97 c3 5b 75 26 2c 3d e0 4d 0c 58 d2 13 f5 1c b0 4b 0f 68 95 f0 0b 0f fa
+
+%cf      1 
+%1       1 
+%pf      0 
+%0       0 
+%af      1 
+%0       0 
+%zf      0 
+%sf      1 
+%tf      0 
+%if      1 
+%df      0 
+%of      1 
+%iopl[0] 0 
+%iopl[1] 0 
+%nt      0 
+%0       0 
+%rf      0 
+%vm      0 
+%ac      0 
+%vif     0 
+%vip     0 
+%id      0 
+
+[ 00000002 00000000 - 00000002 00000000 ]
+[ 0 valid rows shown ]
+
+[ 00000001 00000000 - 00000001 00000000 ]
+[ 0 valid rows shown ]
+
+[ 00000000 00000000 - 00000000 00000000 ]
+[ 0 valid rows shown ]
+
+2 more segment(s)
+
+
+[ 00000000 00601d80 - 00000000 00601c80 ]
+[ 16 valid rows shown ]
+
+00000000 00601cf8   . . . . v v v v   00 00 00 00 00 00 00 00 
+00000000 00601cf0   v v v v v v v v   00 00 00 00 00 00 00 00 
+00000000 00601ce8   v v v v v v v v   00 00 00 00 00 00 00 00 
+00000000 00601ce0   v v v v v v v v   00 00 00 00 00 00 00 00 
+00000000 00601cd8   v v v v v v v v   00 00 00 00 40 00 00 00 
+00000000 00601cd0   v v v v v v v v   bf 80 00 00 3f 80 00 00 
+00000000 00601cc8   v v v v v v v v   00 00 00 00 00 00 00 20 
+00000000 00601cc0   v v v v v v v v   00 00 00 00 00 00 00 01 
+00000000 00601cb8   v v v v v v v v   00 00 00 00 00 00 00 04 
+00000000 00601cb0   v v v v v v v v   00 00 00 00 00 00 00 03 
+00000000 00601ca8   v v v v v v v v   bf 80 00 00 bf 80 00 00 
+00000000 00601ca0   v v v v v v v v   bf 80 00 00 bf 80 00 00 
+00000000 00601c98   v v v v v v v v   00 00 00 03 00 00 00 02 
+00000000 00601c90   v v v v v v v v   00 00 00 01 00 00 00 00 
+00000000 00601c88   v v v v v v v v   3f 80 00 00 3f 80 00 00 
+00000000 00601c80   v v v v v v v v   3f 80 00 00 3f 80 00 00 
+
+[ 00000000 00601b80 - 00000000 00601a80 ]
+[ 14 valid rows shown ]
+
+00000000 00601ae8   . v v v v v v v   00 00 00 00 00 00 00 00 
+00000000 00601ae0   v v v v v v v v   00 00 00 00 00 00 00 00 
+00000000 00601ad8   v v v v v v v v   00 00 00 00 00 00 00 00 
+00000000 00601ad0   v v v v v v v v   00 00 00 00 00 00 00 00 
+00000000 00601ac8   v v v v v v v v   00 40 00 00 00 3f 80 00 
+00000000 00601ac0   v v v v v v v v   00 00 00 00 01 00 00 00 
+00000000 00601ab8   v v v v v v v v   01 00 00 00 01 00 00 00 
+00000000 00601ab0   v v v v v v v v   01 00 00 00 04 00 00 00 
+00000000 00601aa8   v v v v v v v v   04 00 00 00 04 00 00 00 
+00000000 00601aa0   v v v v v v v v   04 00 00 00 03 00 00 00 
+00000000 00601a98   v v v v v v v v   02 00 00 00 bf 80 00 00 
+00000000 00601a90   v v v v v v v v   bf 80 00 00 bf 80 00 00 
+00000000 00601a88   v v v v v v v v   3f 80 00 00 3f 80 00 00 
+00000000 00601a80   v v v v v v v v   3f 80 00 00 3f 80 00 00 
+
