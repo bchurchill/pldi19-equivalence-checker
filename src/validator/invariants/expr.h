@@ -120,7 +120,6 @@ public:
       return expr;
     }
     else {
-      expr->print_dot();
       std::cout << __FILE__ << ":" << __LINE__ 
                 << ": parser got error: " << parser.get_error() << std::endl;
       return NULL;
