@@ -16,11 +16,12 @@ echo "// See the License for the specific language governing permissions and" >>
 echo "// limitations under the License." >> cr.txt
 echo "" >> cr.txt
 
-cr="Copyright 2013-2016 Stanford University"
+cr="Copyright 2013-2019 Stanford University"
 crlen=${#cr}
 crlen=$((crlen+3))
 
 for file in `find . -type f -and \( -name "*.h" -o -name "*.c" -o -name "*.cc" \)\
+                    -not -path "./pldi19/*"\
                     -not -path "./src/ext/*"\
                     -not -path "*/validator/handlers.h" `; do
 
