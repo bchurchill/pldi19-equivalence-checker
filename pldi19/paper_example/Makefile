@@ -11,11 +11,12 @@ all:
 	stoke debug cfg --target $(REWRITE) -o $(NAME)_vec.pdf
 
 tcgen:
+	rm -rf tcs
 	mkdir -p tcs
-	rm -f tcs/tcgen1 tcs/tcgen2
 	stoke_tcgen --target $(TARGET) --bound 8 --def_in $(DEF_INS) --live_out $(LIVE_OUTS) --output tcs/tcgen1 --mutants 0
 	stoke_tcgen --target $(REWRITE) --bound 8 --def_in $(DEF_INS) --live_out $(LIVE_OUTS) --output tcs/tcgen2 --mutants 0
-	cat tcs/tcgen1 tcs/tcgen2 > tcs/testcases.combo
+	cat tcs/tcgen1 tcs/tcgen2 > testcases
+	rm -rf tcs
 
 clean:
-	rm -rf opt1* opt3* *.pdf sage* stoke_sage* state* *.tmp
+	rm -rf opt1* opt3* *.pdf sage* stoke_sage* state* *.tmp tcs
