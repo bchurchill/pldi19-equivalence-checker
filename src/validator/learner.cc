@@ -126,8 +126,8 @@ vector<Variable> get_memory_variables(const Cfg& target, const Cfg& rewrite, Reg
         auto mem = instr.get_operand<x64asm::Mem>((size_t)instr.mem_index());
         if(mem.rip_offset()) {
           auto rip = tunit.hex_offset(i) + tunit.hex_size(i) + tunit.get_rip_offset();
-          cout << "~~~ for " << instr << " rip offset = " << rip << endl;
-          cout << "     hexoffset = " << tunit.hex_offset(i) << "  hexsize = " << tunit.hex_size(i) << " fileoffset = " << tunit.get_rip_offset() << endl;
+          //cout << "~~~ for " << instr << " rip offset = " << rip << endl;
+          //cout << "     hexoffset = " << tunit.hex_offset(i) << "  hexsize = " << tunit.hex_size(i) << " fileoffset = " << tunit.get_rip_offset() << endl;
           mem.set_disp(Imm32(mem.get_disp() + (int32_t)rip));
           mem.set_rip_offset(false);
         }
@@ -313,10 +313,11 @@ vector<std::shared_ptr<NonzeroInvariant>> InvariantLearner::build_memory_null_in
   }
 
 
+  /*
   cout << "[learner][memory_null] Considering these invariants!" << endl;
   for (auto it : invariants) {
     cout << *it << endl;
-  }
+  }*/
 
   return invariants;
 }
@@ -329,10 +330,12 @@ vector<std::shared_ptr<EqualityInvariant>> InvariantLearner::build_memory_regist
   auto memory_vars = get_memory_variables(target_, rewrite_, target_regs, rewrite_regs);
   for(auto mv : memory_vars) {
     mem_sizes.insert(mv.size);
-    cout << "   considering mem var " << mv << endl;
+    //cout << "   considering mem var " << mv << endl;
   }
+  /*
   for(auto it : mem_sizes) 
     cout << "   mem size seen: " << it << endl;
+    */
 
   vector<Variable> register_vars;
   for (size_t k = 0; k < 2; ++k) {
@@ -342,14 +345,14 @@ vector<std::shared_ptr<EqualityInvariant>> InvariantLearner::build_memory_regist
         if ((*r).size() >= mem_size*8) {
           Variable c(*r, k, mem_size, 0);
           register_vars.push_back(c);
-          cout << "   considering variable " << c << endl;
+          //cout << "   considering variable " << c << endl;
         }
       }
       for (auto r = def_ins.sse_begin(); r != def_ins.sse_end(); ++r) {
         for (size_t i = 0; i < (*r).size()/(mem_size*8); ++i) {
           Variable c(*r,k,mem_size,i*mem_size);
           register_vars.push_back(c);
-          cout << "   considering variable " << c << endl;
+          //cout << "   considering variable " << c << endl;
         }
       }
     }
@@ -362,7 +365,7 @@ vector<std::shared_ptr<EqualityInvariant>> InvariantLearner::build_memory_regist
         rv.coefficient = -1;
         auto inv = make_shared<EqualityInvariant>(vector<Variable>({rv,mv}),0);
         invariants.push_back(inv);
-        cout << "Proposing " << *inv << endl;
+        //cout << "Proposing " << *inv << endl;
       }
     }
     // look for equalities of stack-registers with memory locations
@@ -1347,20 +1350,20 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
   }
 
   // Memory-Register equalities
-  cout << "Learning Memory-Register Equalities" << endl;
+  //cout << "Learning Memory-Register Equalities" << endl;
   auto class_memreg_equ = graph.new_class();
   auto potential_equalities = build_memory_register_equalities(target_regs, rewrite_regs);
   for (auto ineq : potential_equalities) {
     if (ineq->check(target_states, rewrite_states)) {
-      cout << "Using " << *ineq << endl;
+      //cout << "Using " << *ineq << endl;
       conj->add_invariant(ineq);
       graph.add_invariant(ineq);
     } else {
-      cout << "Discarding " << *ineq << endl;
+      //cout << "Discarding " << *ineq << endl;
     }
   }
   size_t memreg_equ_count = graph.compute(class_memreg_equ, class_memreg_equ);
-  cout << "FOUND " << memreg_equ_count << " IMPLICATIONS AMONG THE REGISTER-MEMORY EQUALITIES" << endl;
+  //cout << "FOUND " << memreg_equ_count << " IMPLICATIONS AMONG THE REGISTER-MEMORY EQUALITIES" << endl;
 
   // Inequality invariants
   /*
@@ -1413,19 +1416,19 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
 
     auto potential_memory_nulls = build_memory_null_invariants(target_regs, rewrite_regs);
     for (auto mem_null : potential_memory_nulls) {
-      cout << "[learner] Testing " << *mem_null << endl;
+      //cout << "[learner] Testing " << *mem_null << endl;
       if (mem_null->check(target_states, rewrite_states) &&
           mem_null->is_valid(target_states, rewrite_states)) {
-        cout << " * pass" << endl;
+        //cout << " * pass" << endl;
         conj->add_invariant(mem_null);
         graph.add_invariant(mem_null);
       } else {
-        cout << " * fail" << endl;
+        //cout << " * fail" << endl;
       }
     }
 
     size_t mem_null_count = graph.compute(class_mem_null, class_mem_null);
-    cout << "FOUND " << mem_null_count << " IMPLICATIONS AMONG THE MEMORY-NULL EQUALITIES" << endl;
+    //cout << "FOUND " << mem_null_count << " IMPLICATIONS AMONG THE MEMORY-NULL EQUALITIES" << endl;
   }
 
   if(enable_shadow_) {
@@ -1443,7 +1446,7 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
 
 
   // Learn easy equalities over a really huge set of (sub) registers
-  cout << "enable_vector_vars_ = " << enable_vector_vars_ << endl;
+  //cout << "enable_vector_vars_ = " << enable_vector_vars_ << endl;
 
   size_t easy_equalities_class = graph.new_class();
   if(enable_vector_vars_) {
@@ -1609,7 +1612,7 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
       to_delete.insert(to_delete.begin(), i);
   }
   for(auto it : to_delete) {
-    cout << "Removing conjunct " << *(*conj)[it] << endl;
+    //cout << "Removing conjunct " << *(*conj)[it] << endl;
     conj->remove(it);
   }
 
@@ -1628,8 +1631,8 @@ std::vector<Variable> InvariantLearner::sub_registers_for_regset(x64asm::RegSet 
       size_t pow2 = (1 << k);
       for(size_t i = 0; i < bytes; i += pow2) {
         Variable sub(*r, is_rewrite, pow2, i);
-        cout << "Adding subregister " << *r << " is_rewrite=" << is_rewrite << " pow2=" << pow2 << " i=" << i << endl;
-        cout << sub << endl;
+        //cout << "Adding subregister " << *r << " is_rewrite=" << is_rewrite << " pow2=" << pow2 << " i=" << i << endl;
+        //cout << sub << endl;
         outputs.push_back(sub);
       }
     }

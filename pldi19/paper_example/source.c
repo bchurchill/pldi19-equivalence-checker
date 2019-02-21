@@ -1,15 +1,4 @@
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-
-/* --- FUNCTIONS --- */
-/* ------------------------------------------ */
-/* 
- * reads :
- * writes:
- */
-
 
 void
 __attribute__ ((noinline))
@@ -35,9 +24,6 @@ bitflip_vec (int *array, unsigned int len) {
   }
 }
 
-
-
-/* ---------------------------------------- */
 int main (int argc, char* argv[])
 {
     return 0;

@@ -116,10 +116,11 @@ public:
     });
     if(!parser.has_error()) {
       auto expr = parser.get();
-      expr->print_dot();
+      //expr->print_dot();
       return expr;
     }
     else {
+      expr->print_dot();
       std::cout << __FILE__ << ":" << __LINE__ 
                 << ": parser got error: " << parser.get_error() << std::endl;
       return NULL;

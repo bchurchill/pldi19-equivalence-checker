@@ -129,7 +129,7 @@ BitVector SmtObligationChecker::add_to_map(const SymArray& array, unordered_map<
   auto symarray = dynamic_cast<const SymArrayVar* const>(array.ptr);
   assert(symarray != nullptr);
   auto str = symarray->name_;
-  cout << "name is " << str << endl;
+  //cout << "name is " << str << endl;
 
   auto map_and_default = solver_.get_model_array(str, 64, 8);
   auto orig_map = map_and_default.first;

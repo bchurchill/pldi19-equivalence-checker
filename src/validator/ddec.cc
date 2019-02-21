@@ -192,7 +192,6 @@ bool pair_below(pair<DataCollector::TracePoint, DataCollector::TracePoint>& pair
 
 
 bool DdecValidator::build_paa_for_alignment_predicate(std::shared_ptr<Invariant> inv, ProgramAlignmentAutomata& paa) {
-  cout << "[build_paa_for_alignment_predicate] expression " << *inv << endl;
 
   bool found_loop = false;
   for(size_t i = 0; i < target_traces_.size(); ++i) {
@@ -364,19 +363,19 @@ bool DdecValidator::verify_paa(ProgramAlignmentAutomata& paa) {
   bool ap_failed_ever = false;
   bool paa_ok = paa.test_paa(data_collector_);
   if(!paa_ok) {
-    cout << "[verify_paa] PAA does not check out!" << endl;
+    cout << "[verify_paa] PAA does not accept all test inputs.  Aborting." << endl;
     return false;
   } 
 
   if(benchmark_proof_succeeded_) {
-    cout << "[benchmark] No need to check further... see ya." << endl;
+    cout << "[verify_paa] No need to check further... see ya." << endl;
     return false;
   } else {
-    cout << "[benchmark] Looks like we found something!  Recording search time." << endl; 
+    cout << "[verify_paa] The PAA accepts all test cases and is cycle-free.  Continuing." << endl; 
     auto now = system_clock::now();
     auto diff = duration_cast<microseconds>(now - benchmark_searchstart_).count();
     benchmark_total_search_time_ += diff;
-    cout << "[benchmark] SEARCH TOOK " << diff << endl;
+    //cout << "[benchmark] SEARCH TOOK " << diff << endl;
   }
 
   // learn invariants
@@ -392,7 +391,7 @@ bool DdecValidator::verify_paa(ProgramAlignmentAutomata& paa) {
   cout << endl << endl;
 
   // create proof obligations for infeasible paths
-  cout << "[verify_paa] Compute Failure Edges" << endl;
+  //cout << "[verify_paa] Compute Failure Edges" << endl;
   auto failure_edges = paa.compute_failure_edges(target_, rewrite_);
   for(auto it : failure_edges) {
     paa.add_edge(it);
@@ -750,6 +749,7 @@ vector<Variable> DdecValidator::get_stack_locations(bool is_rewrite) {
 
 bool DdecValidator::test_alignment_predicate(shared_ptr<Invariant> invariant) {
   ProgramAlignmentAutomata paa(target_, rewrite_);
+  cout << "[test_alignment_predicate] Trying alignment predicate " << *invariant << endl;
   bool success = build_paa_for_alignment_predicate(invariant, paa);
   if(!success)
     return false;

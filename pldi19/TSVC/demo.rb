@@ -1,5 +1,7 @@
 #!/usr/bin/ruby
 
+require 'fileutils'
+
 @options = { 
   :target_bound => 30,
   :rewrite_bound => 30,
@@ -93,6 +95,9 @@ end
 
 def validate(compiler1, compiler2, benchmark, dofork=false) 
   puts "Running benchmark #{benchmark} with compilers #{compiler1}/#{compiler2}"
+  FileUtils.mkdir_p 'misc'
+  FileUtils.mkdir_p 'traces'
+  FileUtils.mkdir_p 'times'
 
   num = 0
   prefix = "#{benchmark}_#{compiler1}_#{compiler2}"

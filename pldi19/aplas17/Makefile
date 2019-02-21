@@ -8,7 +8,8 @@ all:
 	gcc -O3 $(OPTS) source.c -o opt3bin
 	stoke extract -i opt0bin -o opt0
 	stoke extract -i opt1bin -o opt1
-	stoke extract -i opt3bin -o opt3
+
+pdfs:
 	stoke debug cfg --target $(TARGET) -o $(NAME).pdf
 	stoke debug cfg --target $(REWRITE) -o $(NAME)_opt.pdf
 
