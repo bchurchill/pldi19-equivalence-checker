@@ -47,13 +47,13 @@ public:
   ObligationCheckerGadget() : solver_(NULL), child_(NULL), handler_(NULL), filter_(NULL)
   {
     auto oc_type = obligation_checker_arg.value();
-    if(oc_type == "smt" || oc_type == "postgres") {
+    if (oc_type == "smt" || oc_type == "postgres") {
       handler_ = new ComboHandler();
       filter_ = new BoundAwayFilter(*handler_, (uint64_t)0x1000, (uint64_t)(-0x1000));
       solver_ = new SolverGadget();
       child_ = new SmtObligationChecker(*solver_, *filter_);
       set_separate_stack(!stack_out_arg.value());
-    } 
+    }
     if (oc_type == "postgres") {
       set_alias_strategy(parse_alias());
       set_fixpoint_up(false);
@@ -61,15 +61,15 @@ public:
       set_basic_block_ghosts(true);
       set_separate_stack(!stack_out_arg.value());
 
-      if(verify_nacl_arg.value())
+      if (verify_nacl_arg.value())
         set_nacl(true);
-      if(fixpoint_up_arg.value())
+      if (fixpoint_up_arg.value())
         set_fixpoint_up(true);
 
 
       SmtObligationChecker smt_checker = *static_cast<SmtObligationChecker*>(child_);
       child_ = new PostgresObligationChecker(postgres_arg.value(), smt_checker);
-    } 
+    }
     if (oc_type == "demo") {
       child_ = new DemoObligationChecker();
     }
@@ -80,20 +80,20 @@ public:
     set_basic_block_ghosts(true);
     set_separate_stack(!stack_out_arg.value());
 
-    if(verify_nacl_arg.value())
+    if (verify_nacl_arg.value())
       set_nacl(true);
-    if(fixpoint_up_arg.value())
+    if (fixpoint_up_arg.value())
       set_fixpoint_up(true);
   }
 
   ~ObligationCheckerGadget() {
-    if(child_)
+    if (child_)
       delete child_;
-    if(handler_)
+    if (handler_)
       delete handler_;
-    if(filter_)
+    if (filter_)
       delete filter_;
-    if(solver_)
+    if (solver_)
       delete solver_;
   }
 
@@ -174,7 +174,7 @@ private:
     } else if (alias == "arms_race") {
       return ObligationChecker::AliasStrategy::ARMS_RACE;
     } else if (alias == "dummy") {
-      return ObligationChecker::AliasStrategy::DUMMY; 
+      return ObligationChecker::AliasStrategy::DUMMY;
     } else {
       std::cerr << "Unrecognized alias strategy \"" << alias << "\"" << std::endl;
       exit(1);

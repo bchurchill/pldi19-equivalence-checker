@@ -30,7 +30,7 @@ public:
     }
 
     std::ostream& print(std::ostream& os) const {
-      if(ts == (Cfg::id_type)(-1) && rs == (Cfg::id_type)(-1)) {
+      if (ts == (Cfg::id_type)(-1) && rs == (Cfg::id_type)(-1)) {
         os << "FAIL";
       } else {
         os << "(" << ts << ", " << rs << ")";
@@ -114,7 +114,7 @@ public:
   /** Add a feastible edge.  Returns true if not already present. */
   bool add_edge(Edge path) {
 
-    if(next_edges_.count(path.from)) {
+    if (next_edges_.count(path.from)) {
       for (const auto& e : next_edges_.at(path.from)) {
         if (e == path) {
           //std::cout << "      > edge already exists -- skipping" << std::endl;
@@ -139,7 +139,7 @@ public:
   /** Get the list of next states from a starting point. */
   std::vector<State> next_states(State s) const {
     std::vector<State> states;
-    if(!next_edges_.count(s))
+    if (!next_edges_.count(s))
       return states;
     for (auto edge : next_edges_.at(s)) {
       states.push_back(edge.to);
@@ -150,7 +150,7 @@ public:
   /** Get the list of previous states from here. */
   std::vector<State> prev_states(State s) const {
     std::vector<State> states;
-    if(!prev_edges_.count(s))
+    if (!prev_edges_.count(s))
       return states;
     for (auto edge : prev_edges_.at(s)) {
       states.push_back(edge.from);
@@ -161,7 +161,7 @@ public:
   /** Get the list of edges from this state. */
   std::vector<Edge> next_edges(State s) const {
     std::vector<Edge> empty;
-    if(!next_edges_.count(s))
+    if (!next_edges_.count(s))
       return empty;
     return next_edges_.at(s);
   }
@@ -169,7 +169,7 @@ public:
   /** Get the list of edges to this state. */
   std::vector<Edge> prev_edges(State s) const {
     std::vector<Edge> empty;
-    if(!prev_edges_.count(s))
+    if (!prev_edges_.count(s))
       return empty;
     return prev_edges_.at(s);
   }
@@ -186,12 +186,12 @@ public:
   /** Get the list of states with an inductive edge. */
   std::vector<State> get_inductive_states() {
     std::vector<State> outputs;
-    for(auto pair : next_edges_) {
+    for (auto pair : next_edges_) {
       auto start_state = pair.first;
-      for(auto edge : pair.second) {
+      for (auto edge : pair.second) {
         assert(start_state == edge.from);
-        if(edge.to == edge.from) {
-          outputs.push_back(start_state); 
+        if (edge.to == edge.from) {
+          outputs.push_back(start_state);
           break;
         }
       }
@@ -239,13 +239,13 @@ public:
 
   /** Get data for state. */
   std::vector<CpuState> get_target_data(State s) const {
-    if(target_state_data_.count(s) == 0)
+    if (target_state_data_.count(s) == 0)
       return std::vector<CpuState>();
 
     return target_state_data_.at(s);
   }
   std::vector<CpuState> get_rewrite_data(State s) const {
-    if(rewrite_state_data_.count(s) == 0)
+    if (rewrite_state_data_.count(s) == 0)
       return std::vector<CpuState>();
 
     return rewrite_state_data_.at(s);
@@ -253,13 +253,13 @@ public:
 
   /** Get data for edge. */
   std::vector<CpuState> get_target_data(const Edge& e) const {
-    if(target_edge_data_.count(e) == 0)
+    if (target_edge_data_.count(e) == 0)
       return std::vector<CpuState>();
 
     return target_edge_data_.at(e);
   }
   std::vector<CpuState> get_rewrite_data(const Edge& e) const {
-    if(rewrite_edge_data_.count(e) == 0)
+    if (rewrite_edge_data_.count(e) == 0)
       return std::vector<CpuState>();
 
     return rewrite_edge_data_.at(e);
@@ -307,12 +307,12 @@ public:
 
   /** Check if a state has a self loop. */
   bool has_self_loop(State s) const {
-    if(!next_edges_.count(s))
+    if (!next_edges_.count(s))
       return false;
 
     auto edges = next_edges_.at(s);
-    for(auto e : edges) {
-      if(e.to == s) {
+    for (auto e : edges) {
+      if (e.to == s) {
         return true;
       }
     }
@@ -320,7 +320,7 @@ public:
   }
 
 
-  /** Remove states and edges that aren't needed. 
+  /** Remove states and edges that aren't needed.
     Returns false if nothing was done. */
   bool simplify();
 

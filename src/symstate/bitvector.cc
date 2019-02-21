@@ -87,7 +87,7 @@ SymBitVector SymBitVector::operator*(const SymBitVector& other) const {
 #ifdef STOKE_UF_MULTIPLICATION
   uint16_t bits = width();
   auto mf = multiplication_functions_[bits];
-  if(mf == nullptr) {
+  if (mf == nullptr) {
     stringstream name;
     name << "bv_multiply_" << bits;
     mf = new SymFunction(name.str(), bits, { bits, bits });
@@ -149,14 +149,14 @@ SymBitVector SymBitVector::extend(uint16_t size) const {
   return sign_extend(size);
 }
 SymBitVector SymBitVector::sign_extend(uint16_t size) const {
-  if(size <= width())
+  if (size <= width())
     return *this;
   return SymBitVector(new SymBitVectorSignExtend(ptr, size));
 }
 
 SymBitVector SymBitVector::zero_extend(uint16_t size) const {
   auto old_size = width();
-  if(old_size < size) {
+  if (old_size < size) {
     auto diff = size-old_size;
     return SymBitVector::constant(diff, 0) || *this;
   } else {

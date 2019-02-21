@@ -319,8 +319,8 @@ IntMatrix IntMatrix::remove_column(size_t index) const {
 void IntMatrix::serialize(ostream& os) const {
   auto& matrix = *this;
   os << matrix.size() << " " << matrix[0].size();
-  for(size_t i = 0 ; i < matrix.size() ; ++i) {
-    for(size_t j = 0; j < matrix[0].size(); ++j) {
+  for (size_t i = 0 ; i < matrix.size() ; ++i) {
+    for (size_t j = 0; j < matrix[0].size(); ++j) {
       os << " " << matrix[i][j];
     }
   }
@@ -331,8 +331,8 @@ IntMatrix IntMatrix::deserialize(istream& is) {
   size_t a, b;
   is >> a >> b;
   IntMatrix m(a,b);
-  for(size_t i = 0; i < a; ++i) {
-    for(size_t j = 0; j < b; ++j) {
+  for (size_t i = 0; i < a; ++i) {
+    for (size_t j = 0; j < b; ++j) {
       is >> m[i][j];
     }
   }

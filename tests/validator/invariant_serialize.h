@@ -17,7 +17,7 @@
 
 namespace stoke {
 
-class ValidatorInvariantSerializationTest : public ::testing::Test { 
+class ValidatorInvariantSerializationTest : public ::testing::Test {
 
 protected:
   void check(std::shared_ptr<Invariant> inv) {

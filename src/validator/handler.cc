@@ -67,7 +67,7 @@ const array<const char*, X64ASM_NUM_OPCODES> Handler::att_ = {{
 };
 
 SymBitVector Handler::multiply(SymBitVector a, SymBitVector b) const {
-  if(uninterpreted_multiply_) {
+  if (uninterpreted_multiply_) {
     assert(a.width() == b.width());
     auto width = a.width();
 

@@ -43,19 +43,19 @@ class ClassCheckerGadget : public ClassChecker {
 
 public:
 
-  ClassCheckerGadget(DataCollector& dc, ControlLearner& cl, ObligationChecker& oc, InvariantLearner& il) : 
+  ClassCheckerGadget(DataCollector& dc, ControlLearner& cl, ObligationChecker& oc, InvariantLearner& il) :
     ClassChecker(dc, cl, target_bound_arg.value(), rewrite_bound_arg.value()), child_(NULL)
   {
     auto cc_type = class_checker_arg.value();
-    if(cc_type == "local") {
+    if (cc_type == "local") {
       child_ = new LocalClassChecker(dc, cl, target_bound_, rewrite_bound_, oc, il);
     } else if (cc_type == "postgres") {
       child_ = new PostgresClassChecker(dc, cl, target_bound_, rewrite_bound_, postgres_arg.value());
-    } 
+    }
   }
 
   ~ClassCheckerGadget() {
-    if(child_)
+    if (child_)
       delete child_;
   }
 
@@ -83,10 +83,10 @@ public:
       (2) start an asynchronous job (which will later invoke the callback) and return; or
       (3) block, then start an asyncrhonous job (which will call the callback) and return. */
   virtual int check(const DualAutomata& template_pod,
-                     const DualBuilder::EquivalenceClassMap& equivalence_class,
-                     Callback& callback,
-                     bool separate_stack,
-                     void* optional = NULL) override {
+                    const DualBuilder::EquivalenceClassMap& equivalence_class,
+                    Callback& callback,
+                    bool separate_stack,
+                    void* optional = NULL) override {
     return child_->check(template_pod, equivalence_class, callback, separate_stack, optional);
   }
 

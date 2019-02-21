@@ -31,7 +31,7 @@ namespace stoke {
 
 class InvariantLearnerGadget : public InvariantLearner {
 public:
-  InvariantLearnerGadget(SeedGadget& seed, const Cfg& target, const Cfg& rewrite) : 
+  InvariantLearnerGadget(SeedGadget& seed, const Cfg& target, const Cfg& rewrite) :
     InvariantLearner(target, rewrite) {
     set_seed(seed);
     set_enable_shadow(shadow_regs_arg.value());

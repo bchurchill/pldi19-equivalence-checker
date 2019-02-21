@@ -52,7 +52,7 @@ public:
 
   /** Enable/disable uninterprted multiply */
   virtual void enable_uninterpreted_multiply(bool b) {
-    for(auto h : handlers_) {
+    for (auto h : handlers_) {
       h->enable_uninterpreted_multiply(b);
     }
     uninterpreted_multiply_ = true;

@@ -63,10 +63,10 @@ class ObligationChecker {
 public:
 
   enum AliasStrategy {
-    BASIC = 0,        // enumerate all cases, attempt to bound it 
-    FLAT = 1,         // model memory as an array in the SMT solver 
-    ARM = 2,          // improved implementation of "STRING" 
-    ARMS_RACE = 3,    // run ARM and FLAT in parallel 
+    BASIC = 0,        // enumerate all cases, attempt to bound it
+    FLAT = 1,         // model memory as an array in the SMT solver
+    ARM = 2,          // improved implementation of "STRING"
+    ARMS_RACE = 3,    // run ARM and FLAT in parallel
     DUMMY = 4,        // don't model memory, try to do the proof without it
   };
 
@@ -117,7 +117,7 @@ public:
     std::istream& read_text(std::istream& is);
     std::ostream& write_text(std::ostream& os) const;
 
-    Obligation() : 
+    Obligation() :
       target(TUnit(), x64asm::RegSet::empty(), x64asm::RegSet::empty()),
       rewrite(TUnit(), x64asm::RegSet::empty(), x64asm::RegSet::empty())
     {
@@ -125,11 +125,11 @@ public:
     }
   };
 
-  
+
   typedef std::function<void (Result&, void*)> Callback;
 
-  ObligationChecker() 
-    {
+  ObligationChecker()
+  {
     set_alias_strategy(AliasStrategy::FLAT);
     set_nacl(false);
     set_basic_block_ghosts(true);
@@ -137,7 +137,7 @@ public:
     set_separate_stack(false);
   }
 
-  ObligationChecker(const ObligationChecker& oc) 
+  ObligationChecker(const ObligationChecker& oc)
   {
     basic_block_ghosts_ = oc.basic_block_ghosts_;
     nacl_ = oc.nacl_;
@@ -199,7 +199,7 @@ public:
                     bool override_separate_stack) {
 
     Result await_result;
-    
+
     Callback callback = [&] (Result& result, void*) {
       std::cout << "[check_wait] got callback" << std::endl;
       await_result = result;
@@ -211,7 +211,7 @@ public:
 
     std::cout << "[check_wait] blocking" << std::endl;
     block_until_complete();
-    
+
     return await_result;
   }
 
@@ -276,7 +276,7 @@ protected:
 
 } //namespace stoke
 
-namespace std{
+namespace std {
 
 std::ostream& operator<<(std::ostream&, const stoke::ObligationChecker::Result&);
 std::istream& operator>>(std::istream&, stoke::ObligationChecker::Result&);

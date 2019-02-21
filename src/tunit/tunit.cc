@@ -650,17 +650,17 @@ istream& TUnit::read_naked_text(istream& is) {
 }
 
 void TUnit::serialize(ostream& os) const {
-  write_text(os);  
+  write_text(os);
   os << "==END TUNIT==" << endl;
 }
 
 TUnit TUnit::deserialize(istream& is) {
   TUnit tu;
   stringstream ss;
-  while(is.good()) {
+  while (is.good()) {
     string line;
     getline(is, line);
-    if(line == "==END TUNIT==")
+    if (line == "==END TUNIT==")
       break;
     else
       ss << line << endl;

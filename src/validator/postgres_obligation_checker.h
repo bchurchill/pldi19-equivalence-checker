@@ -29,9 +29,9 @@ class PostgresObligationChecker : public ObligationChecker {
 
 public:
 
-  PostgresObligationChecker(std::string connection_string, SmtObligationChecker& smt_checker) : 
+  PostgresObligationChecker(std::string connection_string, SmtObligationChecker& smt_checker) :
     handler_(), filter_(handler_), connection_string_(connection_string),
-    connection_(connection_string.c_str()), pipeline_(NULL), pipeline_tx_(NULL), 
+    connection_(connection_string.c_str()), pipeline_(NULL), pipeline_tx_(NULL),
     dispatches_(0),
     smt_checker_(smt_checker)
   {
@@ -41,7 +41,7 @@ public:
     enable_arm(true);
     enable_shortcircuit(0);
 
-    if(!connection_.is_open()) {
+    if (!connection_.is_open()) {
       std::cerr << "Failed to open connection to database." << std::endl;
     } else {
       std::cout << "Database connection open." << std::endl;
@@ -100,7 +100,7 @@ public:
 
   /** Forget about everything that has been started. */
   virtual void delete_all() {
-    if(dispatches_ > 0) {
+    if (dispatches_ > 0) {
       std::cout << "Waiting on pipeline..." << std::endl;
       pipeline_->complete();
       std::cout << "Closing up nontransaction..." << std::endl;
@@ -160,7 +160,7 @@ private:
     bool completed;
 
     void invoke_callbacks(ObligationChecker::Result r) {
-      for(size_t i = 0; i < callbacks.size(); ++i) {
+      for (size_t i = 0; i < callbacks.size(); ++i) {
         (*callbacks[i])(r, optionals[i]);
       }
     }

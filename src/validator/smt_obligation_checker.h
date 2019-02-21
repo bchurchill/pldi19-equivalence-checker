@@ -51,7 +51,7 @@ class SmtObligationChecker : public ObligationChecker {
 
 public:
 
-  SmtObligationChecker(SMTSolver& solver, Filter& filter) : 
+  SmtObligationChecker(SMTSolver& solver, Filter& filter) :
     ObligationChecker(),
     check_counterexamples_(true),
     solver_(solver),
@@ -115,8 +115,8 @@ private:
 
   /** Populate a CPU state with memory from the model. */
   bool build_testcase_from_array(CpuState&, SymArray heap, const std::vector<SymArray>& stacks,
-                            const std::map<const SymBitVectorAbstract*, uint64_t>& others,
-                            uint64_t stack_pointer) const;
+                                 const std::map<const SymBitVectorAbstract*, uint64_t>& others,
+                                 uint64_t stack_pointer) const;
   /** Helper for build_testcase_from_array.  Extracts model from an array. */
   cpputil::BitVector add_to_map(const SymArray& array, std::unordered_map<uint64_t, cpputil::BitVector>& mem_map) const;
 
@@ -164,12 +164,12 @@ private:
 
   /** Check if a counterexample actually works.  Updates the output states
     (ceg_expected, ceg_expected2) with data from the sandbox. */
-  bool check_counterexample(const Cfg& target, const Cfg& rewrite, 
-                            const x64asm::Code& target_unroll, 
+  bool check_counterexample(const Cfg& target, const Cfg& rewrite,
+                            const x64asm::Code& target_unroll,
                             const x64asm::Code& rewrite_unroll,
                             const CfgPath& P, const CfgPath& Q,
                             const LineMap& target_linemap, const LineMap& rewrite_linemap,
-                            const std::shared_ptr<Invariant> assume, const std::shared_ptr<Invariant> prove, 
+                            const std::shared_ptr<Invariant> assume, const std::shared_ptr<Invariant> prove,
                             const CpuState& ceg, const CpuState& ceg2,
                             CpuState& ceg_expected, CpuState& ceg_expected2,
                             bool separate_stack);

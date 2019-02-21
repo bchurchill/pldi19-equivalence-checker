@@ -19,7 +19,7 @@ public:
   }
 
   std::string get_tmp_filename() {
-    if(tmp_name.size() == 0) {
+    if (tmp_name.size() == 0) {
       tmp_name = tmpnam(NULL) + std::string(".out");
     }
     return tmp_name;

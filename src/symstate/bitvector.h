@@ -263,7 +263,7 @@ private:
 
 #ifdef STOKE_UF_MULTIPLICATION
   /** Get multiplication function */
-  static std::map<size_t, SymFunction*> multiplication_functions_; 
+  static std::map<size_t, SymFunction*> multiplication_functions_;
 #endif
 
   /** Memory Manager */

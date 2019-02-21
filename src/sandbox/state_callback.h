@@ -26,7 +26,7 @@ struct StateCallbackData {
   const size_t line;
   CpuState& state;
 
-  StateCallbackData(x64asm::Code& c, size_t l, CpuState& s) : 
+  StateCallbackData(x64asm::Code& c, size_t l, CpuState& s) :
     code(c), line(l), state(s) {
   }
 };

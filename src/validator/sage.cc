@@ -1,4 +1,4 @@
-  // Copyright 2013-2016 Stanford University
+// Copyright 2013-2016 Stanford University
 //
 // Licensed under the Apache License, Version 2.0 (the License);
 // you may not use this file except in compliance with the License.
@@ -40,13 +40,13 @@ void Sage::initialize() {
   int to_sage_pipe[2];
   int from_sage_pipe[2];
   int ok = pipe(to_sage_pipe);
-  if(ok) {
+  if (ok) {
     perror("sage pipe1");
     exit(1);
   }
 
   ok = pipe(from_sage_pipe);
-  if(ok) {
+  if (ok) {
     perror("sage pipe2");
     exit(1);
   }
@@ -54,7 +54,7 @@ void Sage::initialize() {
   initialized = true;
 
   pid_t pid = fork();
-  if(pid) {
+  if (pid) {
     /* parent */
     close(to_sage_pipe[0]);
     close(from_sage_pipe[1]);
@@ -110,7 +110,7 @@ void Sage::run() {
   cout << "[sage] running..." << endl;
 
   /** Do initial setup */
-  if(!initialized)
+  if (!initialized)
     initialize();
 
   /** Be safe. */
@@ -134,7 +134,7 @@ void Sage::run() {
   /** Wait for answer.*/
   string tst;
   *stream_from_sage >> tst;
-  if(tst != "OK") {
+  if (tst != "OK") {
     cout << "Expected to receive 'OK' from sage." << endl;
     cout << "Instead got " << tst << endl;
     exit(1);
@@ -157,7 +157,7 @@ void Sage::run() {
 
 //auto start_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 
- // int status = system((string("sage ") + tmp_in + string(" > ") + tmp_out + string(" 2>") + tmp_err).c_str());
+// int status = system((string("sage ") + tmp_in + string(" > ") + tmp_out + string(" 2>") + tmp_err).c_str());
 
   //auto end_time = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
   //cout << "Nullspace computation took " << dec << (end_time - start_time).count() << " ms" << endl;

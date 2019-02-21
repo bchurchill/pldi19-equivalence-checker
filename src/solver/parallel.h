@@ -41,7 +41,7 @@ public:
 
   ParallelSolver* clone() const {
     std::vector<SMTSolver*> new_solvers;
-    for(auto s : solvers_) 
+    for (auto s : solvers_)
       new_solvers.push_back(s->clone());
     return new ParallelSolver(new_solvers);
   }
@@ -63,10 +63,10 @@ public:
       bool has_error = solver.has_error();
       DEBUG_PARALLEL(std::cout << "Solver index=" << index << " has my_result = " << my_result << " and error=" << has_error << std::endl;)
 
-      if(!has_error) {
+      if (!has_error) {
         size_t swap_zero = 0;
         bool i_was_first = finished.compare_exchange_strong(swap_zero, index+1);
-        if(i_was_first) {
+        if (i_was_first) {
           DEBUG_PARALLEL(std::cout << "Solver index=" << index << " was first" << std::endl;)
           // tell all the solvers to stop what they're doing
           interrupt();
@@ -80,15 +80,15 @@ public:
     };
 
     std::vector<std::thread> threads;
-    for(size_t i = 0; i < solvers_.size(); ++i) {
+    for (size_t i = 0; i < solvers_.size(); ++i) {
       threads.push_back(std::thread(thread_body, i));
     }
 
-    for(auto& thread : threads) {
+    for (auto& thread : threads) {
       thread.join();
     }
 
-    
+
     return the_result;
 
   }
@@ -120,7 +120,7 @@ public:
   }
 
   void interrupt() {
-    for(auto it : solvers_) {
+    for (auto it : solvers_) {
       it->interrupt();
     }
   }

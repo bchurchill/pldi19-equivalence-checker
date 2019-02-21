@@ -74,10 +74,10 @@ public:
   void visit(const SymBitVectorFunction * const bv) override {
     auto fxn = bv->f_;
     std::string name = fxn.name;
-    if(!functions_seen_.count(name)) {
+    if (!functions_seen_.count(name)) {
       functions_seen_.insert(name);
 
-      if(commutative_functions_.count(name)) {
+      if (commutative_functions_.count(name)) {
         assert(fxn.args.size() == 2);
         assert(fxn.args[0] == fxn.args[1]);
         auto x = SymBitVector::tmp_var(fxn.args[0]);
@@ -87,7 +87,7 @@ public:
         auto axiom = (lhs == rhs).forall({x, y}, {lhs});
         axioms_.push_back(axiom);
       }
-      if(associative_functions_.count(name)) {
+      if (associative_functions_.count(name)) {
         assert(fxn.args.size() == 2);
         assert(fxn.args[0] == fxn.args[1]);
         assert(fxn.args[0] == fxn.return_type);

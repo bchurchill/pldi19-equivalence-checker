@@ -33,7 +33,7 @@ class Validator : public Verifier {
 public:
 
   Validator(ObligationChecker& checker) :
-    checker_(checker) 
+    checker_(checker)
   {
     has_error_ = false;
     setup_support_table();
@@ -43,14 +43,14 @@ public:
     that shares any configuration of the original one, but can safely be used
     in a different thread.  They can share pointers to memory, but only if that
     memory is only read.  */
-  Validator(const Validator& rhs) : 
+  Validator(const Validator& rhs) :
     Verifier(),
     checker_(rhs.checker_),
     support_table_(rhs.support_table_),
     error_file_(""),
     error_line_(0)
-   {
-     has_error_ = false;
+  {
+    has_error_ = false;
   }
 
   virtual ~Validator() {

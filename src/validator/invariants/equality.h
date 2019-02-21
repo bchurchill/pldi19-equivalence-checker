@@ -39,7 +39,7 @@ class EqualityInvariant : public Invariant {
 public:
   using Invariant::check;
 
-  EqualityInvariant(std::vector<Variable> terms, long constant, uint64_t modulus = 0) : 
+  EqualityInvariant(std::vector<Variable> terms, long constant, uint64_t modulus = 0) :
     terms_(terms), constant_(constant), modulus_(modulus) {
 
     assert(modulus_ != 1);
@@ -53,8 +53,8 @@ public:
     set_di(rewrite, number, true);
 
     size_t size = 64;
-    for(auto var : terms_) {
-      if(var.size*8 > size)
+    for (auto var : terms_) {
+      if (var.size*8 > size)
         size = var.size*8;
     }
 
@@ -64,15 +64,15 @@ public:
     size_t k = 64;
     for (auto term : terms_) {
       //std::cout << std::hex << "coefficient: " << term.coefficient << std::endl;
-      if(term.coefficient > 0) {
+      if (term.coefficient > 0) {
         size_t zeros = __builtin_ctzl(term.coefficient);
         //std::cout << "pos coefficient zeros = " << zeros << std::endl;
-        if(zeros < k)
+        if (zeros < k)
           k = zeros;
       } else if (term.coefficient < 0) {
         size_t zeros = __builtin_ctzl(-term.coefficient);
         //std::cout << "neg coefficient zeros = " << zeros << std::endl;
-        if(zeros < k)
+        if (zeros < k)
           k = zeros;
       } else {
         //std::cout << "zero coefficient found" << std::endl;
@@ -80,32 +80,32 @@ public:
     }
 
     //std::cout << "k = " << k << std::endl;
-    if(k == 64 || modulus_ != 0)
+    if (k == 64 || modulus_ != 0)
       k = 0;
 
     SymBitVector sum = SymBitVector::constant(size-k, 0);
     SymBitVector sum_rhs = SymBitVector::constant(size-k, constant_);
     // proceed, chopping off the top k bits from each term
     for (auto term : terms_) {
-      if(term.coefficient == 0)
+      if (term.coefficient == 0)
         continue;
 
       auto value = term.from_state(target, rewrite);
       auto value_ext = value.sign_extend(size);
       bool negative = (term.coefficient < 0);
       auto normalized_term = term.coefficient;
-      if(negative)
+      if (negative)
         normalized_term = -normalized_term;
       normalized_term = (normalized_term >> k);
       auto coefficient = SymBitVector::constant(64, normalized_term);
 
-      if(k) 
+      if (k)
         value_ext = value_ext[size-1-k][0];
-      if(size-k < 64)
+      if (size-k < 64)
         coefficient = coefficient[size-k-1][0];
 
       auto& side = negative ? sum_rhs : sum;
-      if(normalized_term == 1) {
+      if (normalized_term == 1) {
         side = side + value_ext;
       } else {
         auto coefficient_ext = coefficient.sign_extend(size-k);
@@ -113,12 +113,12 @@ public:
       }
     }
 
-    if(modulus_ == 0)
+    if (modulus_ == 0)
       return sum == sum_rhs;
     else
-      return 
-        ((sum - sum_rhs) 
-          % SymBitVector::constant(size, modulus_)) 
+      return
+        ((sum - sum_rhs)
+         % SymBitVector::constant(size, modulus_))
         == SymBitVector::constant(size, 0);
   }
 
@@ -126,7 +126,7 @@ public:
   bool check(const CpuState& target, const CpuState& rewrite) const {
     auto sum = calculate_lhs(target, rewrite);
 
-    if(modulus_ == 0)
+    if (modulus_ == 0)
       return sum == (uint64_t)constant_;
     else
       return ((uint64_t)constant_ - sum) % modulus_ == 0;
@@ -172,7 +172,7 @@ public:
       os << " = 0x" << constant_;
       os << std::dec;
     }
-    if(modulus_ != 0) {
+    if (modulus_ != 0) {
       os << " (mod " << modulus_ << ")";
     }
 
@@ -187,7 +187,7 @@ public:
     out << "EqualityInvariant" << std::endl;
     out << constant_ << " " << modulus_ << std::endl;
     out << terms_.size() << std::endl;
-    for(auto it : terms_) {
+    for (auto it : terms_) {
       it.serialize(out);
     }
     return out;
@@ -197,7 +197,7 @@ public:
     size_t count;
     is >> constant_ >> modulus_ >> count;
     CHECK_STREAM(is);
-    for(size_t i = 0; i < count; ++i) {
+    for (size_t i = 0; i < count; ++i) {
       Variable v(is);
       terms_.push_back(v);
     }
@@ -214,29 +214,29 @@ public:
   /** return true if we're sure that *this does not imply inv. */
   virtual bool does_not_imply(std::shared_ptr<Invariant> inv) const override {
     auto casted = std::dynamic_pointer_cast<EqualityInvariant>(inv);
-    if(casted) {
+    if (casted) {
       auto our_terms = casted->get_terms();
       auto their_terms = casted->get_terms();
-      for(auto ours : our_terms) {
+      for (auto ours : our_terms) {
         bool found_one = false;
-        for(auto theirs : their_terms) {
-          if(ours.is_related(theirs)) {
+        for (auto theirs : their_terms) {
+          if (ours.is_related(theirs)) {
             found_one = true;
             break;
           }
         }
-        if(!found_one)
+        if (!found_one)
           return true;
       }
-      for(auto theirs : their_terms) {
+      for (auto theirs : their_terms) {
         bool found_one = false;
-        for(auto ours : our_terms) {
-          if(theirs.is_related(ours)) {
+        for (auto ours : our_terms) {
+          if (theirs.is_related(ours)) {
             found_one = true;
             break;
           }
         }
-        if(!found_one)
+        if (!found_one)
           return true;
       }
     }

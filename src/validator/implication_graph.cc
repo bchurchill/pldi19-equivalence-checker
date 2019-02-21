@@ -27,12 +27,12 @@ size_t ImplicationGraph::compute(size_t i1, size_t i2) {
   size_t success = 0;
   size_t failures = 0;
 
-  for(auto inv1 : set1) {
-    for(auto inv2 : set2) {
-      if(inv1 == inv2)
+  for (auto inv1 : set1) {
+    for (auto inv2 : set2) {
+      if (inv1 == inv2)
         continue;
 
-      if(inv1->does_not_imply(inv2)) {
+      if (inv1->does_not_imply(inv2)) {
         cout << "Skipping check for ( " << *inv1 <<  " ) ==> ( " << *inv2 << " )" << endl;
         continue;
       }
@@ -49,14 +49,14 @@ size_t ImplicationGraph::compute(size_t i1, size_t i2) {
       //   if SAT   => no implication
       //   if UNSAT => inv1 => inv2
 
-      cout << "( " << *inv1 << " ) ==> ( " << *inv2 << " )" << endl; 
+      cout << "( " << *inv1 << " ) ==> ( " << *inv2 << " )" << endl;
       auto test = (*inv1)(ts, rs, dummy) & !(*inv2)(ts, rs, dummy);
       //cout << "INV1: " <<  (*inv1)(ts, rs, dummy) << endl;
       //cout << "INV2: " << (*inv2)(ts, rs, dummy) << endl;
       //cout << "CONJ: " << test << endl;
 
       bool worked;
-      if(smt_.is_sat({test})) {
+      if (smt_.is_sat({test})) {
         failures++;
         worked = false;
       } else {
@@ -77,9 +77,9 @@ size_t ImplicationGraph::compute(size_t i1, size_t i2) {
 
 void ImplicationGraph::print() {
   cout << "[implication_graph] REPLACEMENTS" << endl;
-  for(auto it : replacements_) {
+  for (auto it : replacements_) {
     cout << "   " << *(it.first) << endl;
-    for(auto rep : it.second) {
+    for (auto rep : it.second) {
       cout << "         " << *rep << endl;
     }
   }

@@ -232,7 +232,7 @@ Sandbox& Sandbox::clear_callbacks() {
   return *this;
 }
 
-struct SandboxChildCallbackArg{
+struct SandboxChildCallbackArg {
   ostream& output;
   StateCallback original_callback; // the address of the original callback
   void* original_arg;               // the argument of the callback
@@ -253,15 +253,15 @@ void sandbox_child_callback(const StateCallbackData& data, void* arg) {
 
 
 void Sandbox::update_child_callback(std::unordered_map<x64asm::Label, std::unordered_map<size_t, std::pair<StateCallback, void*>>>& m, ostream& os) {
-  for(auto& label_line_pair : m) {
-    for(auto& line_pair : label_line_pair.second) {
+  for (auto& label_line_pair : m) {
+    for (auto& line_pair : label_line_pair.second) {
       update_child_callback(line_pair.second, os);
     }
   }
 }
 
 void Sandbox::update_child_callback(pair<StateCallback, void*>& pair, ostream& os) {
-  if(pair.first == nullptr)
+  if (pair.first == nullptr)
     return;
 
   SandboxChildCallbackArg* scca = new SandboxChildCallbackArg(os);
@@ -275,12 +275,12 @@ void Sandbox::run_child(size_t index) {
 
   int fds[2];
   int ok = pipe(fds);
-  if(ok) {
+  if (ok) {
     perror("sandbox pipe");
   }
 
   pid_t pid = fork();
-  if(pid) {
+  if (pid) {
     // parent.
     close(fds[1]);
 
@@ -289,11 +289,11 @@ void Sandbox::run_child(size_t index) {
     istream is(&filebuf);
 
     // listen to fifo
-    while(is.good()) {
+    while (is.good()) {
       string line;
       cout << "waiting on child " << pid << endl;
       getline(is, line);
-      if(line == "RESULT") {
+      if (line == "RESULT") {
         cout << "Result received!" << endl;
         // read the result and save it
         auto io = io_pairs_[index];
@@ -360,7 +360,7 @@ Sandbox& Sandbox::run(size_t index) {
   assert(num_functions() > 0);
   assert(index < num_inputs());
 
-  if(use_child_) {
+  if (use_child_) {
     run_child(index);
     return *this;
   }
@@ -422,8 +422,8 @@ Sandbox& Sandbox::run() {
 
 bool Sandbox::check_abi(const IoPair& iop) const {
   for (const auto& r : {
-         rbx, rbp, rsp, r12, r13, r14, r15
-       }) {
+  rbx, rbp, rsp, r12, r13, r14, r15
+}) {
     if (iop.in_.gp[r].get_fixed_quad(0) != iop.out_.gp[r].get_fixed_quad(0)) {
       return false;
     }
@@ -883,8 +883,8 @@ bool Sandbox::emit_function(const Cfg& cfg, Function* fxn) {
       const auto& f = cfg.get_function();
       const auto& instr = f.get_code()[i];
       auto hex_offset = f.get_rip_offset() + f.hex_offset(i) + f.hex_size(i);
-      if(rip_map_.size()) {
-        if(rip_map_.count(i))
+      if (rip_map_.size()) {
+        if (rip_map_.count(i))
           hex_offset = rip_map_[i];
         DEBUG_SANDBOX(cout << "[sandbox] i = " << i << " instr = " << instr << endl;)
         DEBUG_SANDBOX(cout << "[sandbox] overriding hex_offset = " << hex_offset << endl;)
@@ -1783,7 +1783,7 @@ void Sandbox::emit_load_stoke_rsp() {
 void Sandbox::serialize(ostream& os) const {
   // for now, we just serialize/deserialize inputs to the function
   vector<CpuState> states;
-  for(auto it : io_pairs_) {
+  for (auto it : io_pairs_) {
     states.push_back(it->in_);
   }
   stoke::serialize<vector<CpuState>>(os, states);
@@ -1792,7 +1792,7 @@ void Sandbox::serialize(ostream& os) const {
 Sandbox Sandbox::deserialize(istream& is) {
   Sandbox sb;
   auto states = stoke::deserialize<vector<CpuState>>(is);
-  for(auto it : states)
+  for (auto it : states)
     sb.insert_input(it);
   return sb;
 }

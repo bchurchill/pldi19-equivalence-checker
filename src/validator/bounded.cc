@@ -40,14 +40,14 @@ void BoundedValidator::callback(ObligationChecker::Result& result, CallbackData&
   auto& Q = info.Q;
 
   // if it didn't verify, take note
-  if(!result.verified) {
-    correct_.store(false); 
+  if (!result.verified) {
+    correct_.store(false);
 
-    if(result.has_ceg) {
+    if (result.has_ceg) {
       found_ceg_.store(true);
       lock_guard<mutex> guard(ceg_m);
       counterexamples_.push_back(result.target_ceg);
-      if(counterexamples_.size() == 1) {
+      if (counterexamples_.size() == 1) {
         target_final_state_ = result.target_final_ceg;
         rewrite_final_state_ = result.rewrite_final_ceg;
       }
@@ -58,25 +58,25 @@ void BoundedValidator::callback(ObligationChecker::Result& result, CallbackData&
   count_++;
 
   BOUNDED_DEBUG(
-  // prepare result string.
-  stringstream ss;
-  ss << "[bv] Paths " << P << " / " << Q << endl;
-  ss << "     verified: " << (result.verified ? "true" : "false") << endl;
-  if(result.has_error) {
-    ss << "    error: " << result.error_message << endl;
-  }
-  auto output = ss.str();
+    // prepare result string.
+    stringstream ss;
+    ss << "[bv] Paths " << P << " / " << Q << endl;
+    ss << "     verified: " << (result.verified ? "true" : "false") << endl;
+  if (result.has_error) {
+  ss << "    error: " << result.error_message << endl;
+}
+auto output = ss.str();
 
-  // print results.
-  {
-    lock_guard<mutex> guard(print_m);
+              // print results.
+{
+  lock_guard<mutex> guard(print_m);
     cout << output;
   })
 
 }
 
-void BoundedValidator::verify_pair(const Cfg& target, const Cfg& rewrite, 
-                                   const CfgPath& P, const CfgPath& Q, 
+void BoundedValidator::verify_pair(const Cfg& target, const Cfg& rewrite,
+                                   const CfgPath& P, const CfgPath& Q,
                                    ObligationChecker::Callback& callback) {
 
   auto assume_state = make_shared<StateEqualityInvariant>(target.def_ins());
@@ -89,7 +89,7 @@ void BoundedValidator::verify_pair(const Cfg& target, const Cfg& rewrite,
   assume->add_invariant(memory_equal);
   assume->add_invariant(no_sig);
 
-  for(auto it : extra_assumptions_) {
+  for (auto it : extra_assumptions_) {
     assume->add_invariant(it);
   }
 
@@ -135,7 +135,7 @@ bool BoundedValidator::verify(const Cfg& target, const Cfg& rewrite) {
     sanity_checks(target, rewrite);
   } catch (validator_error e) {
     error_ = e.get_message();
-    has_error_ = true; 
+    has_error_ = true;
     return false;
   }
 
@@ -159,7 +159,7 @@ bool BoundedValidator::verify(const Cfg& target, const Cfg& rewrite) {
   sort(rewrite_paths.begin(), rewrite_paths.end(), by_length);
 
   ObligationChecker::Callback callback = [this] (ObligationChecker::Result& result, void* info) {
-    this->callback(result, *static_cast<CallbackData*>(info)); 
+    this->callback(result, *static_cast<CallbackData*>(info));
   };
 
 
@@ -170,8 +170,8 @@ bool BoundedValidator::verify(const Cfg& target, const Cfg& rewrite) {
     for (auto rewrite_path : rewrite_paths) {
 
       BOUNDED_DEBUG(
-          lock_guard<mutex> guard(print_m);
-          cout << "[bv] Checking pair: " << target_path << "; " << rewrite_path << endl;
+        lock_guard<mutex> guard(print_m);
+        cout << "[bv] Checking pair: " << target_path << "; " << rewrite_path << endl;
       )
 
       count++;
@@ -181,7 +181,7 @@ bool BoundedValidator::verify(const Cfg& target, const Cfg& rewrite) {
       // Case 2: verify failed and no counterexampe: keep going
       // Case 3: verify worked: keep going
 
-      if(bailout_ && found_ceg_.load()) {
+      if (bailout_ && found_ceg_.load()) {
         // TODO: tell obligation checker to stop.
         return false;
       }

@@ -37,42 +37,42 @@ void ForkingObligationChecker::return_error(Callback& callback, string s, void* 
 }
 
 void ForkingObligationChecker::check(
-           const Cfg& target, const Cfg& rewrite,
-           Cfg::id_type target_block, Cfg::id_type rewrite_block,
-           const CfgPath& p, const CfgPath& q,
-           std::shared_ptr<Invariant> assume, std::shared_ptr<Invariant> prove,
-           const std::vector<std::pair<CpuState, CpuState>>& testcases,
-           Callback& callback,
-           bool override_separate_stack,
-           void* optional) {
+  const Cfg& target, const Cfg& rewrite,
+  Cfg::id_type target_block, Cfg::id_type rewrite_block,
+  const CfgPath& p, const CfgPath& q,
+  std::shared_ptr<Invariant> assume, std::shared_ptr<Invariant> prove,
+  const std::vector<std::pair<CpuState, CpuState>>& testcases,
+  Callback& callback,
+  bool override_separate_stack,
+  void* optional) {
 
   vector<pid_t> friends;
   set<pid_t> friend_set;
 
-  for(auto child_checker : child_checkers_) {
+  for (auto child_checker : child_checkers_) {
     block_until_free();
 
     /** Check that all the friends are still running. */
     bool still_running = false;
-    if(friends.size()) {
-      for(auto pi : process_info_) {
-        if(friend_set.count(pi.pid)) {
+    if (friends.size()) {
+      for (auto pi : process_info_) {
+        if (friend_set.count(pi.pid)) {
           still_running = true;
           break;
         }
       }
 
       /** If the friends are not running, we're done! */
-      if(!still_running) {
+      if (!still_running) {
         return;
       }
     }
 
     /** Pipe and fork */
     DEBUG_FORKING_CHECKER(cout << "[check] pipe!" << endl;)
-      int pipefd[2];
+    int pipefd[2];
     int result = pipe2(pipefd, O_NONBLOCK);
-    if(result != 0) {
+    if (result != 0) {
       perror("[check] pipe");
       return_error(callback, "Call to pipe() failed", optional);
       return;
@@ -80,11 +80,11 @@ void ForkingObligationChecker::check(
 
     DEBUG_FORKING_CHECKER(cout << "[check] forking!" << endl;)
     auto start = chrono::system_clock::now();
-      pid_t pid = fork();
+    pid_t pid = fork();
     auto end = chrono::system_clock::now();
     auto elapsed = chrono::duration_cast<chrono::microseconds>(end-start);
     DEBUG_FORKING_CHECKER(cout << "[check] fork time: " << elapsed.count() << endl;)
-    if(pid == 0) {
+    if (pid == 0) {
       // child
       close(pipefd[0]);
       Callback callback = [&pipefd, child_checker] (Result& result, void* info) {
@@ -94,11 +94,11 @@ void ForkingObligationChecker::check(
         ss << endl;
         const char* buffer = ss.str().c_str();
         DEBUG_FORKING_CHECKER(cout << "BUFFER: " << buffer << endl;)
-          size_t len = strlen(buffer);
+        size_t len = strlen(buffer);
 
-        while(len > 0) {
+        while (len > 0) {
           int n = write(pipefd[1], buffer, len);
-          if(n == 0) {
+          if (n == 0) {
             DEBUG_FORKING_CHECKER(cout << "WRITE WAS 0!" << endl;)
           } else if (n == -1) {
             DEBUG_FORKING_CHECKER(cout << "WRITE FAILED!" << endl;)
@@ -106,13 +106,13 @@ void ForkingObligationChecker::check(
             sleep(1);
           } else {
             DEBUG_FORKING_CHECKER(cout << "WROTE " << n << endl;)
-              len = len - n;
+            len = len - n;
             buffer = buffer + n;
           }
         }
       };
       child_checker->check(target, rewrite, target_block, rewrite_block,
-          p, q, assume, prove, testcases, callback, override_separate_stack, optional);
+                           p, q, assume, prove, testcases, callback, override_separate_stack, optional);
       child_checker->block_until_complete();
       close(pipefd[1]);
       exit(0);
@@ -121,8 +121,8 @@ void ForkingObligationChecker::check(
       close(pipefd[1]);
 
       // update the 'friends' vector on all the friends
-      for(auto& pi : process_info_) {
-        if(friend_set.count(pi.pid)) {
+      for (auto& pi : process_info_) {
+        if (friend_set.count(pi.pid)) {
           pi.friends.push_back(pid);
         }
       }
@@ -144,9 +144,9 @@ void ForkingObligationChecker::check(
       pollfds_[index].events = POLLIN | POLLPRI | POLLOUT | POLLRDHUP;
 
       DEBUG_FORKING_CHECKER(
-          cout << "[check] starting process " << process_info_.size()-1
-          << " with pid " << pid << " and fd " << pipefd[0] << endl;
-          cout << "[check] callback = " << &callback << " optional=" << (uint64_t)optional << endl;)
+        cout << "[check] starting process " << process_info_.size()-1
+        << " with pid " << pid << " and fd " << pipefd[0] << endl;
+        cout << "[check] callback = " << &callback << " optional=" << (uint64_t)optional << endl;)
     }
   }
 
@@ -157,7 +157,7 @@ void ForkingObligationChecker::print_table() const {
   size_t num_procs = process_info_.size();
   cout << "++++++++++++ DEBUG TABLE +++++++++++++" << endl;
   cout << "    " << num_procs << " processes running." << endl;
-  for(size_t i = 0; i < num_procs; ++i) {
+  for (size_t i = 0; i < num_procs; ++i) {
     auto pi = process_info_[i];
     auto pollfd = pollfds_[i];
     cout << "PROCESS " << i << endl;
@@ -167,7 +167,7 @@ void ForkingObligationChecker::print_table() const {
     cout << "   optional " << pi.optional << endl;
     cout << "   poll fd  " << pollfd.fd << endl;
     cout << "   friends  ";
-    for(auto it : pi.friends)
+    for (auto it : pi.friends)
       cout << it << "  ";
     cout << endl;
   }
@@ -181,7 +181,7 @@ void ForkingObligationChecker::poll_and_read(bool fast) {
   /** perform poll() to see which processes to read. */
   size_t num_procs = process_info_.size();
   DEBUG_FORKING_CHECKER(cout << "[poll_and_read] polling on " << num_procs << endl;)
-  if(num_procs == 0)
+  if (num_procs == 0)
     return;
 
   size_t num_rdy = 0;
@@ -189,41 +189,41 @@ void ForkingObligationChecker::poll_and_read(bool fast) {
   int timeout = fast ? 0 : -1;
   num_rdy = poll(pollfds_, num_procs, timeout);
 
-  if(num_rdy == 0)
+  if (num_rdy == 0)
     return;
 
   vector<size_t> to_finish;
 
   DEBUG_FORKING_CHECKER(cout << "[poll_and_read] " << num_rdy << " processes ready." << endl;)
   /** go through the processes and read as needed. */
-  for(size_t i = 0; i < process_info_.size(); ++i) {
-    auto curr_pollfd = pollfds_[i]; 
+  for (size_t i = 0; i < process_info_.size(); ++i) {
+    auto curr_pollfd = pollfds_[i];
     auto& pi = process_info_[i];
     auto revents = curr_pollfd.revents;
     DEBUG_FORKING_CHECKER(
       cout << "[poll_and_read] checking process " << i << endl;
       cout << "                has revents=" << revents << endl;
     )
-    if(revents & POLLIN) {
+    if (revents & POLLIN) {
       DEBUG_FORKING_CHECKER(
-      cout << "[poll_and_read] process " << i 
-           << " with id " << pi.pid 
-           << " and fd " << curr_pollfd.fd << " is ready." << endl;)
-      while(true) {
+        cout << "[poll_and_read] process " << i
+        << " with id " << pi.pid
+        << " and fd " << curr_pollfd.fd << " is ready." << endl;)
+      while (true) {
         int ret = read(pollfds_[i].fd, buffer, sizeof(buffer)-1);
-        if(ret == (-1)) {
+        if (ret == (-1)) {
           DEBUG_FORKING_CHECKER(
-          cout << "[poll_and_read]      got error (probably EAGAIN?)" << endl;
-          perror("poll_and_read: read");)
+            cout << "[poll_and_read]      got error (probably EAGAIN?)" << endl;
+            perror("poll_and_read: read");)
           break;
         } else if (ret == 0) {
           DEBUG_FORKING_CHECKER(
-          cout << "[poll_and_read]      got EOF" << endl;)
+            cout << "[poll_and_read]      got EOF" << endl;)
           to_finish.push_back(i);
           break;
         } else {
           DEBUG_FORKING_CHECKER(
-          cout << "[poll_and_read]      read " << ret << " bytes." << endl;)
+            cout << "[poll_and_read]      read " << ret << " bytes." << endl;)
           buffer[ret] = 0;
 
           stringstream ss;
@@ -254,14 +254,14 @@ void ForkingObligationChecker::poll_and_read(bool fast) {
   DEBUG_FORKING_CHECKER(cout << "[poll_and_read] removing " << to_finish.size() << " processes" << endl;)
   vector<pid_t> to_remove;
   set<pid_t> remove_set;
-  for(auto i : to_finish) {
+  for (auto i : to_finish) {
     // info on this process
     auto& pi = process_info_[i];
     auto friends = pi.friends;
     auto pid = pi.pid;
 
     // check that we haven't already taken care of this process
-    if(remove_set.count(pid))
+    if (remove_set.count(pid))
       continue;
 
     finish_process(pi);
@@ -271,7 +271,7 @@ void ForkingObligationChecker::poll_and_read(bool fast) {
     remove_set.insert(pid);
 
     // add any friends to the remove set
-    for(auto f : friends) {
+    for (auto f : friends) {
       to_remove.push_back(f);
       remove_set.insert(f);
     }
@@ -284,17 +284,17 @@ void ForkingObligationChecker::poll_and_read(bool fast) {
 
   /** Remove all structures related to PIDs.  This is slow, but OK. */
   cout << "TO REMOVE: " << endl;
-  for(auto pid : to_remove) {
+  for (auto pid : to_remove) {
     int index = -1;
     int fd = -1;
-    for(size_t i = 0; i < process_info_.size(); ++i) {
-      if(process_info_[i].pid == pid) {
+    for (size_t i = 0; i < process_info_.size(); ++i) {
+      if (process_info_[i].pid == pid) {
         index = (int)i;
         fd = process_info_[i].fd;
         break;
       }
-    } 
-    for(size_t j = index; j < process_info_.size() - 1; ++j) {
+    }
+    for (size_t j = index; j < process_info_.size() - 1; ++j) {
       pollfds_[j] = pollfds_[j+1];
     }
     process_info_.erase(process_info_.begin() + index);
@@ -307,28 +307,28 @@ void ForkingObligationChecker::poll_and_read(bool fast) {
   DEBUG_FORKING_CHECKER(print_table();)
 }
 
-void ForkingObligationChecker::finish_process(ProcessInfo& pi) const{
+void ForkingObligationChecker::finish_process(ProcessInfo& pi) const {
   ObligationChecker::Result result;
   stringstream ss(pi.data);
   ss >> result;
   DEBUG_FORKING_CHECKER(cout << "[finish_process] got result: " << endl;
-  result.write_text(cout);
-  cout << endl;
-  cout << "calling callback at addr " << (uint64_t)pi.callback << endl;)
+                        result.write_text(cout);
+                        cout << endl;
+                        cout << "calling callback at addr " << (uint64_t)pi.callback << endl;)
   (*pi.callback)(result, pi.optional);
   close(pi.fd);
 }
 
 void ForkingObligationChecker::block_until_complete() {
   DEBUG_FORKING_CHECKER(cout << "[block_until_complete] called" << endl;)
-  while(process_info_.size() > 0) {
+  while (process_info_.size() > 0) {
     poll_and_read(false);
   }
 }
 
 void ForkingObligationChecker::block_until_free() {
   DEBUG_FORKING_CHECKER(cout << "[block_until_free] called" << endl;)
-  while(process_info_.size() == max_processes_) {
+  while (process_info_.size() == max_processes_) {
     poll_and_read(false);
   }
 }

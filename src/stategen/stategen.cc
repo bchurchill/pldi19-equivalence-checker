@@ -89,7 +89,7 @@ bool StateGen::get(CpuState& cs, const Cfg& cfg, bool no_randomize) {
   sb_->compile(cfg);
 
   // Generate a random state if requested
-  if(!no_randomize)
+  if (!no_randomize)
     get(cs);
 
   // now try to patch in the gaps
@@ -341,11 +341,11 @@ bool StateGen::fix(const CpuState& cs, CpuState& fixed, const Cfg& cfg, size_t l
       else
         disp &= 0x00000000ffffffff;
 
-      if(linemap_.size() && linemap_.count(line)) {
+      if (linemap_.size() && linemap_.count(line)) {
         DEBUG_STATEGEN(
-        cout << "[fix] have rip offset of " << linemap_[line].rip_offset << endl;
-        cout << "[fix] (uint64_t)mem.get_disp() = " << (uint64_t)mem.get_disp() << endl;
-        cout << "[fix] disp = " << disp << endl;)
+          cout << "[fix] have rip offset of " << linemap_[line].rip_offset << endl;
+          cout << "[fix] (uint64_t)mem.get_disp() = " << (uint64_t)mem.get_disp() << endl;
+          cout << "[fix] disp = " << disp << endl;)
         addr = linemap_[line].rip_offset + disp;
       } else {
         addr = disp + fxn.get_rip_offset() + fxn.hex_offset(line) + fxn.hex_size(line);
@@ -360,29 +360,29 @@ bool StateGen::fix(const CpuState& cs, CpuState& fixed, const Cfg& cfg, size_t l
   if (is_misaligned(addr, size) && !allow_unaligned_) {
     DEBUG_STATEGEN(cout << "this is misaligned." << endl;)
     return fix_misalignment(cs, fixed, instr);
-  } 
-  
+  }
+
   vector<Memory> segments;
   segments.push_back(fixed.stack);
   segments.push_back(fixed.heap);
   segments.insert(segments.begin(), fixed.segments.begin(), fixed.segments.end());
-  
-  for(auto& segment : segments) {
-    if(already_allocated(segment, addr, size)) {
+
+  for (auto& segment : segments) {
+    if (already_allocated(segment, addr, size)) {
       tried_to_fix_misalign_ = false;
       error_message_ = "Memory was already allocated in segment.";
       return false;
     }
   }
   DEBUG_STATEGEN(cout << "[fix] Seems not to already be allocated here: " << endl;
-  for(auto& segment : segments) {
-    segment.write_text(cout);
+  for (auto& segment : segments) {
+  segment.write_text(cout);
     cout << endl << endl;
   })
 
   /** See if we can resize one of the segments. */
-  for(auto& segment : segments) {
-    if(resize_mem(segment, addr, size)) {
+  for (auto& segment : segments) {
+    if (resize_mem(segment, addr, size)) {
       fixed.stack = segments[0];
       fixed.heap = segments[1];
       segments.erase(segments.begin());

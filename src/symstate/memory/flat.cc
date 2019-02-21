@@ -81,7 +81,7 @@ std::pair<SymBitVector,SymBool> FlatMemory::read(SymBitVector address, uint16_t 
 SymBool FlatMemory::equality_constraint(FlatMemory& other) {
   return (heap_ == other.heap_);
   //if(exclusions.size() == 0)
-  
+
   /*
   auto& my_heap = heap_;
   auto& their_heap = other.heap_;

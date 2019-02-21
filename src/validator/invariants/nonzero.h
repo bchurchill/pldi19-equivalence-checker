@@ -25,7 +25,7 @@ public:
   using Invariant::check;
 
   // negate false -> check if nonzero
-  NonzeroInvariant(Variable v, bool negate = false) : variable_(v), negate_(negate){
+  NonzeroInvariant(Variable v, bool negate = false) : variable_(v), negate_(negate) {
   }
 
   SymBool operator()(SymState& target, SymState& rewrite, size_t& number) {
@@ -35,17 +35,17 @@ public:
 
     /*
     std::cout << "NonzeroInvariant variable_.size = " << variable_.size << std::endl;
-    std::cout << "variable_.from_state(target,rewrite).width() = " 
+    std::cout << "variable_.from_state(target,rewrite).width() = "
          << variable_.from_state(target, rewrite).width() << std::endl; */
 
-    if(!negate_)
+    if (!negate_)
       return variable_.from_state(target, rewrite) != SymBitVector::constant(variable_.size*8, 0);
     else
       return variable_.from_state(target, rewrite) == SymBitVector::constant(variable_.size*8, 0);
   }
 
   bool check(const CpuState& target, const CpuState& rewrite) const {
-    if(!negate_)
+    if (!negate_)
       return !(variable_.from_state(target,rewrite) == 0);
     else
       return (variable_.from_state(target,rewrite) == 0);
@@ -58,7 +58,7 @@ public:
   }
 
   std::ostream& write(std::ostream& os) const {
-    if(!negate_)
+    if (!negate_)
       os << variable_ << " != 0";
     else
       os << variable_ << " == 0";
@@ -83,7 +83,7 @@ public:
 
   virtual bool does_not_imply(std::shared_ptr<Invariant> inv) const override {
     auto casted = std::dynamic_pointer_cast<NonzeroInvariant>(inv);
-    if(casted) {
+    if (casted) {
       return !variable_.is_related(casted->variable_);
     } else {
       return false;

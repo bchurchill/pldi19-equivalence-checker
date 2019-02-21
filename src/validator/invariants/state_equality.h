@@ -80,7 +80,7 @@ public:
     out << "StateEqualityInvariant" << std::endl;
     out << rs_ << std::endl;
     out << ghost_variables_.size() << std::endl;
-    for(auto v : ghost_variables_)
+    for (auto v : ghost_variables_)
       v.serialize(out);
     return out;
   }
@@ -89,7 +89,7 @@ public:
     size_t count;
     is >> rs_ >> count;
     CHECK_STREAM(is);
-    for(size_t i = 0; i < count; ++i) {
+    for (size_t i = 0; i < count; ++i) {
       Variable v(is);
       CHECK_STREAM(is);
       ghost_names_.push_back(v.name);

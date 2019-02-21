@@ -454,7 +454,7 @@ public:
   SymBoolAbstract* visit(const SymBoolForAll * const b) {
     if (is_cached(b)) return get_cached(b);
     auto inside = (*this)(b->a_);
-    if(inside == b->a_) {
+    if (inside == b->a_) {
       return cache(b, (SymBoolForAll*)b);
     }
     return cache(b, make_forall(inside, b->vars_, b->patterns_));

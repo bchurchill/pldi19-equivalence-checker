@@ -257,13 +257,13 @@ public:
   void visit(const SymBoolForAll * const b) {
 
     auto l = get_level(b->a_);
-    if(l < level_) {
+    if (l < level_) {
       parens(l, b);
     } else {
       os_ << "∀";
       bool first = true;
-      for(auto v : b->vars_) {
-        if(first) {
+      for (auto v : b->vars_) {
+        if (first) {
           first = false;
           os_ << " ";
         } else {

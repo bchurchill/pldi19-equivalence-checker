@@ -85,12 +85,12 @@ vector<Variable> InvariantLearner::pick_variables(const Cfg& target,
     auto& block = is_rewrite ? rewrite_block : target_block;
 
     auto regset = live_out_regs(cfg, block);
-    if(include_defin) {
+    if (include_defin) {
       auto defins = def_in_regs(cfg, block);
       regset = regset | defins;
     }
     for (auto r = regset.gp_begin(); r != regset.gp_end(); ++r) {
-      if((*r).size() != 64) // TODO: revisit; what's the right thing to do here?
+      if ((*r).size() != 64) // TODO: revisit; what's the right thing to do here?
         continue;
       Variable v(*r, k);
       variables.push_back(v);
@@ -113,7 +113,7 @@ vector<Variable> get_memory_variables(const Cfg& target, const Cfg& rewrite, Reg
 
   set<x64asm::Mem> target_memory_operands;
   set<x64asm::Mem> rewrite_memory_operands;
-  for(size_t k = 0; k < 2; ++k) {
+  for (size_t k = 0; k < 2; ++k) {
     const Cfg* prog = k ? &rewrite : &target;
     auto& memory_operands = k ? rewrite_memory_operands : target_memory_operands;
     bool has_stack = false;
@@ -124,14 +124,14 @@ vector<Variable> get_memory_variables(const Cfg& target, const Cfg& rewrite, Reg
       //cout << "  processing instr " << instr << endl;
       if (instr.is_explicit_memory_dereference()) {
         auto mem = instr.get_operand<x64asm::Mem>((size_t)instr.mem_index());
-        if(mem.rip_offset()) {
+        if (mem.rip_offset()) {
           auto rip = tunit.hex_offset(i) + tunit.hex_size(i) + tunit.get_rip_offset();
           //cout << "~~~ for " << instr << " rip offset = " << rip << endl;
           //cout << "     hexoffset = " << tunit.hex_offset(i) << "  hexsize = " << tunit.hex_size(i) << " fileoffset = " << tunit.get_rip_offset() << endl;
           mem.set_disp(Imm32(mem.get_disp() + (int32_t)rip));
           mem.set_rip_offset(false);
         }
-        //cout << "     - considering operand " << mem 
+        //cout << "     - considering operand " << mem
         //     << " of size " << mem.size() << " type " << mem.type() << endl;
         memory_operands.insert(mem);
       } else if (instr.is_push() || instr.is_pop()) {
@@ -139,9 +139,9 @@ vector<Variable> get_memory_variables(const Cfg& target, const Cfg& rewrite, Reg
       }
     }
 
-    if(has_stack) {
+    if (has_stack) {
       int32_t max_stack_slots = 8;
-      for(int32_t i = max_stack_slots*8; i > -max_stack_slots*8; i -= 8) {
+      for (int32_t i = max_stack_slots*8; i > -max_stack_slots*8; i -= 8) {
         M64 m(rsp, Imm32(i));
         memory_operands.insert(m);
       }
@@ -149,19 +149,19 @@ vector<Variable> get_memory_variables(const Cfg& target, const Cfg& rewrite, Reg
   }
 
   DEBUG_LEARNER(
-  cout << "Inserted target operands include: " << endl;
-  for(auto mem : target_memory_operands) {
-    cout << "     - considering operand " << mem 
-         << " of size " << mem.size() << " type " << mem.type() << endl;
+    cout << "Inserted target operands include: " << endl;
+  for (auto mem : target_memory_operands) {
+  cout << "     - considering operand " << mem
+       << " of size " << mem.size() << " type " << mem.type() << endl;
   }
   cout << "Inserted rewrite operands include: " << endl;
-  for(auto mem : rewrite_memory_operands) {
-    cout << "     - considering operand " << mem 
-         << " of size " << mem.size() << " type " << mem.type() << endl;
+  for (auto mem : rewrite_memory_operands) {
+  cout << "     - considering operand " << mem
+       << " of size " << mem.size() << " type " << mem.type() << endl;
   }
   )
 
-  for(size_t k = 0; k < 2; ++k) {
+  for (size_t k = 0; k < 2; ++k) {
 
     auto& cfg = k ? rewrite : target;
     auto regs = k ? rewrite_regs : target_regs;
@@ -169,28 +169,28 @@ vector<Variable> get_memory_variables(const Cfg& target, const Cfg& rewrite, Reg
 
     for (auto mem : memory_operands) {
 
-      if(mem.contains_base()) {
-        if(!regs.contains(mem.get_base())) {
+      if (mem.contains_base()) {
+        if (!regs.contains(mem.get_base())) {
           continue;
         }
       }
-      if(mem.contains_index()) {
-        if(!regs.contains(mem.get_index())) {
+      if (mem.contains_index()) {
+        if (!regs.contains(mem.get_index())) {
           continue;
         }
       }
 
-      if(mem.size() == 256) { 
+      if (mem.size() == 256) {
         for (size_t offset : {
                0//,32,-32
              }) {
 
           // Make everything an M256
           M256 mem_fixed(mem.get_seg(),
-                        mem.get_base(),
-                        mem.get_index(),
-                        mem.get_scale(),
-                        mem.get_disp() + offset);
+                         mem.get_base(),
+                         mem.get_index(),
+                         mem.get_scale(),
+                         mem.get_disp() + offset);
 
           Variable v(mem_fixed, k);
           results.insert(v);
@@ -198,17 +198,17 @@ vector<Variable> get_memory_variables(const Cfg& target, const Cfg& rewrite, Reg
         }
       }
 
-      if(mem.size() == 128) { 
+      if (mem.size() == 128) {
         for (size_t offset : {
                0//,16,-16
              }) {
 
           // Make everything an M128
           M128 mem_fixed(mem.get_seg(),
-                        mem.get_base(),
-                        mem.get_index(),
-                        mem.get_scale(),
-                        mem.get_disp() + offset);
+                         mem.get_base(),
+                         mem.get_index(),
+                         mem.get_scale(),
+                         mem.get_disp() + offset);
 
           Variable v(mem_fixed, k);
           results.insert(v);
@@ -216,7 +216,7 @@ vector<Variable> get_memory_variables(const Cfg& target, const Cfg& rewrite, Reg
         }
       }
 
-      if(mem.size() == 64) { 
+      if (mem.size() == 64) {
         for (size_t offset : {
                0//,8,-8
              }) {
@@ -234,7 +234,7 @@ vector<Variable> get_memory_variables(const Cfg& target, const Cfg& rewrite, Reg
         }
       }
 
-      if(mem.size() == 32) {
+      if (mem.size() == 32) {
         for (size_t offset : {
                0//,4,-4
              }) {
@@ -250,7 +250,7 @@ vector<Variable> get_memory_variables(const Cfg& target, const Cfg& rewrite, Reg
         }
       }
 
-      if(mem.size() == 16) {
+      if (mem.size() == 16) {
         for (size_t offset : {
                0//,2,-2
              }) {
@@ -267,7 +267,7 @@ vector<Variable> get_memory_variables(const Cfg& target, const Cfg& rewrite, Reg
         }
       }
 
-      if(mem.size() == 8) {
+      if (mem.size() == 8) {
         for (size_t offset : {
                0//,1,-1
              }) {
@@ -306,7 +306,7 @@ vector<std::shared_ptr<NonzeroInvariant>> InvariantLearner::build_memory_null_in
   auto memory_vars = get_memory_variables(target_, rewrite_, target_regs, rewrite_regs);
   for (auto v : memory_vars) {
     auto mni = std::make_shared<NonzeroInvariant>(v, false);
-    invariants.push_back(mni);  
+    invariants.push_back(mni);
 
     mni = std::make_shared<NonzeroInvariant>(v, true);
     invariants.push_back(mni);
@@ -328,19 +328,19 @@ vector<std::shared_ptr<EqualityInvariant>> InvariantLearner::build_memory_regist
   set<size_t> mem_sizes;
   vector<std::shared_ptr<EqualityInvariant>> invariants;
   auto memory_vars = get_memory_variables(target_, rewrite_, target_regs, rewrite_regs);
-  for(auto mv : memory_vars) {
+  for (auto mv : memory_vars) {
     mem_sizes.insert(mv.size);
     //cout << "   considering mem var " << mv << endl;
   }
   /*
-  for(auto it : mem_sizes) 
+  for(auto it : mem_sizes)
     cout << "   mem size seen: " << it << endl;
     */
 
   vector<Variable> register_vars;
   for (size_t k = 0; k < 2; ++k) {
     auto& def_ins = k ? rewrite_regs : target_regs;
-    for(size_t mem_size : mem_sizes) {
+    for (size_t mem_size : mem_sizes) {
       for (auto r = def_ins.gp_begin(); r != def_ins.gp_end(); ++r) {
         if ((*r).size() >= mem_size*8) {
           Variable c(*r, k, mem_size, 0);
@@ -358,9 +358,9 @@ vector<std::shared_ptr<EqualityInvariant>> InvariantLearner::build_memory_regist
     }
   }
 
-  for(auto mv : memory_vars) {
-    for(auto rv : register_vars) {
-      if(rv.size == mv.size) {
+  for (auto mv : memory_vars) {
+    for (auto rv : register_vars) {
+      if (rv.size == mv.size) {
         mv.coefficient = 1;
         rv.coefficient = -1;
         auto inv = make_shared<EqualityInvariant>(vector<Variable>({rv,mv}),0);
@@ -404,13 +404,13 @@ vector<std::shared_ptr<InequalityInvariant>> InvariantLearner::build_inequality_
     for (auto i = regs.gp_begin(); i != regs.gp_end(); ++i) {
 
       if ((*i).size() == 64) {
-        if(enable_shadow_)
+        if (enable_shadow_)
           for (auto ghost : ghosts_) {
             Variable v(*i, k);
             auto a = std::make_shared<InequalityInvariant>(v, ghost, false, false); // v <= ghost (replacement)
             auto b = std::make_shared<InequalityInvariant>(v, ghost, true, false);  // v < ghost
             auto c = std::make_shared<InequalityInvariant>(ghost, v, false, false); // ghost <= v (replacement)
-            auto d = std::make_shared<InequalityInvariant>(ghost, v, true, false);  // ghost < v  
+            auto d = std::make_shared<InequalityInvariant>(ghost, v, true, false);  // ghost < v
             inequalities.push_back(a);
             inequalities.push_back(b);
             inequalities.push_back(c);
@@ -466,23 +466,23 @@ vector<std::shared_ptr<InequalityInvariant>> InvariantLearner::build_inequality_
 // https://stackoverflow.com/questions/19738919/gcd-function-for-c
 uint64_t InvariantLearner::euclid(uint64_t a, uint64_t b)
 {
-    while (b != 0)
-    {
-        a %= b;
-        a ^= b;
-        b ^= a;
-        a ^= b;
-    }
+  while (b != 0)
+  {
+    a %= b;
+    a ^= b;
+    b ^= a;
+    a ^= b;
+  }
 
-    return a;
+  return a;
 }
 
 
 vector<std::shared_ptr<EqualityInvariant>> InvariantLearner::build_modulo_invariants(
-    RegSet target_regs, 
-    RegSet rewrite_regs, 
-    const vector<CpuState>& target_states, 
-    const vector<CpuState>& rewrite_states) const {
+    RegSet target_regs,
+    RegSet rewrite_regs,
+    const vector<CpuState>& target_states,
+const vector<CpuState>& rewrite_states) const {
 
   vector<std::shared_ptr<EqualityInvariant>> modulos;
 
@@ -496,49 +496,49 @@ vector<std::shared_ptr<EqualityInvariant>> InvariantLearner::build_modulo_invari
       // first, let's get gcd for all values for just this register
       uint64_t onereg_gcd = 0;
       uint64_t onereg_val = states[0][*i];
-      for(auto& it : states) {
+      for (auto& it : states) {
         auto value = it[*i] - onereg_val;
-        if(value != 0) {
-          if(onereg_gcd == 0)
+        if (value != 0) {
+          if (onereg_gcd == 0)
             onereg_gcd = value;
           else
             onereg_gcd = euclid(onereg_gcd, value);
         }
       }
-      if(onereg_gcd > 1) {
+      if (onereg_gcd > 1) {
         Variable v(*i, k);
         v.coefficient = 1;
         auto terms = {v};
         auto inv = std::make_shared<EqualityInvariant>(terms, onereg_val % onereg_gcd, onereg_gcd);
-        if(inv->check(target_states, rewrite_states))
+        if (inv->check(target_states, rewrite_states))
           modulos.push_back(inv);
       }
 
 
       for (auto j = regs.gp_begin(); j != regs.gp_end(); ++j) {
 
-        if(*i <= *j) // don't put this in loop guard: might not be in order?
+        if (*i <= *j) // don't put this in loop guard: might not be in order?
           continue;
 
         /** collect all the differences. */
         vector<uint64_t> differences;
-        for(auto& it : states) {
+        for (auto& it : states) {
           differences.push_back(it[*i] - it[*j]);
         }
 
         /** get gcd of all differences of differences */
         uint64_t gcd = 0;
         uint64_t some_diff = differences[0];
-        for(size_t s = 1; s < differences.size(); ++s) {
+        for (size_t s = 1; s < differences.size(); ++s) {
           auto difference = differences[s] - some_diff;
-          if(difference != 0) {
-            if(gcd == 0)
+          if (difference != 0) {
+            if (gcd == 0)
               gcd = difference;
             else
               gcd = euclid(gcd, difference);
           }
 
-          if(gcd == 1)
+          if (gcd == 1)
             break;
         }
 
@@ -548,12 +548,12 @@ vector<std::shared_ptr<EqualityInvariant>> InvariantLearner::build_modulo_invari
           v.coefficient = 1;
           Variable w(*j, k);
           w.coefficient = -1;
-          auto terms = {v , w};
+          auto terms = {v, w};
           some_diff = some_diff % gcd;
           auto inv = std::make_shared<EqualityInvariant>(terms, some_diff, gcd);
-          if(inv->check(target_states, rewrite_states)) {
+          if (inv->check(target_states, rewrite_states)) {
             modulos.push_back(inv);
-          } 
+          }
         }
 
       }
@@ -564,26 +564,26 @@ vector<std::shared_ptr<EqualityInvariant>> InvariantLearner::build_modulo_invari
 }
 
 vector<std::shared_ptr<InequalityInvariant>> InvariantLearner::build_inequality_with_constant_invariants(
-    RegSet target_regs, 
-    RegSet rewrite_regs, 
-    const vector<CpuState>& target_states, 
-    const vector<CpuState>& rewrite_states) {
+      RegSet target_regs,
+      RegSet rewrite_regs,
+      const vector<CpuState>& target_states,
+const vector<CpuState>& rewrite_states) {
 
   assert(target_states.size() == rewrite_states.size());
 
   vector<std::shared_ptr<InequalityInvariant>> outputs;
   vector<Variable> variables;
 
-  for(size_t k = 0; k < 2; ++k) {
+  for (size_t k = 0; k < 2; ++k) {
     auto regs = k ? rewrite_regs : target_regs;
     for (auto i = regs.gp_begin(); i != regs.gp_end(); ++i) {
       Variable v(*i, k);
       variables.push_back(v);
     }
 
-    if(enable_shadow_) {
+    if (enable_shadow_) {
       const Cfg& prog = k ? rewrite_ : target_;
-      for(size_t i = 1; i < prog.num_blocks()-1; ++i) {
+      for (size_t i = 1; i < prog.num_blocks()-1; ++i) {
         Variable v = Variable::bb_ghost(i, k);
         variables.push_back(v);
       }
@@ -591,18 +591,18 @@ vector<std::shared_ptr<InequalityInvariant>> InvariantLearner::build_inequality_
   }
 
   auto memory_vars = get_memory_variables(target_, rewrite_, target_regs, rewrite_regs);
-  for(auto mv : memory_vars) {
-    if(mv.is_stack())
+  for (auto mv : memory_vars) {
+    if (mv.is_stack())
       variables.push_back(mv);
   }
 
   uniform_int_distribution<size_t> dis(0, 100);
 
-  for(auto& v1 : variables) {
-    for(auto& v2 : variables) {
-      if(v1 == v2)
+  for (auto& v1 : variables) {
+    for (auto& v2 : variables) {
+      if (v1 == v2)
         continue;
-      if(v1.size != v2.size)
+      if (v1.size != v2.size)
         continue;
 
       // look for invariants of the form
@@ -617,24 +617,24 @@ vector<std::shared_ptr<InequalityInvariant>> InvariantLearner::build_inequality_
       uint64_t max_difference = 0;
       uint64_t max_count = 0;
       uint64_t min_count = 0;
-      for(size_t i = 0 ; i < target_states.size(); ++i) {
+      for (size_t i = 0 ; i < target_states.size(); ++i) {
 
 
         size_t choice = dis(gen_);
-        if(choice <= 10 && target_states.size() > 20)
+        if (choice <= 10 && target_states.size() > 20)
           continue;
-        
+
         auto a = v1.from_state(target_states[i], rewrite_states[i]);
         auto b = v2.from_state(target_states[i], rewrite_states[i]);
         uint64_t difference = b - a;
         //cout << "  difference " << difference << endl;
-        if(difference > max_difference) {
+        if (difference > max_difference) {
           max_difference = difference;
           max_count = 1;
         } else if (difference == max_difference) {
           max_count++;
         }
-        if(difference < min_difference) {
+        if (difference < min_difference) {
           min_difference = difference;
           min_count = 1;
         } else if (difference == min_difference) {
@@ -661,60 +661,61 @@ vector<std::shared_ptr<InequalityInvariant>> InvariantLearner::build_inequality_
 
 /** Return invariants over the range of a variable. */
 vector<std::shared_ptr<RangeInvariant>> InvariantLearner::build_range_invariants(
-    RegSet target_regs, 
-    RegSet rewrite_regs, 
-    const vector<CpuState>& target_states, 
-    const vector<CpuState>& rewrite_states) const {
+                                       RegSet target_regs,
+                                       RegSet rewrite_regs,
+                                       const vector<CpuState>& target_states,
+const vector<CpuState>& rewrite_states) const {
 
   vector<std::shared_ptr<RangeInvariant>> ranges;
   vector<Variable> variables;
 
   for (size_t k = 0; k < 2; ++k) {
     auto regs = k ? rewrite_regs : target_regs;
-    for(auto i = regs.gp_begin(); i != regs.gp_end(); ++i) {
+    for (auto i = regs.gp_begin(); i != regs.gp_end(); ++i) {
       Variable v(*i, k);
       variables.push_back(v);
     }
   }
 
   auto mem_vars = get_memory_variables(target_, rewrite_, target_regs, rewrite_regs);
-  for(auto var : mem_vars) {
-    if(var.is_stack())
+  for (auto var : mem_vars) {
+    if (var.is_stack())
       variables.push_back(var);
   }
 
-  for(auto var : variables) {
+  for (auto var : variables) {
 
     uint64_t min = (uint64_t)(-1);
     uint64_t max = 0;
     uint64_t min_count = 0;
     uint64_t max_count = 0;
 
-    for(size_t i = 0; i < target_states.size(); ++i) {
+    for (size_t i = 0; i < target_states.size(); ++i) {
       auto ts = target_states[i];
       auto rs = rewrite_states[i];
 
       auto value = var.from_state(ts, rs);
-      if(value == max) {
+      if (value == max) {
         max_count++;
-      } else if(value > max) {
+      } else if (value > max) {
         max = value;
         max_count = 1;
       }
-      if(value == min) {
+      if (value == min) {
         min_count++;
-      } if(value < min) {
+      }
+      if (value < min) {
         min = value;
         min_count = 1;
       }
     }
 
-    if(min_count > 2) {
+    if (min_count > 2) {
       auto inv = std::make_shared<RangeInvariant>(var, min, (uint64_t)(-1));
       assert(inv->check(target_states, rewrite_states));
       ranges.push_back(inv);
     }
-    if(max_count > 2) {
+    if (max_count > 2) {
       auto inv = std::make_shared<RangeInvariant>(var, 0, max);
       assert(inv->check(target_states, rewrite_states));
       ranges.push_back(inv);
@@ -795,17 +796,17 @@ bool add_or_delete_inv(vector<std::shared_ptr<Invariant>>& invs, std::shared_ptr
 }
 
 vector<std::shared_ptr<Invariant>> build_flag_invariants(
-  x64asm::RegSet target_regs,
-  x64asm::RegSet rewrite_regs,
-  const vector<CpuState>& target_states,
-  const vector<CpuState>& rewrite_states) {
+                                  x64asm::RegSet target_regs,
+                                  x64asm::RegSet rewrite_regs,
+                                  const vector<CpuState>& target_states,
+const vector<CpuState>& rewrite_states) {
 
   DEBUG_LEARNER(cout << "target_regs: " << target_regs << endl;)
   DEBUG_LEARNER(cout << "rewrite_regs: " << rewrite_regs << endl;)
 
   vector<std::shared_ptr<Invariant>> inv;
 
-  for(size_t k = 0; k < 2; ++k) {
+  for (size_t k = 0; k < 2; ++k) {
     auto& regs = k ? rewrite_regs : target_regs;
     for (auto flag = regs.flags_begin(); flag != regs.flags_end(); ++flag) {
 
@@ -858,18 +859,18 @@ const std::vector<CpuState>& rewrite_states) {
 }
 
 void InvariantLearner::debug_memory_nonequivalent(
-    const std::vector<CpuState>& target_states,
-    const std::vector<CpuState>& rewrite_states) const {
+  const std::vector<CpuState>& target_states,
+  const std::vector<CpuState>& rewrite_states) const {
 
   MemoryEqualityInvariant inv;
   size_t num_states = target_states.size();
   size_t bad_states = 0;
   CpuState target_bad;
   CpuState rewrite_bad;
-  for(size_t i = 0; i < num_states; ++i) {
-    if(!inv.check(target_states[i], rewrite_states[i])) {
-      if(bad_states == 0) {
-        target_bad = target_states[i]; 
+  for (size_t i = 0; i < num_states; ++i) {
+    if (!inv.check(target_states[i], rewrite_states[i])) {
+      if (bad_states == 0) {
+        target_bad = target_states[i];
         rewrite_bad = rewrite_states[i];
       }
       bad_states++;
@@ -883,24 +884,24 @@ void InvariantLearner::debug_memory_nonequivalent(
 
 
 std::shared_ptr<MemoryEqualityInvariant> InvariantLearner::learn_memory_equality(
-    const std::vector<CpuState>& target_states,
-    const std::vector<CpuState>& rewrite_states,
-    x64asm::RegSet target_regs,
-    x64asm::RegSet rewrite_regs) const {
+  const std::vector<CpuState>& target_states,
+  const std::vector<CpuState>& rewrite_states,
+  x64asm::RegSet target_regs,
+  x64asm::RegSet rewrite_regs) const {
 
   // Memory equality
   auto memequ = make_shared<MemoryEqualityInvariant>();
-  if(memequ->check(target_states, rewrite_states)) {
+  if (memequ->check(target_states, rewrite_states)) {
     cout << "[learn_simple] adding standard memory equality invariant" << endl;
-    return memequ; 
+    return memequ;
   } else {
     auto vars = get_memory_variables(target_, rewrite_, target_regs, rewrite_regs);
-    for(auto var : vars) {
+    for (auto var : vars) {
       vector<Variable> vs;
       vs.push_back(var);
       auto memequ = make_shared<MemoryEqualityInvariant>(vs);
       cout << "[learn_simple] ... attempting " << *memequ << endl;
-      if(memequ->check(target_states, rewrite_states))  {
+      if (memequ->check(target_states, rewrite_states))  {
         cout << "[learn_simple] adding memory equality invariant excluding " << var << endl;
         return memequ;
       }
@@ -911,7 +912,7 @@ std::shared_ptr<MemoryEqualityInvariant> InvariantLearner::learn_memory_equality
   cerr << "Could not find any invariant relating memory states... busted." << endl;
   return shared_ptr<MemoryEqualityInvariant>(nullptr);
 }
- 
+
 
 std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn(
   x64asm::RegSet target_regs,
@@ -924,7 +925,7 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn(
 
   auto memequ = learn_memory_equality(states, states2, target_regs, rewrite_regs);
 
-  if(memequ) {
+  if (memequ) {
     auto conj = learn_simple(target_regs, rewrite_regs, states, states2, graph);
     conj->add_invariant(memequ);
     return conj;
@@ -939,9 +940,9 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn(
 /** Learn constants over a set of columns,
   === AND === remove variables that are constants. */
 vector<std::shared_ptr<Invariant>> InvariantLearner::learn_constants(
-  vector<Variable>& columns,
-  const vector<CpuState>& target_states,
-  const vector<CpuState>& rewrite_states) {
+                                  vector<Variable>& columns,
+                                  const vector<CpuState>& target_states,
+const vector<CpuState>& rewrite_states) {
 
   assert(target_states.size() == rewrite_states.size());
   size_t tc_count = target_states.size();
@@ -977,20 +978,20 @@ vector<std::shared_ptr<Invariant>> InvariantLearner::learn_constants(
 
 void multiplication_update(uint64_t& col_i_value, uint64_t& col_j_value,
                            bool& i_bigger, bool& found_prod, uint64_t& prod, bool& prod_match) {
-  if(prod_match == false)
+  if (prod_match == false)
     return;
 
-  if(!found_prod) {
-    if(col_i_value != 0 && col_j_value != 0) {
+  if (!found_prod) {
+    if (col_i_value != 0 && col_j_value != 0) {
       auto tmp_diff = col_i_value / col_j_value;
-      if(tmp_diff * col_j_value == col_i_value) {
+      if (tmp_diff * col_j_value == col_i_value) {
         found_prod = true;
         prod = tmp_diff;
         i_bigger = true;
         return;
       } else {
         tmp_diff = col_j_value / col_i_value;
-        if(tmp_diff*col_i_value == col_j_value) {
+        if (tmp_diff*col_i_value == col_j_value) {
           found_prod = true;
           prod = tmp_diff;
           i_bigger = false;
@@ -1008,13 +1009,13 @@ void multiplication_update(uint64_t& col_i_value, uint64_t& col_j_value,
       return;
     }
   } else {
-    if(i_bigger) {
-      if(prod*col_j_value != col_i_value) {
+    if (i_bigger) {
+      if (prod*col_j_value != col_i_value) {
         prod_match = false;
         return;
       }
     } else {
-      if(prod*col_i_value != col_j_value) {
+      if (prod*col_i_value != col_j_value) {
         prod_match = false;
         return;
       }
@@ -1027,9 +1028,9 @@ void multiplication_update(uint64_t& col_i_value, uint64_t& col_j_value,
 /** Learn constants over a set of columns,
   === AND === remove variables that are constants. */
 vector<std::shared_ptr<Invariant>> InvariantLearner::learn_easy_equalities(
-  vector<Variable>& columns,
-  const vector<CpuState>& target_states,
-  const vector<CpuState>& rewrite_states) {
+                                  vector<Variable>& columns,
+                                  const vector<CpuState>& target_states,
+const vector<CpuState>& rewrite_states) {
 
   assert(target_states.size() == rewrite_states.size());
   size_t tc_count = target_states.size();
@@ -1046,10 +1047,10 @@ vector<std::shared_ptr<Invariant>> InvariantLearner::learn_easy_equalities(
       bool prod_match = true;
       bool found_prod = false;
       bool i_bigger = false;
-      uint64_t prod; 
+      uint64_t prod;
 
       uint64_t diff = 0;
-      if(tc_count > 0) {
+      if (tc_count > 0) {
         uint64_t col_i_start_value = columns[i].from_state(target_states[0], rewrite_states[0]);
         uint64_t col_j_start_value = columns[j].from_state(target_states[0], rewrite_states[0]);
         diff = col_i_start_value - col_j_start_value;
@@ -1060,13 +1061,13 @@ vector<std::shared_ptr<Invariant>> InvariantLearner::learn_easy_equalities(
         auto col_i_value = columns[i].from_state(target_states[k], rewrite_states[k]);
         auto col_j_value = columns[j].from_state(target_states[k], rewrite_states[k]);
 
-        if(col_i_value - col_j_value != diff) {
+        if (col_i_value - col_j_value != diff) {
           diff_match = false;
         }
 
         multiplication_update(col_i_value, col_j_value, i_bigger, found_prod, prod, prod_match);
-        
-        if(!diff_match && !prod_match)
+
+        if (!diff_match && !prod_match)
           break;
       }
       // add equality asserting column[i] matches column[j].
@@ -1100,8 +1101,8 @@ vector<std::shared_ptr<Invariant>> InvariantLearner::learn_easy_equalities(
 
   sort(columns_to_erase.begin(), columns_to_erase.end(), greater<size_t>());
   size_t last = (size_t)(-1);
-  for(auto col : columns_to_erase) {
-    if(col == last)
+  for (auto col : columns_to_erase) {
+    if (col == last)
       continue;
     last = col;
 
@@ -1165,9 +1166,9 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::matrix_to_invariant(
 
 
 vector<std::shared_ptr<Invariant>> InvariantLearner::learn_equalities(
-  vector<Variable> columns,
-  const vector<CpuState>& target_states,
-  const vector<CpuState>& rewrite_states) {
+                                  vector<Variable> columns,
+                                  const vector<CpuState>& target_states,
+const vector<CpuState>& rewrite_states) {
 
   size_t num_columns = columns.size() + 1;
   size_t tc_count = target_states.size();
@@ -1227,7 +1228,7 @@ vector<std::shared_ptr<Invariant>> InvariantLearner::learn_equalities(
 
     for (size_t i = 0; i < target_states.size(); ++i) {
 
-      if(new_states >= sample_tcs_)
+      if (new_states >= sample_tcs_)
         break;
 
       auto target_state = target_states[i];
@@ -1235,14 +1236,14 @@ vector<std::shared_ptr<Invariant>> InvariantLearner::learn_equalities(
 
       bool added = false;
       for (size_t j = 0; j < equalities->size(); ++j) {
-        if(invariant_ceg_found[j])
+        if (invariant_ceg_found[j])
           continue;
 
         if (!(*equalities)[j]->check(target_state, rewrite_state)) {
           cout << "GOT A BAD INVARIANT j=" << j << endl;
           cout << *(*equalities)[j] << endl;
           invariant_ceg_found[j] = true;
-          if(!added) {
+          if (!added) {
             target_learn.push_back(target_state);
             rewrite_learn.push_back(rewrite_state);
             added = true;
@@ -1260,7 +1261,7 @@ vector<std::shared_ptr<Invariant>> InvariantLearner::learn_equalities(
       cout << "Got bad invariants!" << endl;
     }
   }
-  for(size_t i = 0; i < equalities->size(); ++i)
+  for (size_t i = 0; i < equalities->size(); ++i)
     invariants.push_back((*equalities)[i]);
 
   // Extract the data from the nullspace
@@ -1288,7 +1289,7 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
     return conj;
   }
 
- // NonZero invariants
+// NonZero invariants
   auto class_nonzero = graph.new_class();
   for (size_t k = 0; k < 2; ++k) {
     auto& states = k ? rewrite_states : target_states;
@@ -1323,18 +1324,18 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
     for (auto modulo : potential_mod2n) {
       if (modulo->check(target_states, rewrite_states)) {
         conj->add_invariant(modulo);
-      } 
+      }
     }
   }
   */
 
-  if(!enable_vector_vars_) {
-    for(size_t k = 0; k < 2; ++k) {
-      for(auto r : r64s) {
+  if (!enable_vector_vars_) {
+    for (size_t k = 0; k < 2; ++k) {
+      for (auto r : r64s) {
         auto candidate = std::make_shared<TopZeroInvariant>(r, k);
-        if(candidate->check(target_states, rewrite_states)) {
+        if (candidate->check(target_states, rewrite_states)) {
           conj->add_invariant(candidate);
-        } 
+        }
       }
     }
   }
@@ -1346,7 +1347,7 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
     if (sign->check(target_states, rewrite_states)) {
       conj->add_invariant(sign);
       graph.add_invariant(sign);
-    } 
+    }
   }
 
   // Memory-Register equalities
@@ -1373,7 +1374,7 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
     if (ineq->check(target_states, rewrite_states)) {
       conj->add_invariant(ineq);
       graph.add_invariant(ineq);
-    } 
+    }
   }
   */
 
@@ -1381,7 +1382,7 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
   auto inequalities_with_constants = build_inequality_with_constant_invariants(target_regs, rewrite_regs, target_states, rewrite_states);
   auto class_ineq_const = graph.new_class();
   for (auto ineq : inequalities_with_constants) {
-    if(ineq->check(target_states, rewrite_states)) {
+    if (ineq->check(target_states, rewrite_states)) {
       conj->add_invariant(ineq);
       graph.add_invariant(ineq);
     }
@@ -1390,7 +1391,7 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
   // Modulo invariants
   auto class_modulo = graph.new_class();
   auto modulos = build_modulo_invariants(target_regs, rewrite_regs, target_states, rewrite_states);
-  for(auto it : modulos) {
+  for (auto it : modulos) {
     conj->add_invariant(it);
     graph.add_invariant(it);
   }
@@ -1398,7 +1399,7 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
   // Range invariants
   auto class_bound = graph.new_class();
   auto ranges = build_range_invariants(target_regs, rewrite_regs, target_states, rewrite_states);
-  for(auto it : ranges) {
+  for (auto it : ranges) {
     conj->add_invariant(it);
     graph.add_invariant(it);
   }
@@ -1412,7 +1413,7 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
     conj->add_invariant(it);
 
   auto class_mem_null = graph.new_class();
-  if(enable_memory_) {
+  if (enable_memory_) {
 
     auto potential_memory_nulls = build_memory_null_invariants(target_regs, rewrite_regs);
     for (auto mem_null : potential_memory_nulls) {
@@ -1431,7 +1432,7 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
     //cout << "FOUND " << mem_null_count << " IMPLICATIONS AMONG THE MEMORY-NULL EQUALITIES" << endl;
   }
 
-  if(enable_shadow_) {
+  if (enable_shadow_) {
     for (auto ghost : ghosts_) {
       auto pointer_null = std::make_shared<PointerNullInvariant>(ghost, 1);
       DEBUG_LEARNER(cout << "testing ptr " << *pointer_null << endl;)
@@ -1449,7 +1450,7 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
   //cout << "enable_vector_vars_ = " << enable_vector_vars_ << endl;
 
   size_t easy_equalities_class = graph.new_class();
-  if(enable_vector_vars_) {
+  if (enable_vector_vars_) {
     vector<Variable> vector_columns;
     auto vector_vars_target = sub_registers_for_regset(target_regs, false);
     auto vector_vars_rewrite = sub_registers_for_regset(rewrite_regs, true);
@@ -1474,20 +1475,20 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
   vector<Variable> columns;
 
   DEBUG_LEARNER(cout << "[learner] enable_shadow_ = " << enable_shadow_ << endl;)
-  if(enable_shadow_) {
+  if (enable_shadow_) {
     /** get all shadow registers from target/rewrite states. */
-    for(size_t k = 0; k < 2; ++k) {
+    for (size_t k = 0; k < 2; ++k) {
       auto& states = k ? rewrite_states : target_states;
       set<string> names;
 
       DEBUG_LEARNER(cout << "[learner] getting shadow variables from " << states.size() << " states." << endl;)
-      for(auto& s : states) {
-        for(auto pair : s.shadow) {
+      for (auto& s : states) {
+        for (auto pair : s.shadow) {
           names.insert(pair.first);
         }
       }
 
-      for(auto name : names) {
+      for (auto name : names) {
         Variable v(name, k);
         columns.push_back(v);
       }
@@ -1519,8 +1520,8 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
   /** get variables corresponding to stack locations */
   {
     auto mem_vars = get_memory_variables(target_, rewrite_, target_regs, rewrite_regs);
-    for(auto var : mem_vars) {
-      if(var.is_stack())
+    for (auto var : mem_vars) {
+      if (var.is_stack())
         columns.push_back(var);
     }
   }
@@ -1559,7 +1560,7 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
 );
   auto equality_class = graph.new_class();
   auto equality_invs = learn_equalities(columns, target_states, rewrite_states);
-  for(auto inv : equality_invs) {
+  for (auto inv : equality_invs) {
     conj->add_invariant(inv);
     graph.add_invariant(inv);
   }
@@ -1596,7 +1597,7 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
   /*
   class_sign
   class_memreg_equ
-  class_modulo 
+  class_modulo
 
   class_nonzero
   class_bound
@@ -1607,11 +1608,11 @@ std::shared_ptr<ConjunctionInvariant> InvariantLearner::learn_simple(x64asm::Reg
   /** Have implication graph do its thing */
   graph.print();
   vector<size_t> to_delete;
-  for(size_t i = 0; i < conj->size(); ++i) {
-    if(graph.is_superseded((*conj)[i]))
+  for (size_t i = 0; i < conj->size(); ++i) {
+    if (graph.is_superseded((*conj)[i]))
       to_delete.insert(to_delete.begin(), i);
   }
-  for(auto it : to_delete) {
+  for (auto it : to_delete) {
     //cout << "Removing conjunct " << *(*conj)[it] << endl;
     conj->remove(it);
   }
@@ -1627,9 +1628,9 @@ std::vector<Variable> InvariantLearner::sub_registers_for_regset(x64asm::RegSet 
   for (auto r = rs.sse_begin(); r != rs.sse_end(); ++r) {
     size_t bytes = (*r).size()/8;
     // add each 1,2,4,8-byte subregister
-    for(size_t k = 0; k < 4; ++k) {
+    for (size_t k = 0; k < 4; ++k) {
       size_t pow2 = (1 << k);
-      for(size_t i = 0; i < bytes; i += pow2) {
+      for (size_t i = 0; i < bytes; i += pow2) {
         Variable sub(*r, is_rewrite, pow2, i);
         //cout << "Adding subregister " << *r << " is_rewrite=" << is_rewrite << " pow2=" << pow2 << " i=" << i << endl;
         //cout << sub << endl;
@@ -1640,34 +1641,34 @@ std::vector<Variable> InvariantLearner::sub_registers_for_regset(x64asm::RegSet 
 
   for (auto r = rs.gp_begin(); r != rs.gp_end(); ++r) {
     size_t bytes = (*r).size()/8;
-    switch(bytes) {
-      case 8: {
-        // add register as output
-        Variable full_reg(*r, is_rewrite);
-        outputs.push_back(full_reg);
+    switch (bytes) {
+    case 8: {
+      // add register as output
+      Variable full_reg(*r, is_rewrite);
+      outputs.push_back(full_reg);
+    }
+    case 4: {
+      // add each quadword as an output
+      for (size_t i = 0; i < bytes; i+=4) {
+        Variable quad(*r, is_rewrite, 4, i);
+        outputs.push_back(quad);
       }
-      case 4: {
-        // add each quadword as an output
-        for(size_t i = 0; i < bytes; i+=4) {
-          Variable quad(*r, is_rewrite, 4, i);
-          outputs.push_back(quad);
-        }
+    }
+    case 2: {
+      // add each word as an output
+      for (size_t i = 0; i < bytes; i+=2) {
+        Variable word(*r, is_rewrite, 2, i);
+        outputs.push_back(word);
       }
-      case 2: {
-        // add each word as an output
-        for(size_t i = 0; i < bytes; i+=2) {
-          Variable word(*r, is_rewrite, 2, i);
-          outputs.push_back(word);
-        }
+    }
+    case 1: {
+      // add each byte as an output
+      for (size_t i = 0; i < bytes; i++) {
+        Variable abyte(*r, is_rewrite, 1, i);
+        outputs.push_back(abyte);
       }
-      case 1: {
-        // add each byte as an output
-        for(size_t i = 0; i < bytes; i++) {
-          Variable abyte(*r, is_rewrite, 1, i);
-          outputs.push_back(abyte);
-        }
-        break;
-      }
+      break;
+    }
     }
   }
 

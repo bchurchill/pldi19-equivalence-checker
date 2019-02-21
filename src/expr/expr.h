@@ -58,75 +58,75 @@ public:
   Expr(T constant) : constant_(constant), arity_(0) {}
 
   int print_dot(int start = 0) {
-    if(arity_ == 0) {
+    if (arity_ == 0) {
       std::cout << start << " [label='" << constant_ << "'];" << std::endl;
       return start+1;
-    } 
-    if(arity_ == 1) {
+    }
+    if (arity_ == 1) {
       std::cout << start << " [label='" << var_ << "'];" << std::endl;
       return start+1;
     }
     int next = start+1;
     std::cout << start << " [label='";
-    switch(op_) {
-      case NONE:
-        std::cout << "NONE/ERR";
-        break;
-      case EXP:
-        std::cout << "EXP";
-        break;
-      case PLUS:
-        std::cout << "+";
-        break;
-      case MINUS:
-        std::cout << "-";
-        break;
-      case TIMES:
-        std::cout << "*";
-        break;
-      case DIV:
-        std::cout << "/";
-        break;
-      case MOD:
-        std::cout << "%";
-        break;
-      case AND:
-        std::cout << "&";
-        break;
-      case OR:
-        std::cout << "|";
-        break;
-      case SHL:
-        std::cout << "<<";
-        break;
-      case SHR:
-        std::cout << ">>";
-        break;
-      case LT:
-        std::cout << "<";
-        break;
-      case GT:
-        std::cout << ">";
-        break;
-      case LTE:
-        std::cout << "<=";
-        break;
-      case GTE:
-        std::cout << ">=";
-        break;
-      case EQ:
-        std::cout << "==";
-        break;
-      case NEQ:
-        std::cout << "!=";
-        break;
+    switch (op_) {
+    case NONE:
+      std::cout << "NONE/ERR";
+      break;
+    case EXP:
+      std::cout << "EXP";
+      break;
+    case PLUS:
+      std::cout << "+";
+      break;
+    case MINUS:
+      std::cout << "-";
+      break;
+    case TIMES:
+      std::cout << "*";
+      break;
+    case DIV:
+      std::cout << "/";
+      break;
+    case MOD:
+      std::cout << "%";
+      break;
+    case AND:
+      std::cout << "&";
+      break;
+    case OR:
+      std::cout << "|";
+      break;
+    case SHL:
+      std::cout << "<<";
+      break;
+    case SHR:
+      std::cout << ">>";
+      break;
+    case LT:
+      std::cout << "<";
+      break;
+    case GT:
+      std::cout << ">";
+      break;
+    case LTE:
+      std::cout << "<=";
+      break;
+    case GTE:
+      std::cout << ">=";
+      break;
+    case EQ:
+      std::cout << "==";
+      break;
+    case NEQ:
+      std::cout << "!=";
+      break;
     }
     std::cout << "'];" << std::endl;
-    if(a1_) {
+    if (a1_) {
       std::cout << start << " -> " << next << ";" << std::endl;
       next = a1_->print_dot(next);
     }
-    if(a2_) {
+    if (a2_) {
       std::cout << start << " -> " << next << ";" << std::endl;
       next = a2_->print_dot(next);
     }
@@ -190,13 +190,13 @@ public:
 
   template <typename U>
   Expr<U>* map() const {
-    if(arity_ == 0) {
+    if (arity_ == 0) {
       return new Expr<U>((U)(constant_));
     } else if (arity_ == 1) {
       return new Expr<U>(var_);
     } else {
       return new Expr<U>(a1_->map<U>(), a2_->map<U>(), (typename Expr<U>::Operator)op_);
-    } 
+    }
   }
 
 private:

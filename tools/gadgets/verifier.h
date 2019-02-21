@@ -60,7 +60,7 @@ public:
   }
 
   ~VerifierGadget() {
-    for(auto it : verifiers_)
+    for (auto it : verifiers_)
       delete it;
     delete verifier_;
   }
@@ -89,15 +89,15 @@ private:
 
   void add_pointer_ranges(Validator& validator) {
     std::string pointer_ranges = pointer_range_arg.value();
-    if(pointer_ranges.size() == 0)
+    if (pointer_ranges.size() == 0)
       return;
 
     std::stringstream ss(pointer_ranges);
-    while(ss.good()) {
+    while (ss.good()) {
       x64asm::M8 begin_addr(x64asm::Imm32(0));
       x64asm::M8 end_addr(x64asm::Imm32(0));
       ss >> begin_addr >> std::ws;
-      if(ss.peek() == ':') {
+      if (ss.peek() == ':') {
         ss.get();
       } else {
         std::cerr << "Parsing failed for pointer range " << pointer_ranges << std::endl;
@@ -105,9 +105,9 @@ private:
         std::cerr << "     (rax):7(rax,rdi,8)" << std::endl;
         exit(1);
       }
-      ss >> std::ws; 
+      ss >> std::ws;
       ss >> end_addr >> std::ws;
-      if(ss.bad() || ss.fail()) {
+      if (ss.bad() || ss.fail()) {
         std::cerr << "Parsing failed for pointer range " << pointer_ranges << std::endl;
         std::cerr << "Expected   \"memory_address : memory_address\", for example...";
         std::cerr << "     (rax) : 7(rax,rdi,8)" << std::endl;
@@ -120,11 +120,11 @@ private:
 
   void add_assumptions(Validator& validator) {
     std::string s = assume_arg.value();
-    if(s.size() == 0)
+    if (s.size() == 0)
       return;
 
     auto expr = ExprInvariant::parse(s);
-    if(expr == NULL) {
+    if (expr == NULL) {
       exit(1);
     }
     auto ei = std::make_shared<ExprInvariant>(expr, s);
@@ -138,8 +138,8 @@ private:
     std::cout << "PROCESSING RO SEGMENT" << std::endl;
 
     // watch out for overflow here!!
-    for(uint64_t i = m.lower_bound(); i - m.lower_bound() < m.size(); ++i) {
-      if(m.is_valid(i)) {
+    for (uint64_t i = m.lower_bound(); i - m.lower_bound() < m.size(); ++i) {
+      if (m.is_valid(i)) {
         x64asm::Imm32 imm(i);
         x64asm::M8 ref(imm);
         auto inv = std::make_shared<MemoryConstantInvariant>(ref, true, m[i]);
@@ -152,12 +152,12 @@ private:
   void add_readonly_memory(DdecValidator& ddec) {
     auto ro_testcases = rodata.value();
 
-    for(auto& tc : ro_testcases) {
+    for (auto& tc : ro_testcases) {
       std::cout << "PROCESSING RO TESTCASE" << std::endl;
       add_readonly_memory(ddec, tc.stack);
       add_readonly_memory(ddec, tc.heap);
       add_readonly_memory(ddec, tc.data);
-      for(auto& segment : tc.segments) {
+      for (auto& segment : tc.segments) {
         add_readonly_memory(ddec, segment);
       }
     }
@@ -178,10 +178,10 @@ private:
       ddec->set_bound(target_bound_arg.value(), rewrite_bound_arg.value());
       ddec->set_training_set_size(training_set_size_arg.value());
       auto align_pred = alignment_predicate_arg.value();
-      if(align_pred.size()) {
+      if (align_pred.size()) {
         auto expr = ExprInvariant::parse(align_pred);
         auto inv = std::make_shared<ExprInvariant>(expr, align_pred);
-        if(alignment_predicate_heap_arg.value()) {
+        if (alignment_predicate_heap_arg.value()) {
           auto conj = std::make_shared<ConjunctionInvariant>();
           conj->add_invariant(inv);
           conj->add_invariant(std::make_shared<MemoryEqualityInvariant>());

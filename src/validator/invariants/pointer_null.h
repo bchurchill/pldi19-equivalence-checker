@@ -42,7 +42,7 @@ public:
     di.is_rewrite = variable_.is_rewrite;
     di.implicit_dereference = false;
     di.line_number = (size_t)(-1);
-    
+
     auto mem_value = state.memory->read(var_value, size_*8, di);
     auto result = mem_value.first == SymBitVector::constant(size_*8, 0);
 

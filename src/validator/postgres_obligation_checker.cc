@@ -22,50 +22,50 @@ using namespace pqxx;
 
 void PostgresObligationChecker::make_tables() {
 
-  
-  const char* sql_proof_obligation = 
+
+  const char* sql_proof_obligation =
     "CREATE TABLE IF NOT EXISTS ProofObligation("                  \
-      "hash         VARCHAR(50) PRIMARY KEY,"                      \
-      "problem      TEXT,"                                         \
-      "created_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW()"        \
+    "hash         VARCHAR(50) PRIMARY KEY,"                      \
+    "problem      TEXT,"                                         \
+    "created_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW()"        \
     ")";
 
   const char* sql_proof_obligation_index =
     "CREATE INDEX IF NOT EXISTS proofobligation_hash "        \
-      "ON ProofObligation(hash)";
+    "ON ProofObligation(hash)";
 
-  const char* sql_proof_obligation_result = 
+  const char* sql_proof_obligation_result =
     "CREATE TABLE IF NOT EXISTS ProofObligationResult("             \
-      "id                 SERIAL PRIMARY KEY,"                      \
-      "hash               VARCHAR(50),"                             \
-      "solver             VARCHAR(8),"                              \
-      "strategy           VARCHAR(8),"                              \
-      "verified           BOOLEAN,"                                 \
-      "ceg_target         TEXT,"                                    \
-      "ceg_rewrite        TEXT,"                                    \
-      "ceg_target_final   TEXT,"                                    \
-      "ceg_rewrite_final  TEXT,"                                    \
-      "error              TEXT,"                                    \
-      "gen_time           BIGINT,"                                  \
-      "smt_time           BIGINT,"                                  \
-      "version            VARCHAR(128),"                            \
-      "created_at         TIMESTAMP WITH TIME ZONE DEFAULT NOW(),"  \
-      "comments           TEXT"                                     \
+    "id                 SERIAL PRIMARY KEY,"                      \
+    "hash               VARCHAR(50),"                             \
+    "solver             VARCHAR(8),"                              \
+    "strategy           VARCHAR(8),"                              \
+    "verified           BOOLEAN,"                                 \
+    "ceg_target         TEXT,"                                    \
+    "ceg_rewrite        TEXT,"                                    \
+    "ceg_target_final   TEXT,"                                    \
+    "ceg_rewrite_final  TEXT,"                                    \
+    "error              TEXT,"                                    \
+    "gen_time           BIGINT,"                                  \
+    "smt_time           BIGINT,"                                  \
+    "version            VARCHAR(128),"                            \
+    "created_at         TIMESTAMP WITH TIME ZONE DEFAULT NOW(),"  \
+    "comments           TEXT"                                     \
     ")";
 
   const char* sql_proof_obligation_result_index =
     "CREATE INDEX IF NOT EXISTS proofobligationresult_hash "        \
-      "ON ProofObligationResult(hash)";
+    "ON ProofObligationResult(hash)";
 
-  const char* sql_proof_obligation_queue = 
+  const char* sql_proof_obligation_queue =
     "CREATE TABLE IF NOT EXISTS ProofObligationQueue("              \
-      "id                 SERIAL PRIMARY KEY,"                      \
-      "hash               VARCHAR(50),"                             \
-      "solver             VARCHAR(8),"                              \
-      "strategy           VARCHAR(8),"                              \
-      "locked_by          BIGINT,"                                  \
-      "expiration         TIMESTAMP WITH TIME ZONE,"                \
-      "created_at         TIMESTAMP WITH TIME ZONE DEFAULT NOW()"   \
+    "id                 SERIAL PRIMARY KEY,"                      \
+    "hash               VARCHAR(50),"                             \
+    "solver             VARCHAR(8),"                              \
+    "strategy           VARCHAR(8),"                              \
+    "locked_by          BIGINT,"                                  \
+    "expiration         TIMESTAMP WITH TIME ZONE,"                \
+    "created_at         TIMESTAMP WITH TIME ZONE DEFAULT NOW()"   \
     ")";
 
   nontransaction tx(connection_);
@@ -97,19 +97,19 @@ void PostgresObligationChecker::make_tables() {
 }
 
 void PostgresObligationChecker::check(const Cfg& target, const Cfg& rewrite,
-                   Cfg::id_type target_block, Cfg::id_type rewrite_block,
-                   const CfgPath& p, const CfgPath& q,
-                   shared_ptr<Invariant> assume, shared_ptr<Invariant> prove,
-                   const std::vector<std::pair<CpuState, CpuState>>& testcases,
-                   Callback& callback,
-                   bool override_separate_stack,
-                   void* optional) {
+                                      Cfg::id_type target_block, Cfg::id_type rewrite_block,
+                                      const CfgPath& p, const CfgPath& q,
+                                      shared_ptr<Invariant> assume, shared_ptr<Invariant> prove,
+                                      const std::vector<std::pair<CpuState, CpuState>>& testcases,
+                                      Callback& callback,
+                                      bool override_separate_stack,
+                                      void* optional) {
 
   /** Sample test cases */
   vector<pair<CpuState,CpuState>> sampled_testcases;
-  if(testcases.size() > 5) {
+  if (testcases.size() > 5) {
     // TODO: sample randomly if needed
-    for(size_t i = 0; i < testcases.size(); i += testcases.size()/5) {
+    for (size_t i = 0; i < testcases.size(); i += testcases.size()/5) {
       sampled_testcases.push_back(testcases[i]);
     }
   } else {
@@ -133,25 +133,25 @@ void PostgresObligationChecker::check(const Cfg& target, const Cfg& rewrite,
   obligation.write_text(ss);
   auto hash = md5(ss.str());
 
-  if(local_cache_.count(hash)) {
+  if (local_cache_.count(hash)) {
     // this lightens the load on the database, and maybe even the local solver
     cout << "[check] found answer in cache!" << endl;
     callback(local_cache_[hash], optional);
     return;
   }
 
-  if(shortcircuit_ > 0) {
+  if (shortcircuit_ > 0) {
     // if we can quickly perform the SMT check ourselves, don't go to the database
     auto r = smt_checker_.check_wait(target, rewrite, target_block, rewrite_block,
                                      p, q, assume, prove, testcases, override_separate_stack);
-    if(r.verified || r.has_ceg) {
+    if (r.verified || r.has_ceg) {
       local_cache_[hash] = r;
       callback(r, optional);
       return;
-    }     
+    }
   }
 
-  if(pipeline_ == NULL) {
+  if (pipeline_ == NULL) {
     pipeline_tx_ = new nontransaction(connection_);
     pipeline_ = new pipeline(*pipeline_tx_);
     pipeline_->retain(2);
@@ -188,7 +188,7 @@ void PostgresObligationChecker::check(const Cfg& target, const Cfg& rewrite,
               << "AND "
               << "   (NOT EXISTS (SELECT hash FROM ProofObligationResult "
               << "    WHERE hash='" << hash_esc << "' "
-              << "      AND error is null)) " 
+              << "      AND error is null)) "
               << "AND "
               << "   (NOT EXISTS (SELECT hash FROM ProofObligationQueue "
               << "    WHERE hash='" << hash_esc << "'"
@@ -206,7 +206,7 @@ void PostgresObligationChecker::check(const Cfg& target, const Cfg& rewrite,
   cout << "Dispatching hash " << hash << endl;
 
   dispatches_++;
-  if(dispatches_ % 25 == 0) {
+  if (dispatches_ % 25 == 0) {
     cout << "Waiting on pipeline..." << endl;
     pipeline_->complete();
     cout << "Closing up nontransaction..." << endl;
@@ -225,7 +225,7 @@ void PostgresObligationChecker::check(const Cfg& target, const Cfg& rewrite,
 
 void PostgresObligationChecker::poll_database() {
 
-  if(dispatches_ > 0) {
+  if (dispatches_ > 0) {
     cout << "Waiting on pipeline..." << endl;
     pipeline_->complete();
     cout << "Closing up nontransaction..." << endl;
@@ -233,7 +233,7 @@ void PostgresObligationChecker::poll_database() {
   }
 
 
-  if(outstanding_jobs.size() == 0)
+  if (outstanding_jobs.size() == 0)
     return;
 
   cout << "[poll_database] querying for " << outstanding_jobs.size() << " jobs." << endl;
@@ -245,12 +245,12 @@ void PostgresObligationChecker::poll_database() {
       << "WHERE hash in (";
 
   bool first = true;
-  for(auto pair : outstanding_jobs) {
-    auto hash = pair.first; 
+  for (auto pair : outstanding_jobs) {
+    auto hash = pair.first;
     auto data = pair.second;
-    if(data.completed)
+    if (data.completed)
       continue;
-    if(!first)
+    if (!first)
       sql << ", ";
     sql << "'" << tx.esc(hash) << "'";
     first = false;
@@ -266,24 +266,24 @@ void PostgresObligationChecker::poll_database() {
   map<string, string> error_message;
   map<string, string> error_version;
 
-  for(auto row : r) {
+  for (auto row : r) {
     auto hash = row["hash"].as<string>();
     cout << "[poll_database] Processing row with hash = " << hash << endl;
 
     // check if job has already been processed
-    if(outstanding_jobs.count(hash) == 0) {
+    if (outstanding_jobs.count(hash) == 0) {
       //cout << "  * skipping this row" << endl;
       continue;
     }
 
     // check job status
     auto& job = outstanding_jobs.at(hash);
-    if(job.completed)
+    if (job.completed)
       continue;
 
     bool has_error = !row["error"].is_null();
     bool has_ceg = !row["ceg_target"].is_null();
-    if(has_error) {
+    if (has_error) {
       // we don't want to invoke the callback unless we get errors from all solvers
       error_counts[hash]++;
       error_message.insert({hash, row["error"].as<string>()});
@@ -300,9 +300,9 @@ void PostgresObligationChecker::poll_database() {
       r.info = hash;
       r.solver = (row["solver"].as<string>() == "z3" ? Solver::Z3 : Solver::CVC4);
       r.strategy = (row["strategy"].as<string>() == "flat" ? ObligationChecker::AliasStrategy::FLAT :
-                                               ObligationChecker::AliasStrategy::ARM);
+                    ObligationChecker::AliasStrategy::ARM);
 
-      if(has_ceg) {
+      if (has_ceg) {
         r.has_ceg = true;
 
         stringstream target_ceg;
@@ -330,14 +330,14 @@ void PostgresObligationChecker::poll_database() {
     }
   }
 
-  for(auto pair : error_counts) {
-    if(pair.second >= 4) {
+  for (auto pair : error_counts) {
+    if (pair.second >= 4) {
       auto hash = pair.first;
-      if(outstanding_jobs.count(hash) == 0)
+      if (outstanding_jobs.count(hash) == 0)
         continue;
 
       auto& job = outstanding_jobs.at(hash);
-      if(job.completed)
+      if (job.completed)
         continue;
       Result r;
       r.verified = false;
@@ -357,7 +357,7 @@ void PostgresObligationChecker::poll_database() {
 
 /** Blocks until all the checking has done and the callbacks have been called. */
 void PostgresObligationChecker::block_until_complete() {
-  if(pipeline_) {
+  if (pipeline_) {
     cout << "Waiting on pipeline..." << endl;
     pipeline_->complete();
     cout << "Closing up nontransaction..." << endl;
@@ -367,7 +367,7 @@ void PostgresObligationChecker::block_until_complete() {
   cout << "Polling!" << endl;
 
   poll_database();
-  while(outstanding_jobs.size() > 0) {
+  while (outstanding_jobs.size() > 0) {
     sleep(60);
     poll_database();
   }

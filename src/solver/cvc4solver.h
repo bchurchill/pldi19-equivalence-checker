@@ -107,8 +107,8 @@ private:
   class ExprConverter : public SymVisitor<CVC4::Expr, CVC4::Expr, CVC4::Expr> {
 
   public:
-    ExprConverter(Cvc4Solver* parent) : 
-      em_(parent->em_), 
+    ExprConverter(Cvc4Solver* parent) :
+      em_(parent->em_),
       variables_(parent->variables_),
       bound_variables_(),
       uninterpreted_(&(parent->uninterpreted_)) {}

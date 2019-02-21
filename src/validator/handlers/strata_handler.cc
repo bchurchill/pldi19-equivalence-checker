@@ -352,7 +352,7 @@ std::string StrataHandler::strata_path_;
 void StrataHandler::init() {
 
   if (strata_path_ == "") {
-     // initialize the strata path once
+    // initialize the strata path once
     char buf[1000];
     size_t n = readlink("/proc/self/exe", buf, 999);
     buf[n] = '\0';

@@ -51,7 +51,7 @@ public:
   /** Updates the memory with a write. */
   void write(SymBitVector address, SymBitVector value, uint16_t size) {
     //current_[size/8] = current_[size/8].update(address, value);
-    for(size_t i = 0; i < size/8; i++) {
+    for (size_t i = 0; i < size/8; i++) {
       current_[0] = current_[0].update(address+SymBitVector::constant(64,i), value[8*i+7][8*i]);
     }
   }
@@ -59,7 +59,7 @@ public:
   /** Reads from the memory.  Returns value. */
   SymBitVector read(SymBitVector address, uint16_t size) {
     SymBitVector value = current_[0][address];
-    for(size_t i = 1; i < size/8; ++i) {
+    for (size_t i = 1; i < size/8; ++i) {
       value = current_[0][address + SymBitVector::constant(64, i)] || value;
     }
     return value;
@@ -68,14 +68,14 @@ public:
 
   std::vector<SymArray> get_start_variables() const {
     std::vector<SymArray> outputs;
-    for(auto pair : start_)
+    for (auto pair : start_)
       outputs.push_back(pair.second);
     return outputs;
   }
 
   std::vector<SymArray> get_end_variables() const {
     std::vector<SymArray> outputs;
-    for(auto pair : end_)
+    for (auto pair : end_)
       outputs.push_back(pair.second);
     return outputs;
   }

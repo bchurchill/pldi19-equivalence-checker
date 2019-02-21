@@ -28,8 +28,8 @@ using namespace CVC4;
 
 vector<SymBool> split_constraints_cvc4(const vector<SymBool>& constraints) {
   vector<SymBool> split;
-  for(auto it : constraints) {
-    if(it.type() == SymBool::AND) {
+  for (auto it : constraints) {
+    if (it.type() == SymBool::AND) {
       auto val = static_cast<const SymBoolAnd*>(it.ptr);
       SymBool a(val->a_);
       SymBool b(val->b_);
@@ -70,7 +70,7 @@ bool Cvc4Solver::is_sat(const vector<SymBool>& constraints) {
 
   /** Get all the axioms we need. */
   SymAxiomVisitor av;
-  for(auto it : constraints)
+  for (auto it : constraints)
     av(it);
   auto all_constraints = av.get_axioms();
   all_constraints.insert(all_constraints.begin(), constraints.begin(), constraints.end());
@@ -78,47 +78,47 @@ bool Cvc4Solver::is_sat(const vector<SymBool>& constraints) {
   auto split = split_constraints_cvc4(all_constraints);
 
   DEBUG_CVC4(
-  cout << "CONSTRAINTS - Generic" << endl;
-  for(auto it : split)
+    cout << "CONSTRAINTS - Generic" << endl;
+    for (auto it : split)
     cout << it << endl;)
 
-  DEBUG_CVC4(
-  cout << "CONSTRAINTS - CVC4" << endl;)
-  for (auto it : split) {
+    DEBUG_CVC4(
+      cout << "CONSTRAINTS - CVC4" << endl;)
+    for (auto it : split) {
 
-    if (tc(it) != 1) {
-      stringstream ss;
-      ss << "Typechecking failed for constraint: " << it << endl;
-      if (tc.has_error())
-        ss << "error: " << tc.error() << endl;
-      else
-        ss << "(no typechecking error message given)" << endl;
-      error_ = ss.str();
-      return false;
+      if (tc(it) != 1) {
+        stringstream ss;
+        ss << "Typechecking failed for constraint: " << it << endl;
+        if (tc.has_error())
+          ss << "error: " << tc.error() << endl;
+        else
+          ss << "(no typechecking error message given)" << endl;
+        error_ = ss.str();
+        return false;
+      }
+
+      auto converted = ec(it);
+      if (ec.has_error()) {
+        error_ = ec.error();
+        return false;
+      }
+
+      DEBUG_CVC4(cout << converted << endl;)
+      smt_->assertFormula(converted);
     }
 
-    auto converted = ec(it);
-    if (ec.has_error()) {
-      error_ = ec.error();
-      return false;
-    }
-
-    DEBUG_CVC4(cout << converted << endl;)
-    smt_->assertFormula(converted);
-  }
-
   DEBUG_CVC4(
-  static int debug_count = 0;
-  stringstream ss;
-  ss << "cvc4-debug-" << debug_count++;
-  ofstream ofs(ss.str());
-  auto asserts = smt_->getAssertions();
-  for(auto a : asserts)
+    static int debug_count = 0;
+    stringstream ss;
+    ss << "cvc4-debug-" << debug_count++;
+    ofstream ofs(ss.str());
+    auto asserts = smt_->getAssertions();
+    for (auto a : asserts)
     ofs << a << endl;
-  ofs.close();)
+    ofs.close();)
 
 
-  auto result = smt_->checkSat(em_.mkConst(true));
+    auto result = smt_->checkSat(em_.mkConst(true));
 
   if (result.isUnknown()) { // || result.isSat() == Result::SAT_UNKNOWN) {
     error_ = "CVC4 returned unknown: " + result.toString();
@@ -148,10 +148,10 @@ cpputil::BitVector Cvc4Solver::get_model_bv(const std::string& var, uint16_t bit
 
   DEBUG_CVC4(
     uint64_t value = 0;
-    for(int i = bits-1; i >= 0; --i) {
-      value = value*2 + bv[i];
-    }
-    cout << "model[" << var << "] = " << value << endl;
+  for (int i = bits-1; i >= 0; --i) {
+  value = value*2 + bv[i];
+  }
+  cout << "model[" << var << "] = " << value << endl;
   )
   assert(bv.num_bits() == bits);
   return bv;
@@ -439,7 +439,7 @@ Expr Cvc4Solver::ExprConverter::visit(const SymBitVectorSignExtend * const bv) {
 
 /** Visit a bit-vector variable */
 Expr Cvc4Solver::ExprConverter::visit(const SymBitVectorVar * const bv) {
-  if(bound_variables_.count(bv->name_)) {
+  if (bound_variables_.count(bv->name_)) {
     return bound_variables_[bv->name_];
   }
   if (!variables_.count(bv->name_)) {
@@ -467,10 +467,10 @@ Expr Cvc4Solver::ExprConverter::visit(const SymBoolFalse * const b) {
 
 /** Visit a boolean FOR_ALL */
 Expr Cvc4Solver::ExprConverter::visit(const SymBoolForAll * const b) {
-  auto old_bound_variables = bound_variables_;  
+  auto old_bound_variables = bound_variables_;
 
   vector<Expr> bound_vars;
-  for(auto var : b->vars_) {
+  for (auto var : b->vars_) {
     auto type = em_.mkBitVectorType(var.size_);
     auto bvar = em_.mkBoundVar(var.name_, type);
     bound_vars.push_back(bvar);
@@ -479,11 +479,11 @@ Expr Cvc4Solver::ExprConverter::visit(const SymBoolForAll * const b) {
 
   auto child = (*this)(b->a_);
   Expr bound_var_list;
-  if(bound_vars.size() == 1)
+  if (bound_vars.size() == 1)
     bound_var_list = em_.mkExpr(kind::BOUND_VAR_LIST, bound_vars[0]);
-  else if(bound_vars.size() == 2) 
+  else if (bound_vars.size() == 2)
     bound_var_list = em_.mkExpr(kind::BOUND_VAR_LIST, bound_vars[0], bound_vars[1]);
-  else if(bound_vars.size() == 3)
+  else if (bound_vars.size() == 3)
     bound_var_list = em_.mkExpr(kind::BOUND_VAR_LIST, bound_vars[0], bound_vars[1], bound_vars[2]);
   else {
     cerr << "STOKE's custom CVC4 binding does not support 0 or 4+ bound vars in universal quantifier." << endl;

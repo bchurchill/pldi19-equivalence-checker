@@ -60,30 +60,30 @@ struct Variable {
   }
   bool is_related(const Variable& v) const {
     //std::cout << "checking if from same program..." << std::endl;
-    if(is_rewrite != v.is_rewrite)
+    if (is_rewrite != v.is_rewrite)
       return false;
     //std::cout << "checking if ghost flag differs ..." << std::endl;
-    if(is_ghost != v.is_ghost)
+    if (is_ghost != v.is_ghost)
       return false;
     //std::cout << "checking if ghosts name matches ..." << std::endl;
-    if(is_ghost) 
+    if (is_ghost)
       return name == v.name;
 
     //std::cout << "checking if memory status differs ..." << std::endl;
-    if(operand.is_typical_memory() != v.operand.is_typical_memory())
+    if (operand.is_typical_memory() != v.operand.is_typical_memory())
       return false;
 
-    if(operand.is_typical_memory()) {
+    if (operand.is_typical_memory()) {
       //std::cout << "comparing memory..." << std::endl;
       auto m1 = *static_cast<const x64asm::Mem*>(&operand);
       auto m2 = *static_cast<const x64asm::Mem*>(&v.operand);
-      if(m1.contains_base() != m2.contains_base())
+      if (m1.contains_base() != m2.contains_base())
         return false;
-      if(m1.contains_index() != m2.contains_index())
+      if (m1.contains_index() != m2.contains_index())
         return false;
-      if(m1.contains_base() && m1.get_base() != m2.get_base())
+      if (m1.contains_base() && m1.get_base() != m2.get_base())
         return false;
-      if(m1.contains_index() && m1.get_index() != m2.get_index())
+      if (m1.contains_index() && m1.get_index() != m2.get_index())
         return false;
       return true;
     } else {
@@ -115,37 +115,37 @@ struct Variable {
   }
 
   bool operator<(const Variable& other) const {
-    if(is_rewrite != other.is_rewrite)
+    if (is_rewrite != other.is_rewrite)
       return is_rewrite < other.is_rewrite;
-    if(size != other.size)
+    if (size != other.size)
       return size < other.size;
-    if(coefficient != other.coefficient)
+    if (coefficient != other.coefficient)
       return coefficient < other.coefficient;
-    if(operand != other.operand)
+    if (operand != other.operand)
       return operand < other.operand;
-    if(name != other.name)
+    if (name != other.name)
       return name < other.name;
-    if(is_ghost != other.is_ghost)
+    if (is_ghost != other.is_ghost)
       return is_ghost < other.is_ghost;
-    if(offset != other.offset)
+    if (offset != other.offset)
       return offset < other.offset;
     return false;
   }
 
   bool operator==(const Variable& other) const {
-    if(is_rewrite != other.is_rewrite)
+    if (is_rewrite != other.is_rewrite)
       return false;
-    if(size != other.size)
+    if (size != other.size)
       return false;
-    if(coefficient != other.coefficient)
+    if (coefficient != other.coefficient)
       return false;
-    if(operand != other.operand)
+    if (operand != other.operand)
       return false;
-    if(name != other.name)
+    if (name != other.name)
       return false;
-    if(is_ghost != other.is_ghost)
+    if (is_ghost != other.is_ghost)
       return false;
-    if(offset != other.offset)
+    if (offset != other.offset)
       return false;
     return true;
   }

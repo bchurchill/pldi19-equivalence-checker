@@ -37,7 +37,7 @@ const std::vector<DataCollector::Trace>& DataCollector::get_traces(Cfg& cfg) {
   for (size_t i = 0; i < sandbox_.size(); ++i) {
     Trace trace;
     mine_data(cfg, i, trace);
-    for(auto& tp : trace) {
+    for (auto& tp : trace) {
       tp.cs.shadow.clear();
     }
     traces.push_back(trace);
@@ -53,15 +53,15 @@ std::vector<DataCollector::Trace> DataCollector::get_detailed_traces(const Cfg& 
 
   vector<Trace> traces;
   DEBUG_DETAILED_TRACE(
-  cout << "[get_detailed_trace] sandbox_.size() = " << sandbox_.size() << endl;)
-  for(size_t testcase = 0; testcase < sandbox_.size(); ++testcase) {
+    cout << "[get_detailed_trace] sandbox_.size() = " << sandbox_.size() << endl;)
+  for (size_t testcase = 0; testcase < sandbox_.size(); ++testcase) {
     size_t index;
     auto label = cfg.get_function().get_leading_label();
     sandbox_.insert_function(cfg);
     sandbox_.set_entrypoint(label);
     sandbox_.clear_callbacks();
 
-    if(linemap != nullptr)
+    if (linemap != nullptr)
       sandbox_.set_linemap(*linemap);
 
     std::vector<CallbackParam*> to_free;
@@ -69,7 +69,7 @@ std::vector<DataCollector::Trace> DataCollector::get_detailed_traces(const Cfg& 
     Trace trace;
 
     auto code = cfg.get_code();
-    for(size_t i = 0; i < code.size(); ++i) {
+    for (size_t i = 0; i < code.size(); ++i) {
 
       CallbackParam* cp = new CallbackParam();
       to_free.push_back(cp);
@@ -78,15 +78,15 @@ std::vector<DataCollector::Trace> DataCollector::get_detailed_traces(const Cfg& 
       cp->trace = &trace;
       cp->line_number = i;
 
-      if(linemap != nullptr) {
-        if(i == code.size() - 1)
+      if (linemap != nullptr) {
+        if (i == code.size() - 1)
           continue;
-        if(linemap->count(i) == 0) {
+        if (linemap->count(i) == 0) {
           // this error case is a bug but it shouldn't be catastrophic.
           // this only affects checking counterexamples, if the result
           // is wrong, then we know the counterexample is wrong, which
           // is probably what we want in this case
-          // ...... make something up. 
+          // ...... make something up.
           cout << "BUG BUG BUG at " << __FILE__ << ":" << __LINE__ << endl;
           cout << "linemap is missing entries!" << endl;
           cp->block_id = 1;
@@ -99,7 +99,7 @@ std::vector<DataCollector::Trace> DataCollector::get_detailed_traces(const Cfg& 
 
       auto instr = code[i];
       DEBUG_DETAILED_TRACE(cout << "[get_detailed_trace] instrumenting " << instr << endl;)
-      if(instr.is_any_jump() || collect_before_) {
+      if (instr.is_any_jump() || collect_before_) {
         sandbox_.insert_before(label, i, callback, cp);
       } else {
         sandbox_.insert_after(label, i, callback, cp);
@@ -107,12 +107,12 @@ std::vector<DataCollector::Trace> DataCollector::get_detailed_traces(const Cfg& 
     }
 
     DEBUG_DETAILED_TRACE(
-    cout << "[get_detailed_trace] running sandbox with testcase=" << testcase << endl;
-    cout << *sandbox_.get_input(testcase) << endl;)
+      cout << "[get_detailed_trace] running sandbox with testcase=" << testcase << endl;
+      cout << *sandbox_.get_input(testcase) << endl;)
     sandbox_.run(testcase);
     DEBUG_DETAILED_TRACE(
-    cout << "[get_detailed_trace] output" << endl;
-    cout << *sandbox_.get_output(testcase) << endl;)
+      cout << "[get_detailed_trace] output" << endl;
+      cout << *sandbox_.get_output(testcase) << endl;)
 
     for (auto it : to_free)
       delete it;
@@ -169,7 +169,7 @@ void DataCollector::mine_data(const Cfg& cfg, size_t testcase, std::vector<Trace
 
   sandbox_.run(testcase);
   auto output = *sandbox_.get_output(testcase);
-  if(output.code != ErrorCode::NORMAL) {
+  if (output.code != ErrorCode::NORMAL) {
     cout << "Test case " << testcase << " seemed to fail with an exception." << endl;
   }
 

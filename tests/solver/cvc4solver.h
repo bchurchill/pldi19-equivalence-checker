@@ -329,7 +329,7 @@ TEST(Cvc4SolverTest, QuantifiersUnsat) {
 
   SymFunction f("F", 64, {64, 64});
 
-  auto assume = (f(x,y) == f(y,x)).forall({x,y},{});
+  auto assume = (f(x,y) == f(y,x)).forall({x,y}, {});
   auto prove = (f(x,c) == f(d,y));
   vector<SymBool> constraints = {assume, x == y, c == d, !prove};
   Cvc4Solver z3;
@@ -344,7 +344,7 @@ TEST(Cvc4SolverTest, QuantifiersSat) {
   auto y = SymBitVector::var(64, "y");
   SymFunction f("F", 64, {64, 64});
 
-  auto a1 = (f(x,y) == f(y,x)).forall({x,y},{});
+  auto a1 = (f(x,y) == f(y,x)).forall({x,y}, {});
   auto prove = f(x, x) == x;
   vector<SymBool> constraints = {a1, !prove};
   Cvc4Solver z3;

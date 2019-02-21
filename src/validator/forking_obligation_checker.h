@@ -79,7 +79,7 @@ public:
   }
 
   /** Forget about everything that has been started. */ virtual void delete_all() {
-    for(auto pi : process_info_) {
+    for (auto pi : process_info_) {
       kill(pi.pid, SIGKILL);
     }
     process_info_.clear();

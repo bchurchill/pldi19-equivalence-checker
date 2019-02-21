@@ -45,10 +45,10 @@ istream& ObligationChecker::Result::read_text(istream& is) {
   strategy = (AliasStrategy)n_strategy;
   is >> source_version;
   CHECK_STREAM(is);
-  if(has_error)
-    is >> error_message >> ws; 
+  if (has_error)
+    is >> error_message >> ws;
   CHECK_STREAM(is);
-  if(has_ceg) {
+  if (has_ceg) {
     is >> target_ceg >> ws;
     CHECK_STREAM(is);
     is >> rewrite_ceg >> ws;
@@ -67,9 +67,9 @@ ostream& ObligationChecker::Result::write_text(ostream& os) const {
   os << gen_time_microseconds << " " << smt_time_microseconds << endl;
   os << (size_t)solver << " " << (size_t)strategy << endl;
   os << source_version << endl;
-  if(has_error)
+  if (has_error)
     os << error_message << endl;
-  if(has_ceg) {
+  if (has_ceg) {
     os << target_ceg << endl;
     os << rewrite_ceg << endl;
     os << target_final_ceg << endl;

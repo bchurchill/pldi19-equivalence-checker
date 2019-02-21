@@ -53,7 +53,7 @@ SymBool SymBool::tmp_var() {
 
 SymBool SymBool::forall(const std::vector<SymBitVector>& vars, const std::vector<SymBitVector>& patterns) const {
   vector<SymBitVectorVar> converted_vars;
-  for(auto v : vars) {
+  for (auto v : vars) {
     const auto ptr = static_cast<const SymBitVectorVar* const>(v.ptr);
     converted_vars.push_back(*ptr);
   }
@@ -125,7 +125,7 @@ bool SymBoolArrayEq::equals(const SymBoolAbstract * const other) const {
 }
 
 bool SymBoolForAll::equals(const SymBoolAbstract * const other) const {
-  if(type() != other->type()) return false;
+  if (type() != other->type()) return false;
   auto cast = static_cast<const SymBoolForAll * const>(other);
   return a_->equals(cast->a_) && vars_ == cast->vars_;
 }

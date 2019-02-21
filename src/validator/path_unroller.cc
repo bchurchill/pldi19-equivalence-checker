@@ -55,21 +55,21 @@ void PathUnroller::generate_linemap(const Cfg& cfg, const CfgPath& p, LineMap& t
       auto& instr = code[i];
 
       /** insert an extra label if there isn't one already. */
-      // TODO: bug here / leaky abstraction.  
+      // TODO: bug here / leaky abstraction.
       // if the first basic block in the sequence has only one instruction, then we'll miscount
       // the number of times this basic block was executed down the road...
-      if(first && !instr.is_label_defn()) {
+      if (first && !instr.is_label_defn()) {
         unrolled.push_back(Instruction(Opcode::LABEL_DEFN, { Label(".anonymous_function") }));
         to_populate[line_no++] = li;
       }
       first = false;
 
-      if(instr.is_label_defn()) {
-        if(unrolled.size() == 0)
+      if (instr.is_label_defn()) {
+        if (unrolled.size() == 0)
           unrolled.push_back(instr);
         else
           unrolled.push_back(Instruction(Opcode::NOP));
-      } else if(!instr.is_any_jump()) {
+      } else if (!instr.is_any_jump()) {
         unrolled.push_back(instr);
       } else {
         unrolled.push_back(Instruction(Opcode::NOP));

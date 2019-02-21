@@ -97,10 +97,10 @@ public:
     return *this;
   }
   /** Sets a mapping from line number to RIP offset for cases where the
-    default computation doesn't work. */ 
+    default computation doesn't work. */
   Sandbox& set_linemap(const LineMap& m) {
     rip_map_.clear();
-    for(auto pair : m) {
+    for (auto pair : m) {
       rip_map_[pair.first] = pair.second.rip_offset;
     }
     return *this;
@@ -480,8 +480,8 @@ private:
   void run_child(size_t index);
   /** Updates the callbacks for the child */
   void update_child_callback(std::pair<StateCallback, void*>& pair, std::ostream& os);
-  void update_child_callback(std::unordered_map<x64asm::Label, 
-                             std::unordered_map<size_t, std::pair<StateCallback, void*>>>& m, 
+  void update_child_callback(std::unordered_map<x64asm::Label,
+                             std::unordered_map<size_t, std::pair<StateCallback, void*>>>& m,
                              std::ostream& os);
 };
 

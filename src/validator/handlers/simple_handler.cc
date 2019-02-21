@@ -932,7 +932,7 @@ void SimpleHandler::add_all() {
   });
 
   add_opcode_str({"psrldq"},
-      [this] (Operand dst, Operand i, SymBitVector a, SymBitVector imm, SymState& ss) {
+  [this] (Operand dst, Operand i, SymBitVector a, SymBitVector imm, SymState& ss) {
     auto shift = a >> (imm.zero_extend(128)*SymBitVector::constant(128,8));
     ss.set(dst, shift, false);
   });

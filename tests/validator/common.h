@@ -33,8 +33,8 @@ class StraightLineValidatorTest : public ::testing::Test {
 
 public:
 
-  StraightLineValidatorTest() : 
-    handler_(), 
+  StraightLineValidatorTest() :
+    handler_(),
     filter_(handler_, 0x100, (uint64_t)(-0x100)),
     oc_(s_, filter_),
     v_(make_validator())

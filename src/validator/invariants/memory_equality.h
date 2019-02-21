@@ -58,11 +58,11 @@ public:
   }
 
   std::ostream& write(std::ostream& os) const {
-    if(excluded_locations_.size() == 0)
+    if (excluded_locations_.size() == 0)
       os << "(t/r agree on memory)";
     else {
       os << "(t/r agree on memory except at ";
-      for(auto v : excluded_locations_)
+      for (auto v : excluded_locations_)
         os << v << " ";
       os << ")";
     }
@@ -86,18 +86,18 @@ public:
   virtual std::ostream& serialize(std::ostream& out) const {
     out << "MemoryEqualityInvariant" << std::endl;
     out << excluded_locations_.size() << std::endl;
-    for(auto it : excluded_locations_) {
+    for (auto it : excluded_locations_) {
       it.serialize(out);
     }
     return out;
   }
 
-  MemoryEqualityInvariant(std::istream& is) { 
+  MemoryEqualityInvariant(std::istream& is) {
     CHECK_STREAM(is);
     size_t count;
     is >> count;
     CHECK_STREAM(is);
-    for(size_t i = 0; i < count; ++i) {
+    for (size_t i = 0; i < count; ++i) {
       Variable v(is);
       excluded_locations_.push_back(v);
       CHECK_STREAM(is);
@@ -121,9 +121,9 @@ public:
 
   std::vector<SymBitVector> get_excluded_addresses(SymState& left, SymState& right) const {
     std::vector<SymBitVector> excluded_addrs;
-    for(auto v : excluded_locations_) {
+    for (auto v : excluded_locations_) {
       auto start = v.get_addr(left, right);
-      for(size_t i = 0; i < v.size; ++i) {
+      for (size_t i = 0; i < v.size; ++i) {
         auto excluded = start + SymBitVector::constant(64, i);
         excluded_addrs.push_back(excluded);
       }
@@ -136,28 +136,28 @@ private:
 
   /** Check if two segments are equal, except on specified locations. */
   bool check_segment(const Memory& a, const Memory& b, const CpuState& target, const CpuState& rewrite) const {
-    if(a.lower_bound() != b.lower_bound())
+    if (a.lower_bound() != b.lower_bound())
       return false;
-    if(a.size() != b.size())
+    if (a.size() != b.size())
       return false;
-    for(uint64_t i = 0; i < a.size(); ++i) {
+    for (uint64_t i = 0; i < a.size(); ++i) {
       uint64_t addr = a.lower_bound() + i;
-      if(!a.is_valid(addr))
+      if (!a.is_valid(addr))
         continue;
-      
+
       bool excluded = false;
-      for(auto v : excluded_locations_) {
+      for (auto v : excluded_locations_) {
         uint64_t start = v.get_addr(target, rewrite);
         uint64_t end = start + v.size;
 
-        if(addr >= start && addr < end) {
+        if (addr >= start && addr < end) {
           excluded = true;
           break;
         }
       }
-      
-      if(!excluded)
-        if(a[addr] != b[addr])
+
+      if (!excluded)
+        if (a[addr] != b[addr])
           return false;
     }
 

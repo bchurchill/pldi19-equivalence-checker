@@ -43,8 +43,8 @@ uint64_t Z3Solver::solver_time_ = 0;
 
 vector<SymBool> split_constraints(const vector<SymBool>& constraints) {
   vector<SymBool> split;
-  for(auto it : constraints) {
-    if(it.type() == SymBool::AND) {
+  for (auto it : constraints) {
+    if (it.type() == SymBool::AND) {
       auto val = static_cast<const SymBoolAnd*>(it.ptr);
       SymBool a(val->a_);
       SymBool b(val->b_);
@@ -74,7 +74,7 @@ bool Z3Solver::is_sat(const vector<SymBool>& constraints) {
 
   /** Get all the axioms we need. */
   SymAxiomVisitor av;
-  for(auto it : constraints)
+  for (auto it : constraints)
     av(it);
   auto all_constraints = av.get_axioms();
   all_constraints.insert(all_constraints.begin(), constraints.begin(), constraints.end());
@@ -135,8 +135,8 @@ bool Z3Solver::is_sat(const vector<SymBool>& constraints) {
       convert_time_ += (convert_end - typecheck_end).count();
 #endif
       DEBUG_Z3(
-      cout << it << endl;
-      cout << constraint << endl;)
+        cout << it << endl;
+        cout << constraint << endl;)
       solver_.add(constraint);
     }
 
@@ -156,18 +156,18 @@ bool Z3Solver::is_sat(const vector<SymBool>& constraints) {
     if (check_abort()) return false;
 
     DEBUG_Z3(
-    static int debug_count = 0;
-    stringstream ss;
-    ss << "z3-smtlib-" << debug_count++;
-    ofstream ofs(ss.str());
-    string smtlib = solver_.to_smt2();
-    ofs << smtlib << endl;
-    ofs.close();)
+      static int debug_count = 0;
+      stringstream ss;
+      ss << "z3-smtlib-" << debug_count++;
+      ofstream ofs(ss.str());
+      string smtlib = solver_.to_smt2();
+      ofs << smtlib << endl;
+      ofs.close();)
 
 #ifdef STOKE_Z3_DEBUG_LAST_HASH
-  string smt = solver_.to_smt2();
-  last_hash_ = md5(smt);
-  last_text_ = smt;
+    string smt = solver_.to_smt2();
+    last_hash_ = md5(smt);
+    last_text_ = smt;
 #endif
 
     auto result = solver_.check();
@@ -191,8 +191,8 @@ bool Z3Solver::is_sat(const vector<SymBool>& constraints) {
         delete model_;
       model_ = new z3::model(solver_.get_model());
       DEBUG_Z3(
-      cout << "MODEL: " << endl;
-      cout << *model_ << endl;
+        cout << "MODEL: " << endl;
+        cout << *model_ << endl;
       )
       return true;
     }
@@ -619,7 +619,7 @@ z3::expr Z3Solver::ExprConverter::visit(const SymBoolForAll * const b) {
   /** Get expressions for variable */
   auto vars = b->vars_;
   vector<expr> exprs;
-  for(auto v : vars) {
+  for (auto v : vars) {
     exprs.push_back(context_.bv_const(v.name_.c_str(), v.size_));
   }
 
@@ -627,7 +627,7 @@ z3::expr Z3Solver::ExprConverter::visit(const SymBoolForAll * const b) {
   auto inside = (*this)(b->a_);
 
   /** Find a method that works... */
-  if(vars.size() == 1) {
+  if (vars.size() == 1) {
     return z3::forall(exprs[0], inside);
   } else if (vars.size() == 2) {
     return z3::forall(exprs[0], exprs[1], inside);
@@ -637,7 +637,7 @@ z3::expr Z3Solver::ExprConverter::visit(const SymBoolForAll * const b) {
     // NOTE: this code doesn't work
     assert(false);
     expr_vector vect(context_);
-    for(auto e : exprs) {
+    for (auto e : exprs) {
       vect.push_back(e);
     }
     return z3::forall(vect, inside);

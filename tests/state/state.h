@@ -32,7 +32,7 @@ private:
     sg.get(state_, cfg);
 
     size_t shadows = (rand() % 8);
-    for(size_t i = 0; i < shadows; ++i) {
+    for (size_t i = 0; i < shadows; ++i) {
       stringstream ss;
       ss << "var" << i;
       state_.shadow[ss.str()] = rand();

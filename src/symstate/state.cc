@@ -61,7 +61,7 @@ void SymState::build_from_cpustate(const CpuState& cs) {
       uint8_t value = mem[addr];
       auto addr_bv = SymBitVector::constant(64, addr);
       auto val_bv = SymBitVector::constant(8, value);
-      DereferenceInfo di; 
+      DereferenceInfo di;
       di.stack_dereference = is_stack;
       fm->write(addr_bv, val_bv, 8, di);
     }

@@ -18,7 +18,7 @@
 #include "src/validator/invariant.h"
 
 namespace stoke {
-class DisjunctionInvariant : public Invariant { 
+class DisjunctionInvariant : public Invariant {
 public:
   using Invariant::check;
 
@@ -43,7 +43,7 @@ public:
   }
 
   void get_dereference_map(DereferenceMap& deref_map, const CpuState& target, const CpuState& rewrite, size_t& number) override {
-    for(auto it : invariants_) {
+    for (auto it : invariants_) {
       it->get_dereference_map(deref_map, target, rewrite, number);
       number++;
     }
@@ -106,7 +106,7 @@ public:
   virtual std::ostream& serialize(std::ostream& out) const override {
     out << "DisjunctionInvariant" << std::endl;
     out << invariants_.size() << std::endl;
-    for(auto it : invariants_) {
+    for (auto it : invariants_) {
       it->serialize(out);
     }
     return out;
@@ -115,7 +115,7 @@ public:
   DisjunctionInvariant(std::istream& is) {
     size_t count;
     is >> count;
-    for(size_t i = 0; i < count; ++i) {
+    for (size_t i = 0; i < count; ++i) {
       invariants_.push_back(Invariant::deserialize(is));
       CHECK_STREAM(is);
     }
@@ -123,13 +123,13 @@ public:
 
   std::shared_ptr<Invariant> clone() const override {
     std::vector<std::shared_ptr<Invariant>> new_invs;
-    for(auto inv : invariants_)
+    for (auto inv : invariants_)
       new_invs.push_back(inv->clone());
     return std::make_shared<DisjunctionInvariant>(new_invs);
   }
 
 
- std::ostream& write_pretty(std::ostream& os) const override {
+  std::ostream& write_pretty(std::ostream& os) const override {
 
     if (invariants_.size() == 0) {
       os << "    true" << std::endl;

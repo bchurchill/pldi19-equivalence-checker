@@ -89,11 +89,11 @@ public:
     return empty;
   }
 
-  bool is_valid(const std::vector<CpuState>& target_tcs, const std::vector<CpuState>& rewrite_tcs) const 
+  bool is_valid(const std::vector<CpuState>& target_tcs, const std::vector<CpuState>& rewrite_tcs) const
   {
     auto vars = get_variables();
-    for(auto v : vars) {
-      if(!v.is_valid(target_tcs, rewrite_tcs)) {
+    for (auto v : vars) {
+      if (!v.is_valid(target_tcs, rewrite_tcs)) {
         return false;
       }
     }

@@ -37,7 +37,7 @@ public:
       dev_urandom.read(random_bytes, 8);
       dev_urandom.close();
       uint64_t random_int = 0;
-      for(size_t i = 0; i < 8; ++i) 
+      for (size_t i = 0; i < 8; ++i)
         random_int = (random_int << 8) | (uint64_t)random_bytes[i];
       std::cout << "Seeding with " << random_int << std::endl;
 

@@ -4,9 +4,9 @@
 
 namespace stoke {
 
-  const char version_info[] = {
-    #include "git-version.inc"
-  };
+const char version_info[] = {
+#include "git-version.inc"
+};
 
 }
 

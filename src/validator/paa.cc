@@ -119,7 +119,7 @@ void ProgramAlignmentAutomata::remove_prefix(const CfgPath& tr1, DataCollector::
 /** Here we trace one test case through the Automata along every possible path.
   Returns false on error. */
 bool ProgramAlignmentAutomata::learn_state_data(const DataCollector::Trace& orig_target_trace,
-                                    const DataCollector::Trace& orig_rewrite_trace) {
+    const DataCollector::Trace& orig_rewrite_trace) {
 
   /** Copy traces */
   auto target_trace = orig_target_trace;
@@ -174,9 +174,9 @@ bool ProgramAlignmentAutomata::learn_state_data(const DataCollector::Trace& orig
       }
 
       DEBUG_LEARN_STATE_DATA(
-      cout << "[lsd] processing trace state @ " << tr_state.state << endl;
-      cout << "[lsd]            target rem  = " << DataCollector::project_states(tr_state.target_trace) << endl;
-      cout << "[lsd]            rewrite rem = " << DataCollector::project_states(tr_state.rewrite_trace) << endl;)
+        cout << "[lsd] processing trace state @ " << tr_state.state << endl;
+        cout << "[lsd]            target rem  = " << DataCollector::project_states(tr_state.target_trace) << endl;
+        cout << "[lsd]            rewrite rem = " << DataCollector::project_states(tr_state.rewrite_trace) << endl;)
       bool found_matching_edge = false;
 
       for (auto edge : next_edges_[tr_state.state]) {
@@ -190,8 +190,8 @@ bool ProgramAlignmentAutomata::learn_state_data(const DataCollector::Trace& orig
             cout << blk << "  ";
             cout << endl;)
 
-        // check if edge's target path is prefix of tr_state's target path
-        auto te_copy = edge.te;
+            // check if edge's target path is prefix of tr_state's target path
+            auto te_copy = edge.te;
         te_copy.push_back(edge.to.ts);
         if (!is_prefix(te_copy, tr_state.target_trace)) {
           DEBUG_LEARN_STATE_DATA(cout << "     target prefix fail" << endl;)
@@ -236,11 +236,11 @@ bool ProgramAlignmentAutomata::learn_state_data(const DataCollector::Trace& orig
         data_reachable_states_.insert(follow.state);
 
         DEBUG_LEARN_STATE_DATA(std::cout << "   - REACHABLE: " << follow.state << std::endl;
-        cout << "drs: ";
-        for(auto it : data_reachable_states_) {
-          cout << it << "    ";
-        }
-        cout << endl;)
+                               cout << "drs: ";
+        for (auto it : data_reachable_states_) {
+        cout << it << "    ";
+      }
+      cout << endl;)
       }
 
       if (!found_matching_edge) {
@@ -303,7 +303,7 @@ bool ProgramAlignmentAutomata::learn_invariants(InvariantLearner& learner, Impli
   rewrite_.recompute();
 
   cout << "drs: ";
-  for(auto it : data_reachable_states_) {
+  for (auto it : data_reachable_states_) {
     cout << it << "    ";
   }
   cout << endl;
@@ -338,7 +338,7 @@ bool ProgramAlignmentAutomata::learn_invariants(InvariantLearner& learner, Impli
     // TODO: if there aren't enough states here, sound a warning
     auto target_state_count = target_state_data_[state].size();
     auto rewrite_state_count = rewrite_state_data_[state].size();
-    cout << "[learn_invariants] learning over " << target_state_count << " target states and " 
+    cout << "[learn_invariants] learning over " << target_state_count << " target states and "
          << rewrite_state_count << " rewrite states" << endl;
 
     auto inv = learner.learn(target_.def_outs(state.ts), rewrite_.def_outs(state.rs),
@@ -349,7 +349,7 @@ bool ProgramAlignmentAutomata::learn_invariants(InvariantLearner& learner, Impli
     cout << "[learn_invariants] Invariant at " << state << ": " << *inv << endl;
 
     /** Check to make sure we got an invariant. */
-    if(inv->size() == 0)
+    if (inv->size() == 0)
       return false;
   }
 
@@ -403,7 +403,9 @@ void ProgramAlignmentAutomata::print_all() const {
     }
   }
 
-  for(auto state : {exit_state(), fail_state()}) {
+  for (auto state : {
+         exit_state(), fail_state()
+       }) {
     cout << "STATE " << state << endl;
     auto conj = get_invariant(state);
     conj->write_pretty(cout);
@@ -494,7 +496,7 @@ std::set<ProgramAlignmentAutomata::State> ProgramAlignmentAutomata::get_edge_rea
       //cout << "[sanity] from " << r << endl;
       for (auto p : next_states(r)) {
         //cout << "[sanity]    inserting " << p << endl;
-        if(p == fail_state())
+        if (p == fail_state())
           continue;
         global_reachable.insert(p);
       }
@@ -515,7 +517,7 @@ std::set<CfgPath> ProgramAlignmentAutomata::get_cfg_fringe(const Cfg& cfg, State
   vector<CfgPath> safe_paths;
   auto safe_edges = next_edges(state);
   DEBUG_CFG_FRINGE("safe paths" << endl)
-  for(auto edge : safe_edges) {
+  for (auto edge : safe_edges) {
     auto& path = is_rewrite ? edge.re : edge.te;
     safe_paths.push_back(path);
     DEBUG_CFG_FRINGE("   " << path << endl)
@@ -530,40 +532,40 @@ std::set<CfgPath> ProgramAlignmentAutomata::get_cfg_fringe(const Cfg& cfg, State
   //for(auto it = cfg.succ_begin(starting_block); it != cfg.succ_end(starting_block); ++it) {
   //  current_paths.push_back({ *it });
   //}
-  while(current_paths.size()) {
+  while (current_paths.size()) {
 
     DEBUG_CFG_FRINGE("current paths" << endl)
 
     // find all of the next paths
     next_paths.clear();
-    for(const auto& cp : current_paths) {
+    for (const auto& cp : current_paths) {
       DEBUG_CFG_FRINGE("   " << cp << endl)
       assert(cp.size() > 0);
       auto last_block = cp[cp.size() - 1];
-      for(auto it = cfg.succ_begin(last_block); it != cfg.succ_end(last_block); ++it) {
+      for (auto it = cfg.succ_begin(last_block); it != cfg.succ_end(last_block); ++it) {
         auto new_path = cp;
         new_path.push_back(*it);
         next_paths.push_back(new_path);
-      }  
+      }
     }
 
     // if any of the next paths are not covered by the safe edges, add it to
     // the solution set
-    if(next_paths.size()) {
+    if (next_paths.size()) {
       vector<size_t> to_remove;
       DEBUG_CFG_FRINGE("next paths" << endl)
       assert(next_paths.size() > 0);
-      for(int i = (int)next_paths.size()-1; i >= 0; --i) {
+      for (int i = (int)next_paths.size()-1; i >= 0; --i) {
         assert((size_t)i < next_paths.size() && (size_t)i >= 0);
         const auto& np = next_paths[i];
         bool in_answers = true;
-        for(const auto& sp : safe_paths) {
-          if(CfgPaths::is_prefix(np, sp) && np != sp) {
+        for (const auto& sp : safe_paths) {
+          if (CfgPaths::is_prefix(np, sp) && np != sp) {
             in_answers = false;
             break;
           }
         }
-        if(in_answers) {
+        if (in_answers) {
           DEBUG_CFG_FRINGE("   " << np << "  (output)" << endl)
           outputs.insert(np);
           to_remove.push_back(i);
@@ -572,7 +574,7 @@ std::set<CfgPath> ProgramAlignmentAutomata::get_cfg_fringe(const Cfg& cfg, State
         }
       }
 
-      for(auto item : to_remove) {
+      for (auto item : to_remove) {
         assert(item < next_paths.size());
         next_paths.erase(next_paths.begin() + item);
       }
@@ -588,10 +590,10 @@ std::vector<ProgramAlignmentAutomata::Edge> ProgramAlignmentAutomata::compute_fa
 
   /** for each state */
   auto states = get_edge_reachable_states();
-  for(auto state : states) {
-    if(state == exit_state())
+  for (auto state : states) {
+    if (state == exit_state())
       continue;
-    if(state == fail_state())
+    if (state == fail_state())
       continue;
 
     /** get the "fringe" points on each of the target and rewrite CFGs */
@@ -602,23 +604,23 @@ std::vector<ProgramAlignmentAutomata::Edge> ProgramAlignmentAutomata::compute_fa
 
     /** for every pair of fringe points, figure out if the comparison is needed. */
     auto edges = next_edges(state);
-    for(auto target_path : target_fringe) {
-      for(auto rewrite_path : rewrite_fringe) {
+    for (auto target_path : target_fringe) {
+      for (auto rewrite_path : rewrite_fringe) {
         //cout << "Considering target_path=" << target_path;
         //cout << " rewrite_path=" << rewrite_path << endl;
         bool match = false;
-        
-        for(auto edge : edges) {
-         // cout << "   Considering edge=" << edge << endl;
-          if(CfgPaths::is_prefix(edge.te, target_path) && 
-             CfgPaths::is_prefix(edge.re, rewrite_path)) {
+
+        for (auto edge : edges) {
+          // cout << "   Considering edge=" << edge << endl;
+          if (CfgPaths::is_prefix(edge.te, target_path) &&
+              CfgPaths::is_prefix(edge.re, rewrite_path)) {
             //cout << "      * match found!" << endl;
             match = true;
             break;
           }
         }
 
-        if(!match) {
+        if (!match) {
           Edge e;
           e.te = target_path;
           e.re = rewrite_path;
@@ -665,7 +667,7 @@ ProgramAlignmentAutomata::Edge ProgramAlignmentAutomata::Edge::deserialize(std::
 }
 
 void ProgramAlignmentAutomata::serialize(std::ostream& os) const {
-  stoke::serialize<Cfg>(os, target_);  
+  stoke::serialize<Cfg>(os, target_);
   stoke::serialize<Cfg>(os, rewrite_);
   stoke::serialize<map<State, vector<Edge>>>(os, next_edges_);
   stoke::serialize<map<State, vector<Edge>>>(os, prev_edges_);
@@ -694,31 +696,31 @@ bool ProgramAlignmentAutomata::one_program_cycle(State s, bool is_target)  const
   queue<State> worklist;
   worklist.push(s);
 
-  while(worklist.size()) {
+  while (worklist.size()) {
     State t = worklist.front();
     worklist.pop();
     DEBUG_IN_CYCLE(cout << "[in_cycle] visiting " << t << endl;)
-    if(next_edges_.count(t) == 0)
+    if (next_edges_.count(t) == 0)
       continue;
     auto next = next_edges_.at(t);
-    for(auto e : next) {
+    for (auto e : next) {
       DEBUG_IN_CYCLE(cout << "[in_cycle] considering edge " << e << endl;)
-      if(is_target && e.re.size() != 0) {
+      if (is_target && e.re.size() != 0) {
         DEBUG_IN_CYCLE(cout << "[in_cycle]    skipping -- nonempty rewrite edge" << endl;)
         continue;
       }
-      if(!is_target && e.te.size() != 0) {
+      if (!is_target && e.te.size() != 0) {
         DEBUG_IN_CYCLE(cout << "[in_cycle]    skipping -- nonempty target edge" << endl;)
         continue;
       }
 
       auto u = e.to;
       DEBUG_IN_CYCLE(cout << "[in_cycle]     next is " << u << endl;)
-      if(u == s) {
+      if (u == s) {
         DEBUG_IN_CYCLE(cout << "[in_cycle] returning true for " << s << endl;)
         return true;
       }
-      if(!visited[u]) {
+      if (!visited[u]) {
         worklist.push(u);
         visited[u] = true;
       }
@@ -736,18 +738,18 @@ bool ProgramAlignmentAutomata::in_scc(State s) const {
   queue<State> worklist;
   worklist.push(s);
 
-  while(worklist.size()) {
+  while (worklist.size()) {
     State t = worklist.front();
     worklist.pop();
     DEBUG_IN_SCC(cout << "[in_scc] visiting " << t << endl;)
     auto next = next_states(t);
-    for(auto u : next) {
+    for (auto u : next) {
       DEBUG_IN_SCC(cout << "[in_scc]     next is " << u << endl;)
-      if(u == s) {
+      if (u == s) {
         DEBUG_IN_SCC(cout << "[in_scc] returning true for " << s << endl;)
         return true;
       }
-      if(!visited[u]) {
+      if (!visited[u]) {
         worklist.push(u);
         visited[u] = true;
       }
@@ -767,25 +769,25 @@ bool ProgramAlignmentAutomata::simplify() {
   auto end = exit_state();
 
   bool fixpoint = false;
-  while(!fixpoint) {
+  while (!fixpoint) {
     fixpoint = true;
     auto edge_reachable = get_edge_reachable_states();
     //cout << "[simplify] starting fixpoint iteration" << endl;
-    for(auto s = edge_reachable.rbegin(); s != edge_reachable.rend(); s++) {
-      if(*s == start)
+    for (auto s = edge_reachable.rbegin(); s != edge_reachable.rend(); s++) {
+      if (*s == start)
         continue;
-      if(*s == end)
+      if (*s == end)
         continue;
 
-      if(has_self_loop(*s))
+      if (has_self_loop(*s))
         continue;
 
       //cout << "[simplify] State " << s << " not in SCC; trying to remove." << endl;
-      auto edges_in = prev_edges(*s); 
+      auto edges_in = prev_edges(*s);
       auto edges_out = next_edges(*s);
 
-      for(auto in : edges_in) {
-        for(auto out : edges_out) {
+      for (auto in : edges_in) {
+        for (auto out : edges_out) {
           Edge e = in;
           e.to = out.to;
           e.te.insert(e.te.end(), out.te.begin(), out.te.end());
@@ -795,11 +797,11 @@ bool ProgramAlignmentAutomata::simplify() {
         }
       }
 
-      for(auto in : edges_in) {
+      for (auto in : edges_in) {
         //cout << "[simplify] removing edge " << in << endl;
         remove_edge(in);
       }
-      for(auto out : edges_out) {
+      for (auto out : edges_out) {
         //cout << "[simplify] removing edge " << out << endl;
         remove_edge(out);
       }
@@ -815,14 +817,14 @@ bool ProgramAlignmentAutomata::simplify() {
 
   /** Step 2: Remove edges where another edge is a prefix. */
   auto states = get_edge_reachable_states();
-  for(auto s : states) {
-    // check for any edges which are the prefix of another 
+  for (auto s : states) {
+    // check for any edges which are the prefix of another
     auto edges = next_edges_[s];
     set<Edge> edges_to_remove;
 
-    for(size_t i = 0; i < edges.size(); ++i) {
-      for(size_t j = 0; j < edges.size(); ++j) {
-        if(i == j)
+    for (size_t i = 0; i < edges.size(); ++i) {
+      for (size_t j = 0; j < edges.size(); ++j) {
+        if (i == j)
           continue;
 
         auto first = edges[i];
@@ -839,8 +841,8 @@ bool ProgramAlignmentAutomata::simplify() {
         second_rewrite_edge.push_back(second.to.rs);
 
 
-        if(CfgPaths::is_prefix(first_target_edge, second_target_edge) &&
-           CfgPaths::is_prefix(first_rewrite_edge, second_rewrite_edge)) {
+        if (CfgPaths::is_prefix(first_target_edge, second_target_edge) &&
+            CfgPaths::is_prefix(first_rewrite_edge, second_rewrite_edge)) {
           // remove 'second'
           edges_to_remove.insert(second);
           changes_made = true;
@@ -848,12 +850,12 @@ bool ProgramAlignmentAutomata::simplify() {
       }
     }
 
-    for(auto e : edges_to_remove)
+    for (auto e : edges_to_remove)
       remove_edge(e);
   }
 
   // redo until fixpoint
-  if(changes_made) 
+  if (changes_made)
     simplify();
 
   return changes_made;

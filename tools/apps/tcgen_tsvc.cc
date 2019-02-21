@@ -50,9 +50,9 @@ auto& num_tc = ValueArg<size_t>::create("num_testcases")
                .default_val(16);
 
 auto& segment_length = ValueArg<size_t>::create("segment_length")
-               .usage("<int>")
-               .description("The length of each segment to create in ints")
-               .default_val(128);
+                       .usage("<int>")
+                       .description("The length of each segment to create in ints")
+                       .default_val(128);
 
 int main(int argc, char** argv) {
 
@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
     0x0,
     0x0,
     0x0,
-    
+
     0x4,
     0x0,
     0x0,
@@ -294,7 +294,7 @@ int main(int argc, char** argv) {
     // LLVM read-only data
     Memory llvm;
     llvm.resize(llvm_segment_start, 32);
-    for(size_t i = 0; i < llvm_segment.size(); ++i) {
+    for (size_t i = 0; i < llvm_segment.size(); ++i) {
       uint64_t addr = llvm_segment_start + i;
       llvm.set_valid(addr, true);
       llvm[addr] = llvm_segment[i];
@@ -304,19 +304,19 @@ int main(int argc, char** argv) {
     // GCC read-only data
     Memory gcc;
     gcc.resize(gcc_segment_start, 1024);
-    for(size_t i = 0; i < gcc_segment.size(); ++i) {
+    for (size_t i = 0; i < gcc_segment.size(); ++i) {
       uint64_t addr = gcc_segment_start + i;
       gcc.set_valid(addr, true);
       gcc[addr] = gcc_segment[i];
     }
     tc.segments.push_back(gcc);
 
-    for(size_t i = 0; i < segment_locations.size(); ++i) {
+    for (size_t i = 0; i < segment_locations.size(); ++i) {
       auto start = segment_locations[i];
       auto length = segment_lengths[i];
       Memory m;
       m.resize(start, length+256);
-      for(size_t j = 0; j < length; ++j) {
+      for (size_t j = 0; j < length; ++j) {
         m.set_valid(start+j, true);
         m[start+j] = rand() % 256;
       }

@@ -26,17 +26,17 @@ ostream& operator<<(ostream& os, const stoke::Invariant& inv) {
 using namespace std;
 using namespace stoke;
 
-void Invariant::get_dereference_map(DereferenceMap& deref_map, 
-                                    const CpuState& target, 
-                                    const CpuState& rewrite, 
+void Invariant::get_dereference_map(DereferenceMap& deref_map,
+                                    const CpuState& target,
+                                    const CpuState& rewrite,
                                     size_t& number) {
 
   auto vars = get_variables();
   vector<Variable> memory_variables;
 
-  for(auto var : vars) {
+  for (auto var : vars) {
     //cout << "Looking at " << var << endl;
-    if(var.is_dereference()) {
+    if (var.is_dereference()) {
       //cout << "  Memory dereference!" << endl;
       memory_variables.push_back(var);
     } else {
@@ -44,7 +44,7 @@ void Invariant::get_dereference_map(DereferenceMap& deref_map,
     }
   }
 
-  if(memory_variables.size() > 0) {
+  if (memory_variables.size() > 0) {
     auto var = memory_variables[0];
     //cout << "Processing variable " << var << " number=" << number << endl;
     //if(var.is_valid(target, rewrite)) {
@@ -68,8 +68,8 @@ std::shared_ptr<Invariant> Invariant::deserialize(istream& in) {
   in >> ws >> class_name;
   CHECK_STREAM(in);
 
-  if(class_name == "ConjunctionInvariant") {
-    return std::make_shared<ConjunctionInvariant>(in);    
+  if (class_name == "ConjunctionInvariant") {
+    return std::make_shared<ConjunctionInvariant>(in);
   } else if (class_name == "DisjunctionInvariant") {
     return std::make_shared<DisjunctionInvariant>(in);
   } else if (class_name == "EqualityInvariant") {

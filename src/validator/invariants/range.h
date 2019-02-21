@@ -45,11 +45,11 @@ public:
   }
 
   std::ostream& write(std::ostream& os) const {
-    if(min_ > 0 && max_ < (uint64_t)(-1)) {
+    if (min_ > 0 && max_ < (uint64_t)(-1)) {
       os << min_ << " ≤ " << variable_ << " ≤ " << max_;
     } else if (min_ > 0) {
       os << min_ << " ≤ " << variable_;
-    } else if (max_ < (uint64_t)(-1)){
+    } else if (max_ < (uint64_t)(-1)) {
       os << variable_ << " ≤ " << max_;
     } else {
       os << "true";
@@ -72,7 +72,7 @@ public:
 
   RangeInvariant(std::istream& is) : variable_(is) {
     CHECK_STREAM(is);
-    is >> min_ >> max_; 
+    is >> min_ >> max_;
     CHECK_STREAM(is);
 
   }

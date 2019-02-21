@@ -41,7 +41,7 @@ public:
     assert(size() == other.size());
     auto sz = size();
     IntVector result(sz);
-    for(size_t i = 0; i < sz; ++i)
+    for (size_t i = 0; i < sz; ++i)
       result[i] = (*this)[i] + other[i];
     return result;
   }

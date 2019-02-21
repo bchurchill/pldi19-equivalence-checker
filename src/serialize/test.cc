@@ -32,7 +32,7 @@ struct A {
 int A::counter = 0;
 
 int main(int argc, char** argv) {
-  if(argc == 1) {
+  if (argc == 1) {
     stoke::serialize(cout, 5);
     vector<int> x = { 2, 3, 4};
     stoke::serialize(cout, x);
@@ -45,11 +45,11 @@ int main(int argc, char** argv) {
     cout << "5 = " << x << endl;
     auto ys = stoke::deserialize<vector<int>>(cin);
     cout << "vector = ";
-    for(auto it : ys)
+    for (auto it : ys)
       cout << it << endl;
     auto as = stoke::deserialize<vector<A>>(cin);
     cout << "as = " << endl;
-    for(auto it : as)
+    for (auto it : as)
       cout << it.me << endl;
     A b = stoke::deserialize<A>(cin);
     cout << "b = " << b.me << endl;

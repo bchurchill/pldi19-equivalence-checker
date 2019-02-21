@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
   cout << "Analyzing " << target_tcs.size() << " testcases." << endl;
 
 
-  ImplicationGraph ig(target, rewrite); 
+  ImplicationGraph ig(target, rewrite);
   auto invs = learner.learn(target_regs_arg.value(), rewrite_regs_arg.value(),
                             target_tcs, rewrite_tcs, ig,
                             target_flag_arg.value(), rewrite_flag_arg.value());

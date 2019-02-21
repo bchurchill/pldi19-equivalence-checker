@@ -11,8 +11,8 @@ namespace stoke {
 
 class ImplicationGraph {
 
-  public:
-    
+public:
+
   ImplicationGraph(const Cfg& target, const Cfg& rewrite) :
     target_(target), rewrite_(rewrite), smt_() {
     set_separate_stack(false);
@@ -29,7 +29,7 @@ class ImplicationGraph {
     //if(replacements_.count(inv))
     //  return replacements_[inv].size() > 0;
     //else
-      return false;
+    return false;
   }
 
   void add_replacement(std::shared_ptr<Invariant> inv, std::shared_ptr<Invariant> replacement) {

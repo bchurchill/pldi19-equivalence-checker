@@ -101,13 +101,13 @@ public:
     ImplicationGraph& graph,
     std::string target_cc = "",
     std::string rewrite_cc = ""
-    );
+  );
 
   /** Learn linear equalities over some columns of data */
   std::vector<std::shared_ptr<Invariant>> learn_equalities(
-    std::vector<Variable>,
-    const std::vector<CpuState>&,
-    const std::vector<CpuState>&);
+                                         std::vector<Variable>,
+                                         const std::vector<CpuState>&,
+                                         const std::vector<CpuState>&);
 
 
 private:
@@ -131,16 +131,16 @@ private:
   /** Learn that a variable is constant over many states, AND,
     remove the variable from the referenced set of columns. */
   std::vector<std::shared_ptr<Invariant>> learn_constants(
-    std::vector<Variable>& columns,
-    const std::vector<CpuState>& target_states,
-    const std::vector<CpuState>& rewrite_states);
+                                         std::vector<Variable>& columns,
+                                         const std::vector<CpuState>& target_states,
+                                         const std::vector<CpuState>& rewrite_states);
 
   /** Learn that two variables are equal over many states, AND,
     remove the variable from the referenced set of columns. */
   std::vector<std::shared_ptr<Invariant>> learn_easy_equalities(
-    std::vector<Variable>& columns,
-    const std::vector<CpuState>& target_states,
-    const std::vector<CpuState>& rewrite_states);
+                                         std::vector<Variable>& columns,
+                                         const std::vector<CpuState>& target_states,
+                                         const std::vector<CpuState>& rewrite_states);
 
   /** Learn a single invariant, without regard for flags. */
   std::shared_ptr<ConjunctionInvariant> learn_simple(
@@ -152,46 +152,46 @@ private:
 
   /** Overapproximate set of possible inequality invariants. */
   std::vector<std::shared_ptr<InequalityInvariant>> build_inequality_invariants
-  (x64asm::RegSet target_regs, x64asm::RegSet rewrite_regs,
-   ImplicationGraph& graph) const;
+      (x64asm::RegSet target_regs, x64asm::RegSet rewrite_regs,
+       ImplicationGraph& graph) const;
 
   /** Overapproximate set of possible memory-register equality invariants. */
   std::vector<std::shared_ptr<EqualityInvariant>> build_memory_register_equalities
-  (x64asm::RegSet target_regs, x64asm::RegSet rewrite_regs) const;
+      (x64asm::RegSet target_regs, x64asm::RegSet rewrite_regs) const;
 
   /** Set of inequalities with constants */
   std::vector<std::shared_ptr<InequalityInvariant>> build_inequality_with_constant_invariants(
-    x64asm::RegSet target_regs, 
-    x64asm::RegSet rewrite_regs, 
-    const std::vector<CpuState>& target_states, 
-    const std::vector<CpuState>& rewrite_states);
+        x64asm::RegSet target_regs,
+        x64asm::RegSet rewrite_regs,
+        const std::vector<CpuState>& target_states,
+        const std::vector<CpuState>& rewrite_states);
 
   /** Create set of invariants of form x - y == c (mod N) that
    hold over given data. */
   std::vector<std::shared_ptr<EqualityInvariant>> build_modulo_invariants(
-    x64asm::RegSet target_regs, 
-    x64asm::RegSet rewrite_regs, 
-    const std::vector<CpuState>& target_states, 
-    const std::vector<CpuState>& rewrite_states) const;
+        x64asm::RegSet target_regs,
+        x64asm::RegSet rewrite_regs,
+        const std::vector<CpuState>& target_states,
+        const std::vector<CpuState>& rewrite_states) const;
 
   /** Create set of invariants of form x - y == c (mod N) that
    hold over given data. */
   std::vector<std::shared_ptr<RangeInvariant>> build_range_invariants(
-    x64asm::RegSet target_regs, 
-    x64asm::RegSet rewrite_regs, 
-    const std::vector<CpuState>& target_states, 
-    const std::vector<CpuState>& rewrite_states) const;
+        x64asm::RegSet target_regs,
+        x64asm::RegSet rewrite_regs,
+        const std::vector<CpuState>& target_states,
+        const std::vector<CpuState>& rewrite_states) const;
 
   /** Get all variables corresponding to relevant sub-variables of a register. */
   std::vector<Variable> sub_registers_for_regset(x64asm::RegSet rs, bool is_rewrite) const;
 
   std::vector<std::shared_ptr<NonzeroInvariant>> build_memory_null_invariants(
-      x64asm::RegSet target_regs, x64asm::RegSet rewrite_regs) const;
+        x64asm::RegSet target_regs, x64asm::RegSet rewrite_regs) const;
 
 
   /** Create a single MemoryEqualityInvariant */
   std::shared_ptr<MemoryEqualityInvariant> learn_memory_equality(
-      const std::vector<CpuState>&, const std::vector<CpuState>&, x64asm::RegSet, x64asm::RegSet) const;
+    const std::vector<CpuState>&, const std::vector<CpuState>&, x64asm::RegSet, x64asm::RegSet) const;
   /** For printing output when learn_memory_equality fails. */
   void debug_memory_nonequivalent(
     const std::vector<CpuState>& target_states,

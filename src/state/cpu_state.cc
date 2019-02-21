@@ -259,9 +259,9 @@ bool CpuState::memory_from_map(std::unordered_map<uint64_t, BitVector>& concrete
   DEBUG_MEMORY_FROM_MAP(cout << "[memory_from_map] stack_address = " << stack_address << endl;)
   size_t segment_for_stack = (size_t)(-1);
   int segments_placed = 0;
-  for(size_t i = 0; i < my_segments.size(); ++i) {
+  for (size_t i = 0; i < my_segments.size(); ++i) {
     auto segment = my_segments[i];
-    if(segment.in_range(stack_address)) {
+    if (segment.in_range(stack_address)) {
       DEBUG_MEMORY_FROM_MAP(cout << "[memory_from_map] found stack mapping" << endl;)
       segment_for_stack = i;
       stack = segment;
@@ -272,11 +272,11 @@ bool CpuState::memory_from_map(std::unordered_map<uint64_t, BitVector>& concrete
 
   // place the rest of the segments into the test case
   segments.clear();
-  
-  for(size_t i = 0; i < my_segments.size(); ++i) {
-    if(i == segment_for_stack)
+
+  for (size_t i = 0; i < my_segments.size(); ++i) {
+    if (i == segment_for_stack)
       continue;
-    if(segments_placed == 0) {
+    if (segments_placed == 0) {
       DEBUG_MEMORY_FROM_MAP(cout << "[memory_from_map] placing stack" << endl;)
       stack = my_segments[i];
     } else if (segments_placed == 1) {
@@ -353,7 +353,7 @@ ostream& CpuState::write_text(ostream& os) const {
 
   os << shadow.size() << " shadow variable(s)" << endl;
 
-  for(auto pair : shadow) {
+  for (auto pair : shadow) {
     os << "shadow " << pair.first << " " << pair.second << endl;
   }
 
@@ -401,11 +401,11 @@ istream& CpuState::read_shadow_vars(istream& is) {
   }
   CHECK_STREAM(is);
 
-  for(size_t i = 0; i < n; ++i) {
+  for (size_t i = 0; i < n; ++i) {
     is >> ws;
     is >> s >> name >> value;
     CHECK_STREAM(is);
-    if(s != "shadow") {
+    if (s != "shadow") {
       fail(is) << "Expected 'shadow' but got \"" << s << "\"." << endl;
       return is;
     }
@@ -490,7 +490,7 @@ istream& CpuState::read_text(istream& is) {
     read_shadow_vars(is);
     CHECK_STREAM(is);
   }
-  
+
   return is;
 }
 
@@ -503,15 +503,15 @@ void CpuState::serialize(ostream& os) const {
 CpuState CpuState::deserialize(istream& is) {
   stringstream ss;
   bool started = false;
-  while(is.good()) {
+  while (is.good()) {
     string line;
     getline(is, line);
-    if(line == "==CPU START==") {
+    if (line == "==CPU START==") {
       started = true;
-    } else if(line == "==CPU END==") {
+    } else if (line == "==CPU END==") {
       started = false;
       break;
-    } else if(started) {
+    } else if (started) {
       ss << line << endl;
     }
   }

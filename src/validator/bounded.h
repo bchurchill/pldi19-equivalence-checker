@@ -45,7 +45,7 @@ public:
   }
 
   BoundedValidator(const BoundedValidator& other) :
-    Validator(other), target_final_state_(), rewrite_final_state_() 
+    Validator(other), target_final_state_(), rewrite_final_state_()
   {
     set_bound(other.bound_);
     set_no_bailout(other.bailout_);
@@ -117,7 +117,7 @@ private:
   void callback(ObligationChecker::Result& result, CallbackData& info);
 
   /** Dispatch a pair of paths to obligation checker. */
-  void verify_pair(const Cfg& target, const Cfg& rewrite, 
+  void verify_pair(const Cfg& target, const Cfg& rewrite,
                    const CfgPath& p, const CfgPath& q,
                    ObligationChecker::Callback&);
 

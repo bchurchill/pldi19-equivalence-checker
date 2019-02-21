@@ -18,7 +18,7 @@
 
 namespace stoke {
 
-class SerializeTest : public ::testing::Test { 
+class SerializeTest : public ::testing::Test {
 
 protected:
   template<typename T>

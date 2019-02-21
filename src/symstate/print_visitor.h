@@ -243,8 +243,8 @@ public:
   void visit(const SymBoolForAll * const b) {
     os_ << "∀";
     bool first = true;
-    for(auto v : b->vars_) {
-      if(!first)
+    for (auto v : b->vars_) {
+      if (!first)
         os_ << ", ";
       os_ << v.name_;
       first = false;

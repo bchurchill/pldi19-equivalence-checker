@@ -25,25 +25,25 @@ using namespace stoke;
 
 
 bool ArmMemory::generate_constraints(
-    ArmMemory* am, 
-    std::vector<SymBool>& initial_constraints,
-    std::vector<SymBool>& all_constraints,
-    const DereferenceMaps& deref_maps) {
+  ArmMemory* am,
+  std::vector<SymBool>& initial_constraints,
+  std::vector<SymBool>& all_constraints,
+  const DereferenceMaps& deref_maps) {
 
   DEBUG_ARM(cout << "=========== PRINTING DEREFERENCE MAPS WOHOOOOOOOOOO =============" << endl;)
   DEBUG_ARM(
-  size_t count = 0;
-  for(auto& dm : deref_maps) {
-    cout << "==== MAP " << count++ << endl;
-    for(auto pair : dm) {
+    size_t count = 0;
+  for (auto& dm : deref_maps) {
+  cout << "==== MAP " << count++ << endl;
+  for (auto pair : dm) {
       auto di = pair.first;
       cout << "   is_rewrite: " << di.is_rewrite;
-      if(di.is_invariant)
+      if (di.is_invariant)
         cout << "; invariant: " << di.invariant_number;
       else
         cout << "; line: " << di.line_number;
       cout << " --> " << pair.second << endl;
-    } 
+    }
   }
   cout << "Map done..." << endl;
   )
@@ -56,7 +56,7 @@ bool ArmMemory::generate_constraints(
   //for(auto it : initial_constraints)
   //  cout << "initial_constraints = " << it << endl;
   bool sane = solver_.is_sat(initial_constraints);
-  if(!sane) {
+  if (!sane) {
     DEBUG_ARM(cout << "Initial constraints unsatisfiable... ARM is easy here :)" << endl;)
     return false;
   }
@@ -74,32 +74,32 @@ bool ArmMemory::generate_constraints(
 
   DEBUG_ARM(cout << "==== ARM ON " << all_accesses_.size() << " ACCESSES " << endl;)
   DEBUG_ARM(
-    for(size_t i = 0; i < all_accesses_.size(); ++i) {
-      cout << " ACCESS " << i << ":" << endl;
-      auto access = all_accesses_[i];  
-      auto di = access.deref;
-      cout << "      address = " << access.address << endl;
-      cout << "      value = " << access.value << endl;
-      cout << "      size = " << access.size << endl;
-      cout << "      write = " << access.write << endl;
-      cout << "      di.is_rewrite = " << (di.is_rewrite ? "true" : "false") << endl;
-      cout << "      di.is_invariant = " << (di.is_invariant ? "true" : "false") << endl;
-      cout << "      di.implicit = " << (di.implicit_dereference ? "true" : "false") << endl;
-      cout << "      di.line_number = " << di.line_number << endl;
-      cout << "      di.invariant_number = " << di.invariant_number << endl;
-      for(auto deref_map : deref_maps) {
-        if(deref_map.count(di) > 0) {
-          auto addr = deref_map[di];
-          cout << "      addr = " << addr << endl;
-        } else {
-          cout << "      ~~ addr missing from deref map ~~ " << endl;
-        }
+  for (size_t i = 0; i < all_accesses_.size(); ++i) {
+  cout << " ACCESS " << i << ":" << endl;
+  auto access = all_accesses_[i];
+    auto di = access.deref;
+    cout << "      address = " << access.address << endl;
+    cout << "      value = " << access.value << endl;
+    cout << "      size = " << access.size << endl;
+    cout << "      write = " << access.write << endl;
+    cout << "      di.is_rewrite = " << (di.is_rewrite ? "true" : "false") << endl;
+    cout << "      di.is_invariant = " << (di.is_invariant ? "true" : "false") << endl;
+    cout << "      di.implicit = " << (di.implicit_dereference ? "true" : "false") << endl;
+    cout << "      di.line_number = " << di.line_number << endl;
+    cout << "      di.invariant_number = " << di.invariant_number << endl;
+    for (auto deref_map : deref_maps) {
+      if (deref_map.count(di) > 0) {
+        auto addr = deref_map[di];
+        cout << "      addr = " << addr << endl;
+      } else {
+        cout << "      ~~ addr missing from deref map ~~ " << endl;
       }
     }
+  }
   )
 
   // 1. figure out relationships between offsets
-  if(deref_maps.size() > 0) {
+  if (deref_maps.size() > 0) {
     generate_constraints_offsets_data(initial_constraints, deref_maps);
   } else {
     generate_constraints_offsets_nodata(initial_constraints);
@@ -113,16 +113,16 @@ bool ArmMemory::generate_constraints(
 }
 
 void ArmMemory::generate_constraints_offsets_data(std::vector<SymBool>& initial_constraints,
-                                                  const DereferenceMaps& deref_maps) {
+    const DereferenceMaps& deref_maps) {
   UnionFind<size_t> unionfind;
 
   const auto& deref_map = deref_maps[0];
 
-  for(size_t i = 0; i < all_accesses_.size(); ++i) {
+  for (size_t i = 0; i < all_accesses_.size(); ++i) {
     auto i_access = all_accesses_[i];
     auto i_di = i_access.deref;
 
-    if(deref_map.count(i_di) == 0) {
+    if (deref_map.count(i_di) == 0) {
       DEBUG_ARM(cout << "-> Initial deref map has nothing for access " << i << endl;)
       continue;
     }
@@ -131,11 +131,11 @@ void ArmMemory::generate_constraints_offsets_data(std::vector<SymBool>& initial_
     auto components = unionfind.components();
     unionfind.add(i);
 
-    for(auto j : components) {
+    for (auto j : components) {
       auto j_access = all_accesses_[j];
       auto j_di = j_access.deref;
 
-      if(deref_map.count(j_di) == 0) {
+      if (deref_map.count(j_di) == 0) {
         DEBUG_ARM(cout << "-> Initial deref map has nothing for access " << j << endl;)
         continue;
       }
@@ -144,24 +144,24 @@ void ArmMemory::generate_constraints_offsets_data(std::vector<SymBool>& initial_
       auto diff = (j_addr - i_addr);
 
       bool works = true;
-      for(size_t k = 1; k < deref_maps.size(); ++k) {
+      for (size_t k = 1; k < deref_maps.size(); ++k) {
         auto& test_map = deref_maps[k];
 
         // skip any test cases that look inconclusive
-        if(!test_map.count(j_di) || !test_map.count(i_di))
+        if (!test_map.count(j_di) || !test_map.count(i_di))
           continue;
 
         // if the test case looks legit, see if it matches the first one
         auto j_addr_test = test_map.at(j_di);
         auto i_addr_test = test_map.at(i_di);
         auto diff_test = (j_addr_test - i_addr_test);
-        if(diff_test != diff) {
+        if (diff_test != diff) {
           works = false;
           break;
         }
       }
 
-      if(!works) {
+      if (!works) {
         DEBUG_ARM(cout << "-> No fixed relationship between accesses " << i << " , " << j << endl;)
         continue;
       }
@@ -188,7 +188,7 @@ void ArmMemory::generate_constraints_offsets_data(std::vector<SymBool>& initial_
       }
     }
   }
-} 
+}
 
 void ArmMemory::generate_constraints_offsets_nodata(std::vector<SymBool>& initial_constraints) {
   // 1. For every pair of memory accesses, perform up to three queries to determine if they belong in the same cell
@@ -324,15 +324,15 @@ bool ArmMemory::check_nonoverlapping(ArmMemory* am, const vector<SymBool>& initi
     of ranges of cell offsets that are consecutive. */
   std::map<size_t, UnionFind<uint64_t>> runs;
 
-  for(const auto& access : all_accesses_) {
+  for (const auto& access : all_accesses_) {
     auto& uf = runs[access.cell];
-    for(size_t i = 0; i < access.size/8; ++i) {
+    for (size_t i = 0; i < access.size/8; ++i) {
       uint64_t offset = access.cell_offset + i;
       uf.add(offset);
-      if(uf.contains(offset-1)) {
+      if (uf.contains(offset-1)) {
         uf.join(offset, offset-1);
       }
-      if(uf.contains(offset+1)) {
+      if (uf.contains(offset+1)) {
         uf.join(offset, offset+1);
       }
     }
@@ -341,11 +341,11 @@ bool ArmMemory::check_nonoverlapping(ArmMemory* am, const vector<SymBool>& initi
   /** Now, for each cell and each component we add a range. */
   map<size_t, vector<pair<SymBitVector, SymBitVector>>> ranges;
 
-  for(auto pair : runs) {
+  for (auto pair : runs) {
     auto cellid = pair.first;
     auto& uf = pair.second;
     auto components = uf.components();
-    for(auto component : components) {
+    for (auto component : components) {
       uint64_t low = component;
       uint64_t high = uf.max_value(component);
 
@@ -359,37 +359,37 @@ bool ArmMemory::check_nonoverlapping(ArmMemory* am, const vector<SymBool>& initi
 
   /** For each pair of cells, for each pair of ranges, we check that they're disjoint. */
   auto constraints = initial_constraints;
-  for(size_t i = 0; i < cells_.size(); ++i) {
-    for(size_t j = 0; j < cells_.size(); ++j) {
-      if(i <= j)
+  for (size_t i = 0; i < cells_.size(); ++i) {
+    for (size_t j = 0; j < cells_.size(); ++j) {
+      if (i <= j)
         continue;
 
       auto ranges_i = ranges[i];
       auto ranges_j = ranges[j];
 
-      for(auto range_i : ranges_i) {
-        for(auto range_j : ranges_j) {
+      for (auto range_i : ranges_i) {
+        for (auto range_j : ranges_j) {
 
 
           DEBUG_ARM(cout << "[check_nonoverlapping] Checking cell " << i << " , " << j
-                         << " with ranges " << range_i.first << " to " << range_i.second << " AND " 
-                         << range_j.first << " to " << range_j.second << endl;)
+                    << " with ranges " << range_i.first << " to " << range_i.second << " AND "
+                    << range_j.first << " to " << range_j.second << endl;)
 
           // check that range_i.first > range_j.second OR range_i.second < range_j.first
           auto check = (range_i.first > range_j.second) | (range_i.second < range_j.first);
           constraints.push_back(!check);
           bool passes = !solver_.is_sat(constraints) && !solver_.has_error();
           DEBUG_ARM(
-              if(solver_.has_error())
-                cout << "SOLVER ERROR: " << solver_.get_error() << endl;)
-          DEBUG_ARM(cout << "   PASSES: " << passes << endl;)
-          constraints.pop_back();
-          if(!passes)
+            if (solver_.has_error())
+            cout << "SOLVER ERROR: " << solver_.get_error() << endl;)
+            DEBUG_ARM(cout << "   PASSES: " << passes << endl;)
+            constraints.pop_back();
+          if (!passes)
             return false;
         }
       }
     }
-  }  
+  }
 
 
   return true;
@@ -404,25 +404,25 @@ bool ArmMemory::generate_constraints_given_no_cell_overlap(ArmMemory* am) {
   std::map<uint64_t, std::map<uint64_t, SymBitVector>> other_memory_locations;
 
   // first, figure out what the cells are
-  for(auto& access : all_accesses_) {
+  for (auto& access : all_accesses_) {
     auto& memloc = access.is_other ? other_memory_locations : my_memory_locations;
-    for(size_t i = 0; i < access.size/8; ++i) {
-      if(memloc[access.cell].count(access.cell_offset + i) == 0) {
+    for (size_t i = 0; i < access.size/8; ++i) {
+      if (memloc[access.cell].count(access.cell_offset + i) == 0) {
         memloc[access.cell][access.cell_offset + i] = SymBitVector::tmp_var(8);
       }
     }
   }
 
-  // second, construct a heap for each initial value.  
+  // second, construct a heap for each initial value.
   // TODO: we'll be much better off constructing one heap per cell
   //      will also help with modeling stack, etc.
-  for(size_t k = 0; k < 2; ++k) {
+  for (size_t k = 0; k < 2; ++k) {
     auto& memloc = k ? other_memory_locations : my_memory_locations;
     auto& heap = k ? am->heap_ : heap_;
 
-    for(auto pair : memloc) {
+    for (auto pair : memloc) {
       auto cell = cells_[pair.first];
-      for(auto pair2 : pair.second)
+      for (auto pair2 : pair.second)
         heap = heap.update(SymBitVector::constant(64, pair2.first) + cell.address, pair2.second);
     }
   }
@@ -430,24 +430,24 @@ bool ArmMemory::generate_constraints_given_no_cell_overlap(ArmMemory* am) {
   constraints_.push_back(am->start_variable_ == am->heap_);
 
   // now update the cells
-  for(auto & access : all_accesses_) {
+  for (auto & access : all_accesses_) {
     auto& memloc = access.is_other ? other_memory_locations : my_memory_locations;
-    if(access.write) 
-      for(size_t i = 0; i < access.size/8; ++i) 
+    if (access.write)
+      for (size_t i = 0; i < access.size/8; ++i)
         memloc[access.cell][access.cell_offset + i] = access.value[8*i+7][8*i];
-    else 
-      for(size_t i = 0; i < access.size/8; ++i)
+    else
+      for (size_t i = 0; i < access.size/8; ++i)
         constraints_.push_back(memloc[access.cell][access.cell_offset + i] == access.value[8*i+7][8*i]);
   }
 
   /** Create heap */
-  for(size_t k = 0; k < 2; ++k) {
+  for (size_t k = 0; k < 2; ++k) {
     auto& memloc = k ? other_memory_locations : my_memory_locations;
     auto& heap = k ? am->heap_ : heap_;
 
-    for(auto pair : memloc) {
+    for (auto pair : memloc) {
       auto cell = cells_[pair.first];
-      for(auto pair2 : pair.second)
+      for (auto pair2 : pair.second)
         heap = heap.update(SymBitVector::constant(64, pair2.first) + cell.address, pair2.second);
     }
   }
@@ -458,7 +458,7 @@ bool ArmMemory::generate_constraints_given_no_cell_overlap(ArmMemory* am) {
 
   return true;
 
-} 
+}
 
 void ArmMemory::generate_constraints_given_cells(ArmMemory* am, const vector<SymBool>& initial_constraints) {
 
@@ -468,7 +468,7 @@ void ArmMemory::generate_constraints_given_cells(ArmMemory* am, const vector<Sym
   //      ... You don't write it unless you need to read from another cell.
   //      ... You don't read it unless another cell performed a write.
 
-  if(cells_.size() == 1 || unsound_ || check_nonoverlapping(am, initial_constraints)) {
+  if (cells_.size() == 1 || unsound_ || check_nonoverlapping(am, initial_constraints)) {
     generate_constraints_given_no_cell_overlap(am);
     return;
   }
@@ -489,11 +489,11 @@ void ArmMemory::generate_constraints_given_cells(ArmMemory* am, const vector<Sym
       cout << "HEAP 1: " << heap_ << endl;
     for (auto cell : cells_) {
     cout << "  cell " << cell.index << ": dirty " << cell.dirty << " : " << cell.cache << endl;
-  }
-  cout << "HEAP 2: " << am->heap_ << endl;
-  for (auto cell : cells_) {
+    }
+    cout << "HEAP 2: " << am->heap_ << endl;
+    for (auto cell : cells_) {
     cout << "  cell " << cell.index << ": dirty " << cell.other_dirty << " : " << cell.other_cache << endl;
-  }) */
+    }) */
   };
 
   auto flush_dirty = [&](size_t skip_index = (size_t)(-1)) -> bool{
@@ -576,7 +576,7 @@ void ArmMemory::generate_constraints_given_cells(ArmMemory* am, const vector<Sym
                              cache[access.cell_offset*8+access.size-1][access.cell_offset*8]);
       DEBUG_ARM(
         cout << "==================== PERFORMED READ "  << endl;)
-        //cout << access.value << " : " << cache[access.cell_offset*8+access.size-1][access.cell_offset*8] << endl;)
+      //cout << access.value << " : " << cache[access.cell_offset*8+access.size-1][access.cell_offset*8] << endl;)
     }
   }
 

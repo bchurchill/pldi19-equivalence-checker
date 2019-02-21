@@ -101,26 +101,26 @@ public:
 
   static Expr<uint64_t>* parse(std::string s)  {
     //std::cout << "Attempting parse of " << s << std::endl;
-    ExprParser<uint64_t> parser(s, [] (const std::string& s) -> bool { 
+    ExprParser<uint64_t> parser(s, [] (const std::string& s) -> bool {
       //std::cout << "Got variable " << s << std::endl;
       try {
         parse_variable(s);
         //std::cout << "Parse success" << std::endl;
         return true;
-      } catch(std::string s) {
+      } catch (std::string s) {
         std::cerr << s << std::endl;
         return false;
       }
       std::cout << "Shouldn't be here" << std::endl;
       return false;
     });
-    if(!parser.has_error()) {
+    if (!parser.has_error()) {
       auto expr = parser.get();
       //expr->print_dot();
       return expr;
     }
     else {
-      std::cout << __FILE__ << ":" << __LINE__ 
+      std::cout << __FILE__ << ":" << __LINE__
                 << ": parser got error: " << parser.get_error() << std::endl;
       return NULL;
     }
@@ -134,29 +134,29 @@ public:
 private:
 
   static Variable parse_variable(const std::string& s) {
-    if(s.size() < 3 || s[1] != '_' || (s[0] != 't' && s[0] != 'r')) {
+    if (s.size() < 3 || s[1] != '_' || (s[0] != 't' && s[0] != 'r')) {
       std::stringstream ss;
-      ss << __FILE__ << ":" << __LINE__ 
+      ss << __FILE__ << ":" << __LINE__
          << ": Invalid environment variable. " << s << std::endl;
       throw ss.str();
     }
 
     bool is_rewrite = s[0] == 'r';
 
-    if(s[2] == '%' || s[2] == '(' || s[2] == '0') {
+    if (s[2] == '%' || s[2] == '(' || s[2] == '0') {
       std::stringstream ss;
       x64asm::Operand r(x64asm::rax);
       std::string op_str = s.substr(2);
       ss << op_str;
       ss >> r;
-      if(ss.bad() || ss.fail()) {
+      if (ss.bad() || ss.fail()) {
         std::stringstream ss;
-        ss << __FILE__ << ":" << __LINE__ 
+        ss << __FILE__ << ":" << __LINE__
            << ": Could not parse operand " << op_str << std::endl;
         throw ss.str();
       }
 
-      if(r.is_typical_memory()) {
+      if (r.is_typical_memory()) {
         x64asm::M64 m(*static_cast<x64asm::M8*>(&r));
         Variable v(m, is_rewrite);
         return v;

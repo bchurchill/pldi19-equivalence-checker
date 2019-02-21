@@ -71,7 +71,7 @@ auto& stop_at = ValueArg<size_t>::create("max_tcs")
                 .default_val(0);
 
 auto& randomize_order_arg = FlagArg::create("randomize_order")
-                        .description("Output test cases in random order");
+                            .description("Output test cases in random order");
 
 typedef struct {
   unsigned long size,resident,share,text,lib,data,dt;
@@ -122,10 +122,10 @@ bool check_testcase(CpuState cs, Sandbox& sb) {
   sb.insert_input(cs);
   sb.run(0);
   auto code = sb.get_output(0)->code;
-  if(code != ErrorCode::NORMAL) {
+  if (code != ErrorCode::NORMAL) {
     debug_bad_output = *sb.get_output(0);
   }
-  
+
   return code == ErrorCode::NORMAL;
 }
 
@@ -168,14 +168,14 @@ CpuState mutate(CpuState cs, size_t iterations,
 }
 
 void make_tc_different_memory(
-    SmtObligationChecker& checker,
-    const Cfg& target,
-    const Cfg& rewrite,
-    vector<CpuState>& outputs, CpuState tc,
-    CfgPath p,
-    CfgPath rewrite_path,
-    Sandbox& sb,
-    default_random_engine& gen) {
+  SmtObligationChecker& checker,
+  const Cfg& target,
+  const Cfg& rewrite,
+  vector<CpuState>& outputs, CpuState tc,
+  CfgPath p,
+  CfgPath rewrite_path,
+  Sandbox& sb,
+  default_random_engine& gen) {
 // Now, lets find another testcase that touches *different* memory.
   ComboHandler handler;
   auto _false = make_shared<FalseInvariant>();
@@ -225,21 +225,21 @@ void make_tc_different_memory(
 
 void fix_cache_lines(CpuState& tc, default_random_engine& gen) {
   auto segments = tc.get_segments();
-  for(auto segment : segments) {
-    for(uint64_t i = 0; i < (uint64_t)segment->size(); ++i) {
+  for (auto segment : segments) {
+    for (uint64_t i = 0; i < (uint64_t)segment->size(); ++i) {
       uint64_t addr = segment->lower_bound() + i;
-      if(segment->is_valid(addr)) {
+      if (segment->is_valid(addr)) {
         uint64_t low =  addr & 0xffffffffffffff00;
         uint64_t high = low+15;
         assert(low < high);
-        for(uint64_t fix = low; low <= fix && fix <= high; fix++) {
-          if(!segment->is_valid(addr)) {
+        for (uint64_t fix = low; low <= fix && fix <= high; fix++) {
+          if (!segment->is_valid(addr)) {
             segment->set_valid(addr, true);
             (*segment)[addr] = gen() % 256;
           }
         }
       }
-    } 
+    }
   }
 }
 
@@ -352,16 +352,16 @@ int main(int argc, char** argv) {
     }
   }
 
-  // Go through final testcases and mark memory locations in the same cache line 
+  // Go through final testcases and mark memory locations in the same cache line
   // (e.g. 16-byte chunk) as valid.
-  for(auto& tc : outputs) {
+  for (auto& tc : outputs) {
     fix_cache_lines(tc, gen);
   }
 
   DEBUG(cout << "Output argument: " << output_arg.value() << endl;)
   DEBUG(cout << "Output count: " << outputs.size() << endl;)
 
-  if(randomize_order_arg.value()) {
+  if (randomize_order_arg.value()) {
     random_shuffle(outputs.begin(), outputs.end());
   }
 

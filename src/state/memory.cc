@@ -137,7 +137,7 @@ void Memory::read_text_row(istream& is) {
 
   for (int j = 7; j >= 0; --j) {
     is >> s;
-    if(s != "v" && s != ".") {
+    if (s != "v" && s != ".") {
       fail(is) << "Expected 'v' or '.' to denote memory validity.";
       return;
     }

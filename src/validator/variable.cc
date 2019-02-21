@@ -31,7 +31,7 @@ bool Variable::is_valid(const CpuState& target, const CpuState& rewrite) const {
   if (operand.is_typical_memory()) {
     auto mem = static_cast<const x64asm::Mem&>(operand);
     auto addr = cs.get_addr(mem);
-    for(size_t i = 0; i < mem.size()/8; ++i) {
+    for (size_t i = 0; i < mem.size()/8; ++i) {
       if (!cs.is_valid(addr + i)) {
         return false; // it would really be a segfault
       }
@@ -42,8 +42,8 @@ bool Variable::is_valid(const CpuState& target, const CpuState& rewrite) const {
 }
 
 bool Variable::is_valid(const vector<CpuState>& target, const vector<CpuState>& rewrite) const {
-  for(size_t i = 0; i < target.size(); ++i) {
-    if(!is_valid(target[i], rewrite[i]))
+  for (size_t i = 0; i < target.size(); ++i) {
+    if (!is_valid(target[i], rewrite[i]))
       return false;
   }
 
@@ -56,7 +56,7 @@ cpputil::BitVector Variable::from_state_vector(const CpuState& target, const Cpu
   assert(offset >= 0);
 
   auto& cs = is_rewrite ? rewrite : target;
-  
+
 
   if (!is_ghost) {
 
@@ -72,7 +72,7 @@ cpputil::BitVector Variable::from_state_vector(const CpuState& target, const Cpu
     return vector;
   } else {
     cpputil::BitVector v(64);
-    if(cs.shadow.count(name) == 0) {
+    if (cs.shadow.count(name) == 0) {
       cerr << "shadow with name " << name << " not found... dying." << endl;
       exit(1);
     }
@@ -89,59 +89,59 @@ uint64_t Variable::from_state(const CpuState& target, const CpuState& rewrite) c
     value = value << 8;
     value = value | vector.get_fixed_byte(i);
   }
-  if(size < 8) {
+  if (size < 8) {
     //sign extend
     uint64_t check_mask;
     uint64_t negative_mask;
     uint64_t positive_mask;
-    
+
     // faster ways? of course
     // more obviously correct ways? few
-    switch(size) {
-      case 1:
-        check_mask    = 0x0000000000000080;
-        negative_mask = 0xffffffffffffff00;
-        positive_mask = 0x00000000000000ff;
-        break;
-      case 2:
-        check_mask    = 0x0000000000008000;
-        negative_mask = 0xffffffffffff0000;
-        positive_mask = 0x000000000000ffff;
-        break;
-      case 3:
-        check_mask    = 0x0000000000800000;
-        negative_mask = 0xffffffffff000000;
-        positive_mask = 0x0000000000ffffff;
-        break;
-      case 4:
-        check_mask    = 0x0000000080000000;
-        negative_mask = 0xffffffff00000000;
-        positive_mask = 0x00000000ffffffff;
-        break;
-      case 5:
-        check_mask    = 0x0000008000000000;
-        negative_mask = 0xffffff0000000000;
-        positive_mask = 0x000000ffffffffff;
-        break;
-      case 6:
-        check_mask    = 0x0000800000000000;
-        negative_mask = 0xffff000000000000;
-        positive_mask = 0x0000ffffffffffff;
-        break;
-      case 7:
-        check_mask    = 0x0080000000000000;
-        negative_mask = 0xff00000000000000;
-        positive_mask = 0x00ffffffffffffff;
-        break;
-      default:
-        // how strange... do nothing!
-        check_mask    = 0;
-        negative_mask = 0x0000000000000000;
-        positive_mask = 0xffffffffffffffff;
-        break;
+    switch (size) {
+    case 1:
+      check_mask    = 0x0000000000000080;
+      negative_mask = 0xffffffffffffff00;
+      positive_mask = 0x00000000000000ff;
+      break;
+    case 2:
+      check_mask    = 0x0000000000008000;
+      negative_mask = 0xffffffffffff0000;
+      positive_mask = 0x000000000000ffff;
+      break;
+    case 3:
+      check_mask    = 0x0000000000800000;
+      negative_mask = 0xffffffffff000000;
+      positive_mask = 0x0000000000ffffff;
+      break;
+    case 4:
+      check_mask    = 0x0000000080000000;
+      negative_mask = 0xffffffff00000000;
+      positive_mask = 0x00000000ffffffff;
+      break;
+    case 5:
+      check_mask    = 0x0000008000000000;
+      negative_mask = 0xffffff0000000000;
+      positive_mask = 0x000000ffffffffff;
+      break;
+    case 6:
+      check_mask    = 0x0000800000000000;
+      negative_mask = 0xffff000000000000;
+      positive_mask = 0x0000ffffffffffff;
+      break;
+    case 7:
+      check_mask    = 0x0080000000000000;
+      negative_mask = 0xff00000000000000;
+      positive_mask = 0x00ffffffffffffff;
+      break;
+    default:
+      // how strange... do nothing!
+      check_mask    = 0;
+      negative_mask = 0x0000000000000000;
+      positive_mask = 0xffffffffffffffff;
+      break;
     }
 
-    if(check_mask & value)
+    if (check_mask & value)
       return negative_mask | value;
     else
       return positive_mask & value;
@@ -152,14 +152,14 @@ uint64_t Variable::from_state(const CpuState& target, const CpuState& rewrite) c
 
 /** Does this have a memory dereference? */
 bool Variable::is_dereference() const {
-  if(is_ghost)
+  if (is_ghost)
     return false;
   return operand.is_typical_memory();
 }
 
 uint64_t Variable::get_addr(const CpuState& target, const CpuState& rewrite) const {
   const Mem& mem = static_cast<const Mem&>(operand);
-  if(is_rewrite) {
+  if (is_rewrite) {
     return rewrite.get_addr(mem);
   } else {
     return target.get_addr(mem);
@@ -168,7 +168,7 @@ uint64_t Variable::get_addr(const CpuState& target, const CpuState& rewrite) con
 
 SymBitVector Variable::get_addr(const SymState& target, const SymState& rewrite) const {
   const Mem& mem = static_cast<const Mem&>(operand);
-  if(is_rewrite) {
+  if (is_rewrite) {
     return rewrite.get_addr(mem);
   } else {
     return target.get_addr(mem);
@@ -192,12 +192,12 @@ size_t Variable::get_ghost_bb() {
 
 
 ostream& Variable::serialize(ostream& out) const {
-  out << is_rewrite << " " 
+  out << is_rewrite << " "
       << size << " "
       << offset << " "
       << coefficient << " "
       << is_ghost << endl;
-  if(is_ghost) {
+  if (is_ghost) {
     out << name << endl;
   } else {
     out << operand << endl;
@@ -213,7 +213,7 @@ istream& Variable::deserialize(istream& in) {
      >> coefficient >> ws
      >> is_ghost >> ws;
   CHECK_STREAM(in);
-  if(is_ghost) {
+  if (is_ghost) {
     in >> name >> ws;
     CHECK_STREAM(in);
   } else {
@@ -226,9 +226,9 @@ istream& Variable::deserialize(istream& in) {
     is sufficiently large to account for the size and offset (which are expressed
     in bytes) */
   size_t min_size = size+offset;
-  if(operand.size() < min_size*8) {
+  if (operand.size() < min_size*8) {
     size_t new_size = 1;
-    while(new_size < min_size) {
+    while (new_size < min_size) {
       new_size *= 2;
     }
     assert(operand.is_typical_memory());
@@ -238,25 +238,25 @@ istream& Variable::deserialize(istream& in) {
     */
     M8 m = *static_cast<M8*>(&operand);
 
-    switch(new_size) {
-      case 1:
-        operand = M8(m);
-        break;
-      case 2:
-        operand = M16(m);
-        break;
-      case 4:
-        operand = M32(m);
-        break;
-      case 8:
-        operand = M64(m);
-        break;
-      case 16:
-        operand = M128(m);
-        break;
-      case 32:
-        operand = M256(m);
-        break;
+    switch (new_size) {
+    case 1:
+      operand = M8(m);
+      break;
+    case 2:
+      operand = M16(m);
+      break;
+    case 4:
+      operand = M32(m);
+      break;
+    case 8:
+      operand = M64(m);
+      break;
+    case 16:
+      operand = M128(m);
+      break;
+    case 32:
+      operand = M256(m);
+      break;
     }
   }
 

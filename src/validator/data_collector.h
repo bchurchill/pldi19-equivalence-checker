@@ -65,8 +65,8 @@ public:
     entry to each basic block in between. */
   const std::vector<Trace>& get_traces(Cfg& target);
 
-  std::vector<Trace> get_detailed_traces(const Cfg& target, 
-                      const LineMap * const linemap = nullptr);
+  std::vector<Trace> get_detailed_traces(const Cfg& target,
+                                         const LineMap * const linemap = nullptr);
 
   static CfgPath project_states(Trace& trace) {
     CfgPath p;

@@ -25,11 +25,11 @@ protected:
 
 TEST_F(UnionFindTest, IsolatedComponents) {
   size_t count = 3;
-  for(size_t i = 0; i < count; ++i) {
+  for (size_t i = 0; i < count; ++i) {
     uf.add(i);
   }
 
-  for(size_t i = 0; i < count; ++i) {
+  for (size_t i = 0; i < count; ++i) {
     ASSERT_EQ(i, uf.lookup(i));
     ASSERT_EQ(i, uf.max_value(i));
   }
@@ -38,13 +38,13 @@ TEST_F(UnionFindTest, IsolatedComponents) {
 
 TEST_F(UnionFindTest, OneComponent) {
   size_t count = 3;
-  for(size_t i = 0; i < count; ++i) {
+  for (size_t i = 0; i < count; ++i) {
     uf.add(i);
-    if(i > 0)
+    if (i > 0)
       uf.join(i, i-1);
   }
 
-  for(size_t i = 0; i < count; ++i) {
+  for (size_t i = 0; i < count; ++i) {
     ASSERT_EQ(0ul, uf.lookup(i));
     ASSERT_EQ(2ul, uf.max_value(i));
   }

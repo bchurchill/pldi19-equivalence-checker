@@ -33,7 +33,7 @@ class ProcessIsolatedSolver : public SMTSolver {
 public:
 
   /* Resets the state common to SMT solvers */
-  ProcessIsolatedSolver(SMTSolver* child) : child_(child){
+  ProcessIsolatedSolver(SMTSolver* child) : child_(child) {
     has_error_ = true;
   }
 
@@ -49,7 +49,7 @@ public:
 
     int pipefd[2];
     int result = pipe(pipefd);
-    if(result != 0) {
+    if (result != 0) {
       error_ = "call to pipe() failed";
       has_error_ = true;
       return false;
@@ -57,22 +57,22 @@ public:
 
     error_ = "";
     pid_t pid = fork();
-    if(pid == 0) {
+    if (pid == 0) {
       // child
       close(pipefd[0]);
-      bool result = child_->is_sat(constraints); 
+      bool result = child_->is_sat(constraints);
       int n;
       if (child_->has_error()) {
         //std::cout << "[pi_solver] sending err" << std::endl;
         n = write(pipefd[1], "err", 3);
-      } else if(result) {
+      } else if (result) {
         //std::cout << "[pi_solver] sending sat" << std::endl;
         n = write(pipefd[1], "sat", 3);
       } else {
         //std::cout << "[pi_solver] sending unsat" << std::endl;
         n = write(pipefd[1], "uns", 3);
       }
-      if(n < 3) {
+      if (n < 3) {
         //std::cout << "[pi_solver] error! child only sent " << n << " bytes!" << std::endl;
       }
       close(pipefd[1]);
@@ -89,15 +89,15 @@ public:
       buffer[3] = '\0';
       //std::cout << "[pi_solver] READ FROM CHILD: " << buffer << std::endl;
       close(pipefd[0]);
-      if(count == (ssize_t)(-1) || count == 0 || !strcmp(buffer, "err")) {
+      if (count == (ssize_t)(-1) || count == 0 || !strcmp(buffer, "err")) {
         has_error_ = true;
         error_ = "unknown error";
         return false;
-      } else if(!strcmp(buffer, "sat")) {
+      } else if (!strcmp(buffer, "sat")) {
         has_error_ = false;
         error_ = "";
         return true;
-      } else if(!strcmp(buffer, "uns")) {
+      } else if (!strcmp(buffer, "uns")) {
         has_error_ = false;
         error_ = "";
         return false;
@@ -136,7 +136,7 @@ public:
   }
 
   void interrupt() {
-    kill(pid_, SIGTERM);    
+    kill(pid_, SIGTERM);
   }
 
 private:

@@ -40,8 +40,8 @@ auto& debug = FlagArg::create("debug")
               .description("Debug mode, step through instructions one at a time");
 
 auto& verbose = FlagArg::create("verbose")
-              .alternate("d")
-              .description("Print state following each instruction");
+                .alternate("d")
+                .description("Print state following each instruction");
 
 auto& operands = ValueArg<string>::create("operands")
                  .description("Operands to print for each basic block executed")
@@ -165,10 +165,10 @@ void callback(const StateCallbackData& data, void* arg) {
   auto& frame = program_stack.back();
   frame.second = data.line;
 
-  if(operand_list.size()) {
+  if (operand_list.size()) {
     cout << left;
     cout << dec << setw(4) << " " << setw(4) << data.line << setw(4) << " ";
-    for(auto op : operand_list) {
+    for (auto op : operand_list) {
       cout << hex << setw(4) << " " << setw(16) << (uint64_t)data.state[op].get_fixed_quad(0);
     }
     cout << endl;
@@ -215,33 +215,33 @@ int main(int argc, char** argv) {
   tcs.push_back(tc);
 
   // parse operands
-  if(operands.value().size()) {
+  if (operands.value().size()) {
     stringstream ss(operands.value());
     string token;
-    while(std::getline(ss, token, ';')) {
+    while (std::getline(ss, token, ';')) {
       x64asm::Operand op(rax);
       stringstream tmp_ss(token);
       tmp_ss >> op;
-      if(op.is_typical_memory()) {
-        M64 m(*static_cast<M8*>(&op)); 
+      if (op.is_typical_memory()) {
+        M64 m(*static_cast<M8*>(&op));
         operand_list.push_back(m);
       } else {
         operand_list.push_back(op);
       }
     }
   }
-  if(operand_list.size())  {
+  if (operand_list.size())  {
     cout << endl;
     cout << "    line    ";
   }
-  for(auto op : operand_list) {
+  for (auto op : operand_list) {
     stringstream ss;
     ss << op;
-    while(ss.str().size() < 16)
+    while (ss.str().size() < 16)
       ss << " ";
     cout << "    " << ss.str();
   }
-  if(operand_list.size()) 
+  if (operand_list.size())
     cout << endl;
 
 
@@ -254,7 +254,7 @@ int main(int argc, char** argv) {
 
   sb.run(target);
 
-  if(operand_list.size() == 0) {
+  if (operand_list.size() == 0) {
     const auto result = *(sb.result_begin());
     if (result.code != ErrorCode::NORMAL) {
       Console::msg() << "Control returned abnormally with signal " << dec << (int)result.code << " [" << readable_error_code(result.code) << "]" << endl;
