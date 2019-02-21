@@ -15,7 +15,7 @@
 
 namespace stoke {
 
-class DualAutomata {
+class ProgramAlignmentAutomata {
 
 public:
 
@@ -83,7 +83,7 @@ public:
     static Edge deserialize(std::istream&);
   };
 
-  DualAutomata(Cfg& target, Cfg& rewrite) :
+  ProgramAlignmentAutomata(Cfg& target, Cfg& rewrite) :
     target_(target), rewrite_(rewrite) {
   }
 
@@ -221,7 +221,7 @@ public:
   /** Get edges on each path from start to end. */
   std::vector<std::vector<Edge>> get_paths(State start, State end);
 
-  bool test_dual(DataCollector&);
+  bool test_paa(DataCollector&);
   /** Learn invariants.  Returns 'true' if no error. */
   bool learn_invariants(InvariantLearner&, ImplicationGraph&);
 
@@ -284,7 +284,7 @@ public:
   void compute_topological_sort(CfgSccs& target_scc, CfgSccs& rewrite_scc);
 
   /** Get the topological sort. */
-  const std::vector<DualAutomata::State>& get_topological_sort() const {
+  const std::vector<ProgramAlignmentAutomata::State>& get_topological_sort() const {
     return topological_sort_;
   }
 
@@ -325,7 +325,7 @@ public:
   bool simplify();
 
   void serialize(std::ostream& os) const;
-  static DualAutomata deserialize(std::istream& is);
+  static ProgramAlignmentAutomata deserialize(std::istream& is);
 
 private:
 
@@ -371,14 +371,14 @@ private:
   std::map<Edge, std::vector<CpuState>> target_edge_data_;
   std::map<Edge, std::vector<CpuState>> rewrite_edge_data_;
 
-  std::vector<DualAutomata::State> topological_sort_; //serialize
+  std::vector<ProgramAlignmentAutomata::State> topological_sort_; //serialize
 };
 
 }
 
 namespace std {
-std::ostream& operator<<(std::ostream& os, const stoke::DualAutomata::State&);
-std::ostream& operator<<(std::ostream& os, const stoke::DualAutomata::Edge&);
+std::ostream& operator<<(std::ostream& os, const stoke::ProgramAlignmentAutomata::State&);
+std::ostream& operator<<(std::ostream& os, const stoke::ProgramAlignmentAutomata::Edge&);
 }
 
 #endif

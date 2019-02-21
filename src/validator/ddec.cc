@@ -17,7 +17,7 @@
 #include "src/serialize/serialize.h"
 #include "src/validator/bounded.h"
 #include "src/validator/data_collector.h"
-#include "src/validator/dual.h"
+#include "src/validator/paa.h"
 #include "src/validator/ddec.h"
 #include "src/validator/null.h"
 #include "src/validator/invariants.h"
@@ -191,8 +191,8 @@ bool pair_below(pair<DataCollector::TracePoint, DataCollector::TracePoint>& pair
 }
 
 
-bool DdecValidator::build_dual_for_alignment_predicate(std::shared_ptr<Invariant> inv, DualAutomata& dual) {
-  cout << "[build_dual_for_alignment_predicate] expression " << *inv << endl;
+bool DdecValidator::build_paa_for_alignment_predicate(std::shared_ptr<Invariant> inv, ProgramAlignmentAutomata& paa) {
+  cout << "[build_paa_for_alignment_predicate] expression " << *inv << endl;
 
   bool found_loop = false;
   for(size_t i = 0; i < target_traces_.size(); ++i) {
@@ -259,7 +259,7 @@ bool DdecValidator::build_dual_for_alignment_predicate(std::shared_ptr<Invariant
     if(!found_false && dupes) {
       // no way this is going to work
       // there will necessarily be a cycle with an empty path in it
-      cout << "[build_dual_for_alignment_predicate] predicate holds everywhere on loopy trace " << i << endl;
+      cout << "[build_paa_for_alignment_predicate] predicate holds everywhere on loopy trace " << i << endl;
       return false;
     }
 
@@ -329,15 +329,15 @@ bool DdecValidator::build_dual_for_alignment_predicate(std::shared_ptr<Invariant
         rewrite_path.insert(rewrite_path.begin(), rewrite_trace_path.begin()+first_rewrite.index, rewrite_trace_path.begin() + second_rewrite.index);
 
         DEBUG_PAA_CONSTRUCTION(cout << "    **** FOUND CORRESPONDING PATHS " << target_path << " / " << rewrite_path << endl;)
-        DualAutomata::Edge e(DualAutomata::State(second_target.block_id, second_rewrite.block_id), target_path, rewrite_path);
-        dual.add_edge(e);
+        ProgramAlignmentAutomata::Edge e(ProgramAlignmentAutomata::State(second_target.block_id, second_rewrite.block_id), target_path, rewrite_path);
+        paa.add_edge(e);
       }
     }
 
     // check if there are any cycles with only edges in target / only edges in rewrite
-    auto edge_reachable = dual.get_edge_reachable_states();
+    auto edge_reachable = paa.get_edge_reachable_states();
     for(auto s : edge_reachable) {
-      if(dual.one_program_cycle(s, true) || dual.one_program_cycle(s, false)) {
+      if(paa.one_program_cycle(s, true) || paa.one_program_cycle(s, false)) {
         cout << "   Aborting.  State " << s << " in cycle which doesn't make progress. " << endl;
         return false;
       }
@@ -348,23 +348,23 @@ bool DdecValidator::build_dual_for_alignment_predicate(std::shared_ptr<Invariant
   return true;
 }
 
-bool DdecValidator::verify_dual(DualAutomata& dual) {
+bool DdecValidator::verify_paa(ProgramAlignmentAutomata& paa) {
 
   // check if there are any cycles with only edges in target / only edges in rewrite
-  auto edge_reachable = dual.get_edge_reachable_states();
-  cout << "Checking for cycle in dual" << endl;
+  auto edge_reachable = paa.get_edge_reachable_states();
+  cout << "Checking for cycle in paa" << endl;
   for(auto s : edge_reachable) {
-    if(dual.one_program_cycle(s, true) || dual.one_program_cycle(s, false)) {
-      cout << "[verify_dual] Failure.  State " << s << " in cycle which doesn't make progress. " << endl;
+    if(paa.one_program_cycle(s, true) || paa.one_program_cycle(s, false)) {
+      cout << "[verify_paa] Failure.  State " << s << " in cycle which doesn't make progress. " << endl;
       return false;
     }
   }
 
-  // check if this dual makes sense
+  // check if this paa makes sense
   bool ap_failed_ever = false;
-  bool dual_ok = dual.test_dual(data_collector_);
-  if(!dual_ok) {
-    cout << "[verify_dual] Dual does not check out!" << endl;
+  bool paa_ok = paa.test_paa(data_collector_);
+  if(!paa_ok) {
+    cout << "[verify_paa] PAA does not check out!" << endl;
     return false;
   } 
 
@@ -381,9 +381,9 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
 
   // learn invariants
   ImplicationGraph graph(target_, rewrite_);
-  bool learn_success = dual.learn_invariants(invariant_learner_, graph);
+  bool learn_success = paa.learn_invariants(invariant_learner_, graph);
   if(!learn_success) {
-    cout << "[verify_dual] Learning invariants failed." << endl;
+    cout << "[verify_paa] Learning invariants failed." << endl;
     return false;
   }
 
@@ -392,38 +392,38 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
   cout << endl << endl;
 
   // create proof obligations for infeasible paths
-  cout << "[verify_dual] Compute Failure Edges" << endl;
-  auto failure_edges = dual.compute_failure_edges(target_, rewrite_);
+  cout << "[verify_paa] Compute Failure Edges" << endl;
+  auto failure_edges = paa.compute_failure_edges(target_, rewrite_);
   for(auto it : failure_edges) {
-    dual.add_edge(it);
+    paa.add_edge(it);
   } 
 
   /** Configure invariants. */
-  auto start_state = dual.start_state();
-  auto end_state = dual.exit_state();
-  auto fail_state = dual.fail_state();
-  dual.set_invariant(start_state, get_initial_invariant(dual));
-  dual.set_invariant(end_state, get_final_invariant(dual));
-  dual.set_invariant(fail_state, get_fail_invariant());
+  auto start_state = paa.start_state();
+  auto end_state = paa.exit_state();
+  auto fail_state = paa.fail_state();
+  paa.set_invariant(start_state, get_initial_invariant(paa));
+  paa.set_invariant(end_state, get_final_invariant(paa));
+  paa.set_invariant(fail_state, get_fail_invariant());
 
   /** Add NoSignals invariant everywhere.  This is to handle exceptions. */
   auto ns_invariant = std::make_shared<NoSignalsInvariant>();
   for (auto rs : edge_reachable) {
     if(rs == start_state || rs == end_state || rs == fail_state)
       continue;
-    auto orig_inv = dual.get_invariant(rs);
+    auto orig_inv = paa.get_invariant(rs);
     orig_inv->add_invariant(ns_invariant);
-    dual.set_invariant(rs, orig_inv);
+    paa.set_invariant(rs, orig_inv);
   }
 
   struct CallbackParam {
-    DualAutomata::Edge edge;
+    ProgramAlignmentAutomata::Edge edge;
     size_t conjunct;
     bool ignore_errors;
   };
 
   cout << "Dual with invariants" << endl;
-  dual.print_all();
+  paa.print_all();
   cout << endl;
 
   /** Start the fixpoint computation.  There are two rounds.  In the first round, we ignore
@@ -431,9 +431,9 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
     second round, we pay attention to errors/timeouts again and remove these clauses too, so
     that everything is verified. */
   vector<CallbackParam*> pointers_to_delete;
-  map<DualAutomata::State, vector<pair<CpuState, CpuState>>> reachable_examples_for_state;
-  map<DualAutomata::State, set<size_t>> conjuncts_to_delete;
-  map<DualAutomata::State, bool> update_needed;
+  map<ProgramAlignmentAutomata::State, vector<pair<CpuState, CpuState>>> reachable_examples_for_state;
+  map<ProgramAlignmentAutomata::State, set<size_t>> conjuncts_to_delete;
+  map<ProgramAlignmentAutomata::State, bool> update_needed;
   bool fixpoint = false;
   bool failure = false;
 
@@ -444,10 +444,10 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
   ObligationChecker::Callback callback = [&](ObligationChecker::Result r, void* param) {
     CallbackParam data = *static_cast<CallbackParam*>(param);
     auto target_state = data.edge.to;
-    auto target_invariant = dual.get_invariant(target_state);
+    auto target_invariant = paa.get_invariant(target_state);
 
 
-    cout << "[verify_dual] received callback edge=" << data.edge << endl;
+    cout << "[verify_paa] received callback edge=" << data.edge << endl;
     cout << "              conjunct " << data.conjunct << ": " << *(*target_invariant)[data.conjunct] << endl;
     cout << "              verified= " << r.verified << " error=" << r.has_error << " ceg=" << r.has_ceg << endl;
     if(r.has_error)
@@ -471,19 +471,19 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
       auto conjunct = (*target_invariant)[data.conjunct];
       if(conjunct->is_critical()) {
         //we're done here.
-        cout << "[verify_dual] Failure. Critical invariant failed. " << endl;
+        cout << "[verify_paa] Failure. Critical invariant failed. " << endl;
         failure = true;
         return;
       }
       if(target_state == fail_state) {
         //we're done here.
-        cout << "[verify_dual] Failure. Path to fail state is feasible: " << data.edge << endl;
+        cout << "[verify_paa] Failure. Path to fail state is feasible: " << data.edge << endl;
         failure = true;
         return;
       }
       if(target_state == end_state) {
         //we're done here.
-        cout << "[verify_dual] Failure. Conjunct in final state failed. " << endl;
+        cout << "[verify_paa] Failure. Conjunct in final state failed. " << endl;
         cout << "e=" << data.edge << endl;
         cout << "invariant=" << *conjunct << endl;
         failure = true;
@@ -494,22 +494,22 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
       if(r.has_ceg) {
         reachable_examples_for_state[data.edge.to].push_back(pair<CpuState,CpuState>(r.target_final_ceg, r.rewrite_final_ceg));
 
-        cout << "[verify_dual]      counterexample details" << endl;
-        cout << "[verify_dual]      TARGET START STATE" << endl << endl << r.target_ceg << endl;
-        cout << "[verify_dual]      REWRITE START STATE" << endl << endl << r.rewrite_ceg << endl;
-        cout << "[verify_dual]      TARGET END STATE" << endl << endl << r.target_final_ceg << endl;
-        cout << "[verify_dual]      REWRITE END STATE" << endl << endl << r.rewrite_final_ceg << endl;
-        cout << "[verify_dual]      TARGET/REWRITE start state differences..." << endl;
+        cout << "[verify_paa]      counterexample details" << endl;
+        cout << "[verify_paa]      TARGET START STATE" << endl << endl << r.target_ceg << endl;
+        cout << "[verify_paa]      REWRITE START STATE" << endl << endl << r.rewrite_ceg << endl;
+        cout << "[verify_paa]      TARGET END STATE" << endl << endl << r.target_final_ceg << endl;
+        cout << "[verify_paa]      REWRITE END STATE" << endl << endl << r.rewrite_final_ceg << endl;
+        cout << "[verify_paa]      TARGET/REWRITE start state differences..." << endl;
         cout << diff_states(r.target_ceg, r.rewrite_ceg, false, true, RegSet::universe()) << endl;
-        cout << "[verify_dual]      TARGET/REWRITE end state differences..." << endl;
+        cout << "[verify_paa]      TARGET/REWRITE end state differences..." << endl;
         cout << diff_states(r.target_final_ceg, r.rewrite_final_ceg, false, true, RegSet::universe()) << endl;
-        cout << "[verify_dual]      Target START/END state differences..." << endl;
+        cout << "[verify_paa]      Target START/END state differences..." << endl;
         cout << diff_states(r.target_ceg, r.target_final_ceg, false, true, RegSet::universe()) << endl;
-        cout << "[verify_dual]      Rewrite START/END state differences..." << endl;
+        cout << "[verify_paa]      Rewrite START/END state differences..." << endl;
         cout << diff_states(r.rewrite_ceg, r.rewrite_final_ceg, false, true, RegSet::universe()) << endl;
 
 
-        cout << "[verify_dual]      looking for conjuncts to discard..." << endl;
+        cout << "[verify_paa]      looking for conjuncts to discard..." << endl;
         auto& state_delete_list = conjuncts_to_delete[target_state];
         for(size_t i = 0; i < target_invariant->size(); ++i) {
           if(state_delete_list.count(i))
@@ -517,18 +517,18 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
 
           auto conjunct = (*target_invariant)[i];
           if(!conjunct->check(r.target_final_ceg, r.rewrite_final_ceg)) {
-            cout << "[verify_dual] discarding conjunct " << i << ": " << *conjunct << endl;
+            cout << "[verify_paa] discarding conjunct " << i << ": " << *conjunct << endl;
             state_delete_list.insert(i);
 
             if(conjunct->is_critical()) {
               //we're done here.
-              cout << "[verify_dual] Failure. Critical invariant failed. " << endl;
+              cout << "[verify_paa] Failure. Critical invariant failed. " << endl;
               failure = true;
             }
           }
         }
 
-        cout << "[verify_dual]      callback done." << endl;
+        cout << "[verify_paa]      callback done." << endl;
       }
     } 
   };
@@ -539,8 +539,8 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
 
   CfgSccs target_sccs(target_);
   CfgSccs rewrite_sccs(rewrite_);
-  dual.compute_topological_sort(target_sccs, rewrite_sccs);
-  auto states = dual.get_topological_sort();
+  paa.compute_topological_sort(target_sccs, rewrite_sccs);
+  auto states = paa.get_topological_sort();
   update_needed[start_state] = true;
 
   for(size_t round = 0; round < 2; round++) {
@@ -548,7 +548,7 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
     fixpoint = false;
 
     while(!fixpoint) {
-      cout << "[verify_dual] starting fixpoint iteration; round=" << round << endl;
+      cout << "[verify_paa] starting fixpoint iteration; round=" << round << endl;
 
       // reset state
       checker_.delete_all(); //just-in-case
@@ -556,8 +556,8 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
       conjuncts_to_delete.clear();
       fixpoint = true;
 
-      vector<DualAutomata::State> states_to_update;
-      cout << "[verify_dual] states that need updating are: ";
+      vector<ProgramAlignmentAutomata::State> states_to_update;
+      cout << "[verify_paa] states that need updating are: ";
       for(auto state : states)
         if(update_needed[state]) {
           cout << state << "   ";
@@ -572,16 +572,16 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
       // sure won't hold.
       for(auto state : states_to_update) {
 
-        cout << "[verify_dual] dispatching hoare triples for state " << state << endl;
-        auto edges = dual.next_edges(state);
-        auto source_inv = dual.get_invariant(state);
+        cout << "[verify_paa] dispatching hoare triples for state " << state << endl;
+        auto edges = paa.next_edges(state);
+        auto source_inv = paa.get_invariant(state);
 
         for(auto e : edges) {
-          cout << "[verify_dual] dispatching hoare triples for edge " << e << endl;
+          cout << "[verify_paa] dispatching hoare triples for edge " << e << endl;
           auto target = e.to;
-          std::shared_ptr<ConjunctionInvariant> target_inv = dual.get_invariant(target);
-          auto target_testcases = dual.get_target_data(e);
-          auto rewrite_testcases = dual.get_rewrite_data(e);
+          std::shared_ptr<ConjunctionInvariant> target_inv = paa.get_invariant(target);
+          auto target_testcases = paa.get_target_data(e);
+          auto rewrite_testcases = paa.get_rewrite_data(e);
           assert(target_testcases.size() == rewrite_testcases.size());
           vector<pair<CpuState,CpuState>> testcases;
           for(size_t i = 0; i < target_testcases.size(); ++i) {
@@ -616,7 +616,7 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
             }
 
             // dispatch the check
-            cout << "[verify_dual]      dispatching conjunct " << i << ": " << *conjunct << endl;
+            cout << "[verify_paa]      dispatching conjunct " << i << ": " << *conjunct << endl;
             checker_.check(target_, rewrite_, e.to.ts, e.to.rs, e.te, e.re, 
                            new_source_invariant, conjunct, testcases, callback, true, (void*)cbp);
 
@@ -649,17 +649,17 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
       }
 
       // iterate through conjuncts that need to be removed
-      cout << "[verify_dual] removing conjuncts from this round." << endl;
+      cout << "[verify_paa] removing conjuncts from this round." << endl;
       for(auto state_set : conjuncts_to_delete) {
         auto& to_delete = state_set.second;
         update_needed[state_set.first] = true;
-        std::shared_ptr<ConjunctionInvariant> inv = dual.get_invariant(state_set.first);
+        std::shared_ptr<ConjunctionInvariant> inv = paa.get_invariant(state_set.first);
 
-        cout << "[verify_dual] removing conjuncts from state " << state_set.first << endl;
+        cout << "[verify_paa] removing conjuncts from state " << state_set.first << endl;
         for(auto i = to_delete.rbegin(); i != to_delete.rend(); ++i) {
 
           auto conjunct = (*inv)[*i];
-          cout << "[verify_dual] removing conjunct " << *i << ": " << *conjunct << endl;
+          cout << "[verify_paa] removing conjunct " << *i << ": " << *conjunct << endl;
 
           if(graph.has_replacements(conjunct)) {
 
@@ -672,7 +672,7 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
                 auto rewrite_tc = example_pair.second;
                 if(!replacement->check(target_tc, rewrite_tc)) {
                   // we definitely can't prove this is true -- ignore it.
-                  cout << "[verify_dual]     NOT replacing with " << *replacement << " (fails tests)" << endl;
+                  cout << "[verify_paa]     NOT replacing with " << *replacement << " (fails tests)" << endl;
                   works = false;
                   break;
                 }
@@ -684,14 +684,14 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
               for(size_t i = 0; i < inv->size(); ++i) {
                 auto it = (*inv)[i];
                 if(it == replacement) {
-                  cout << "[verify_dual]     NOT replacing with " << *replacement << " (already present)" << endl;
+                  cout << "[verify_paa]     NOT replacing with " << *replacement << " (already present)" << endl;
                   works = false;
                   break;
                 }
               }
               if(!works)
                 continue;
-              cout << "[verify_dual]     replacing with " << *replacement << endl;
+              cout << "[verify_paa]     replacing with " << *replacement << endl;
               inv->add_invariant(replacement);
             }
           }
@@ -699,7 +699,7 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
           inv->remove(*i); 
         }
       }
-      dual.print_all();
+      paa.print_all();
 
       // clean up memory
       for(auto it : pointers_to_delete)
@@ -708,12 +708,12 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
     }
   }
 
-  cout << "[verify_dual] Finished discharging obligations." << endl;
-  dual.print_all();
+  cout << "[verify_paa] Finished discharging obligations." << endl;
+  paa.print_all();
 
   /** Perform the final check. */
-  auto actual_final = dual.get_invariant(end_state);
-  auto expected_final = get_final_invariant(dual);
+  auto actual_final = paa.get_invariant(end_state);
+  auto expected_final = get_final_invariant(paa);
   bool last_check = actual_final->size() == expected_final->size();
   if(!last_check) {
     cout << "Failure. Final invariant insufficient" << endl;
@@ -724,7 +724,7 @@ bool DdecValidator::verify_dual(DualAutomata& dual) {
 
   /** All done :) */
   cout << " ===== PROOF COMPLETE ===== " << endl;
-  dual.print_all();
+  paa.print_all();
   return true;
 }
 
@@ -749,16 +749,16 @@ vector<Variable> DdecValidator::get_stack_locations(bool is_rewrite) {
 }
 
 bool DdecValidator::test_alignment_predicate(shared_ptr<Invariant> invariant) {
-  DualAutomata dual(target_, rewrite_);
-  bool success = build_dual_for_alignment_predicate(invariant, dual);
+  ProgramAlignmentAutomata paa(target_, rewrite_);
+  bool success = build_paa_for_alignment_predicate(invariant, paa);
   if(!success)
     return false;
 
-  DualAutomata unsimplified = dual;
+  ProgramAlignmentAutomata unsimplified = paa;
   cout << "BEFORE SIMPLIFY PAA!" << endl;
-  dual.print_all();
+  paa.print_all();
 
-  bool simplify_ok = dual.simplify();
+  bool simplify_ok = paa.simplify();
   /*
   if(!simplify_ok) {
     cout << "[test_alignment_predicate] Aborting. Simplify returned false" << endl;
@@ -766,8 +766,8 @@ bool DdecValidator::test_alignment_predicate(shared_ptr<Invariant> invariant) {
   }*/
 
   cout << "TRYING THIS PAA!" << endl;
-  dual.print_all();
-  bool works = verify_dual(dual);
+  paa.print_all();
+  bool works = verify_paa(paa);
   return works;
 }
 
@@ -786,6 +786,7 @@ bool DdecValidator::verify(const Cfg& init_target, const Cfg& init_rewrite) {
   target_traces_ = data_collector_.get_traces(target_);
   rewrite_traces_ = data_collector_.get_traces(rewrite_);
 
+  /** Check if user has supplied an alignment predicate */
   if(alignment_predicate_) {
     cout << "Attempting to use " << *alignment_predicate_ << endl;
     return test_alignment_predicate(alignment_predicate_);
@@ -798,20 +799,23 @@ bool DdecValidator::verify(const Cfg& init_target, const Cfg& init_rewrite) {
   set<EqualityInvariant> tried_invariants;
   vector<shared_ptr<EqualityInvariant>> try_again_predicates;
 
-  for(size_t target_cutpoint = target_.get_entry(); target_cutpoint < target_.get_exit(); ++target_cutpoint) {
-    if(!target_sccs.in_scc(target_cutpoint))
+  /** For every pair of program points in both programs, we try and
+    guess an alignment predicate.  By choosing a pair of program points
+    we can see which registers/stack locations ("variables") are defined. */
+  for(size_t target_block = target_.get_entry(); target_block < target_.get_exit(); ++target_block) {
+    if(!target_sccs.in_scc(target_block))
       continue;
 
-    for(size_t rewrite_cutpoint = rewrite_.get_entry(); rewrite_cutpoint < rewrite_.get_exit(); ++rewrite_cutpoint) {
-      if(!rewrite_sccs.in_scc(rewrite_cutpoint))
+    for(size_t rewrite_block = rewrite_.get_entry(); rewrite_block < rewrite_.get_exit(); ++rewrite_block) {
+      if(!rewrite_sccs.in_scc(rewrite_block))
         continue;
 
-      auto target_defined_registers = target_.def_outs(target_cutpoint);
-      auto rewrite_defined_registers = rewrite_.def_outs(rewrite_cutpoint);
+      /** This gets registers that are defined for each program. */
+      auto target_defined_registers = target_.def_outs(target_block);
+      auto rewrite_defined_registers = rewrite_.def_outs(rewrite_block);
 
       vector<Variable> target_variables;
       vector<Variable> rewrite_variables;
-
 
       for(auto target_reg = target_defined_registers.gp_begin();
                target_reg != target_defined_registers.gp_end();
@@ -831,12 +835,14 @@ bool DdecValidator::verify(const Cfg& init_target, const Cfg& init_rewrite) {
       target_variables.insert(target_variables.begin(), target_stack_locations.begin(), target_stack_locations.end());
       rewrite_variables.insert(rewrite_variables.begin(), rewrite_stack_locations.begin(), rewrite_stack_locations.end());
 
+      /** Here we consider all pairs of registers/stack locations of the two programs. */
       for(auto v1 : target_variables) {
         //cout << "TARGET VARIABLE " << v1 << endl;
 
         for(auto v2 : rewrite_variables) {
           //cout << "REWRITE VARIABLE " << v2 << endl;
 
+          /** Now we consider a power of two for each of the variables selected */
           size_t power2bound = 5;
           for(size_t i = 0; i < power2bound*2-1; ++i) {
             if(i < power2bound) {
@@ -848,8 +854,10 @@ bool DdecValidator::verify(const Cfg& init_target, const Cfg& init_rewrite) {
             }
             EqualityInvariant inv({v1, v2}, 0);
 
+            /** Here we invoke the heruistic to pick a constant to make the alignment
+              predicate */
             vector<uint64_t> constants;
-            constants = find_alignment_predicate_constants(target_cutpoint, rewrite_cutpoint, inv);
+            constants = find_alignment_predicate_constants(target_block, rewrite_block, inv);
 
             for(auto constant : constants) {
               auto specific = make_shared<EqualityInvariant>(inv.get_terms(), constant);
@@ -862,30 +870,11 @@ bool DdecValidator::verify(const Cfg& init_target, const Cfg& init_rewrite) {
               conj->add_invariant(specific);
               conj->add_invariant(memequ);
 
+              /** test_alignment_predicate does all the work in checking the alignment
+                predicate; if it returns true, we have succeeded! */
               bool success = test_alignment_predicate(conj);
               if(success)
                 return true;
-              /*
-              DualAutomata dual(target_, rewrite_);
-              bool success = build_dual_for_alignment_predicate(conj, dual);
-              if(success) {
-                dual.print_all();
-                dual.simplify();
-                cout << "SIMPLIFIED!!" << endl;
-                dual.print_all();
-                bool b = verify_dual(dual, conj);
-                if(b) {
-                  cout << "PROOF SUCCEEDED!" << endl;
-                  benchmark_proof_succeeded_ = true;
-                  benchmark_searchstart_ = system_clock::now();
-                  return true;
-                } else {
-                  cout << "Dual failed to verify... trying something else." << endl;
-                }
-              }
-              else
-                cout << "Making graph failed" << endl;
-              */
             }
           }
         }
@@ -893,39 +882,18 @@ bool DdecValidator::verify(const Cfg& init_target, const Cfg& init_rewrite) {
     }
   }
 
+  /** Now we try alignment predicates that don't assert equivalence. */
   for(auto inv : try_again_predicates) {
     bool success = test_alignment_predicate(inv);
     if(success)
       return true;
-    /*
-    DualAutomata dual(target_, rewrite_);
-    cout << "Trying alignment predicate without heap: " << *inv << endl;
-    bool success = build_dual_for_alignment_predicate(inv, dual);
-    if(success) {
-      dual.print_all();
-      dual.simplify();
-      cout << "SIMPLIFIED!!" << endl;
-      dual.print_all();
-      bool b = verify_dual(dual, inv);
-      if(b) {
-        cout << "PROOF SUCCEEDED!" << endl;
-        benchmark_proof_succeeded_ = true;
-        benchmark_searchstart_ = system_clock::now();
-        return true;
-      } else {
-        cout << "Dual failed to verify... trying something else." << endl;
-      }
-    }
-    else
-      cout << "Making graph failed" << endl;
-      */
   }
 
   auto now = system_clock::now();
   auto diff = duration_cast<microseconds>(now - benchmark_searchstart_).count();
   benchmark_total_search_time_ += diff;
-  cout << "[benchmark] BAD SEARCH TOOK " << diff << endl;
-  cout << "[benchmark] TOTAL SEARCH TIME " << benchmark_total_search_time_ << endl;
+  //cout << "[benchmark] BAD SEARCH TOOK " << diff << endl;
+  //cout << "[benchmark] TOTAL SEARCH TIME " << benchmark_total_search_time_ << endl;
 
 
   //return benchmark_proof_succeeded_;
@@ -933,12 +901,12 @@ bool DdecValidator::verify(const Cfg& init_target, const Cfg& init_rewrite) {
 }
 
 
-std::shared_ptr<ConjunctionInvariant> DdecValidator::get_initial_invariant(DualAutomata& dual) const {
+std::shared_ptr<ConjunctionInvariant> DdecValidator::get_initial_invariant(ProgramAlignmentAutomata& paa) const {
   auto initial_invariant = std::make_shared<ConjunctionInvariant>();
 
   /** set all shadow block variables to 0 */
-  auto target = dual.get_target();
-  auto rewrite = dual.get_rewrite();
+  auto target = paa.get_target();
+  auto rewrite = paa.get_rewrite();
 
   auto sei = std::make_shared<StateEqualityInvariant>(target.def_ins());
   initial_invariant->add_invariant(sei);
@@ -977,8 +945,8 @@ std::shared_ptr<ConjunctionInvariant> DdecValidator::get_initial_invariant(DualA
   return initial_invariant;
 }
 
-std::shared_ptr<ConjunctionInvariant> DdecValidator::get_final_invariant(DualAutomata& dual) const {
-  auto target = dual.get_target();
+std::shared_ptr<ConjunctionInvariant> DdecValidator::get_final_invariant(ProgramAlignmentAutomata& paa) const {
+  auto target = paa.get_target();
   auto final_invariant = std::make_shared<ConjunctionInvariant>();
   auto sei = std::make_shared<StateEqualityInvariant>(target.live_outs());
   final_invariant->add_invariant(sei);

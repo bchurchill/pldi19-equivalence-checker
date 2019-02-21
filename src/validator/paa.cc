@@ -4,7 +4,7 @@
 
 #include "src/serialize/serialize.h"
 #include "src/state/cpu_states.h"
-#include "src/validator/dual.h"
+#include "src/validator/paa.h"
 
 using namespace stoke;
 using namespace std;
@@ -15,7 +15,7 @@ using namespace std;
 #define DEBUG_IN_SCC(X) { if(0) { X } }
 #define DEBUG_IN_CYCLE(X) { if(0) { X } }
 
-bool DualAutomata::State::operator<(const DualAutomata::State& other) const {
+bool ProgramAlignmentAutomata::State::operator<(const ProgramAlignmentAutomata::State& other) const {
   if (ts != other.ts)
     return ts < other.ts;
   if (rs != other.rs)
@@ -25,11 +25,11 @@ bool DualAutomata::State::operator<(const DualAutomata::State& other) const {
   return false;
 }
 
-bool DualAutomata::State::operator==(const DualAutomata::State& other) const {
+bool ProgramAlignmentAutomata::State::operator==(const ProgramAlignmentAutomata::State& other) const {
   return (ts == other.ts && rs == other.rs);
 }
 
-bool DualAutomata::Edge::operator<(const DualAutomata::Edge& other) const {
+bool ProgramAlignmentAutomata::Edge::operator<(const ProgramAlignmentAutomata::Edge& other) const {
   if (from != other.from)
     return from < other.from;
   if (to != other.to)
@@ -53,11 +53,11 @@ bool DualAutomata::Edge::operator<(const DualAutomata::Edge& other) const {
   return false;
 }
 
-bool DualAutomata::Edge::operator==(const DualAutomata::Edge& other) const {
+bool ProgramAlignmentAutomata::Edge::operator==(const ProgramAlignmentAutomata::Edge& other) const {
   return (from == other.from && to == other.to && te == other.te && re == other.re);
 }
 
-DualAutomata::Edge::Edge(DualAutomata::State tail, const CfgPath& tp, const CfgPath& rp) {
+ProgramAlignmentAutomata::Edge::Edge(ProgramAlignmentAutomata::State tail, const CfgPath& tp, const CfgPath& rp) {
   to = tail;
   te = tp;
   re = rp;
@@ -76,7 +76,7 @@ DualAutomata::Edge::Edge(DualAutomata::State tail, const CfgPath& tp, const CfgP
   }
 }
 
-bool DualAutomata::is_prefix(const CfgPath& tr1, const DataCollector::Trace& tr2) {
+bool ProgramAlignmentAutomata::is_prefix(const CfgPath& tr1, const DataCollector::Trace& tr2) {
   if (tr1.size() > tr2.size()) {
     DEBUG_IS_PREFIX(cout << "[is_prefix]     tr1:" << tr1.size() << " > tr2:" << tr2.size() << endl;)
     return false;
@@ -92,7 +92,7 @@ bool DualAutomata::is_prefix(const CfgPath& tr1, const DataCollector::Trace& tr2
   return true;
 }
 
-bool DualAutomata::is_edge_prefix(const CfgPath& tr1, const CfgPath& tr2) {
+bool ProgramAlignmentAutomata::is_edge_prefix(const CfgPath& tr1, const CfgPath& tr2) {
   if (tr1.size() > tr2.size()) {
     //cout << "     tr1:" << tr1.size() << " > tr2:" << tr2.size() << endl;
     return false;
@@ -108,7 +108,7 @@ bool DualAutomata::is_edge_prefix(const CfgPath& tr1, const CfgPath& tr2) {
   return true;
 }
 
-void DualAutomata::remove_prefix(const CfgPath& tr1, DataCollector::Trace& tr2) {
+void ProgramAlignmentAutomata::remove_prefix(const CfgPath& tr1, DataCollector::Trace& tr2) {
   assert(is_prefix(tr1, tr2));
 
   for (size_t i = 0; i < tr1.size(); ++i) {
@@ -118,7 +118,7 @@ void DualAutomata::remove_prefix(const CfgPath& tr1, DataCollector::Trace& tr2) 
 
 /** Here we trace one test case through the Automata along every possible path.
   Returns false on error. */
-bool DualAutomata::learn_state_data(const DataCollector::Trace& orig_target_trace,
+bool ProgramAlignmentAutomata::learn_state_data(const DataCollector::Trace& orig_target_trace,
                                     const DataCollector::Trace& orig_rewrite_trace) {
 
   /** Copy traces */
@@ -254,7 +254,7 @@ bool DualAutomata::learn_state_data(const DataCollector::Trace& orig_target_trac
 
 }
 
-bool DualAutomata::test_dual(DataCollector& dc) {
+bool ProgramAlignmentAutomata::test_paa(DataCollector& dc) {
 
   data_reachable_states_.clear();
   invariants_.clear();
@@ -296,7 +296,7 @@ bool DualAutomata::test_dual(DataCollector& dc) {
   return true;
 }
 
-bool DualAutomata::learn_invariants(InvariantLearner& learner, ImplicationGraph& graph) {
+bool ProgramAlignmentAutomata::learn_invariants(InvariantLearner& learner, ImplicationGraph& graph) {
 
   // Step 2: learn the invariants
   target_.recompute();
@@ -358,15 +358,15 @@ bool DualAutomata::learn_invariants(InvariantLearner& learner, ImplicationGraph&
 }
 
 
-void DualAutomata::compute_topological_sort(CfgSccs& target_scc, CfgSccs& rewrite_scc) {
+void ProgramAlignmentAutomata::compute_topological_sort(CfgSccs& target_scc, CfgSccs& rewrite_scc) {
   // get all the relevant blocks from target/rewrite
-  vector<DualAutomata::State> nodes;
+  vector<ProgramAlignmentAutomata::State> nodes;
   for (auto pair : invariants_) {
     nodes.push_back(pair.first);
   }
 
   // sort the nodes by SCC (which should already be topolically sorted)
-  auto compare = [&](DualAutomata::State a, DualAutomata::State b) -> bool {
+  auto compare = [&](ProgramAlignmentAutomata::State a, ProgramAlignmentAutomata::State b) -> bool {
     auto a_target_scc = target_scc.get_scc(a.ts);
     auto a_rewrite_scc = rewrite_scc.get_scc(a.rs);
     auto b_target_scc = target_scc.get_scc(b.ts);
@@ -383,7 +383,7 @@ void DualAutomata::compute_topological_sort(CfgSccs& target_scc, CfgSccs& rewrit
   topological_sort_ = nodes;
 }
 
-void DualAutomata::print_all() const {
+void ProgramAlignmentAutomata::print_all() const {
 
   for (auto p : next_edges_) {
     auto state = p.first;
@@ -419,8 +419,8 @@ void DualAutomata::print_all() const {
 }
 
 
-vector<vector<DualAutomata::Edge>> DualAutomata::get_paths(
-DualAutomata::State start, DualAutomata::State end) {
+vector<vector<ProgramAlignmentAutomata::Edge>> ProgramAlignmentAutomata::get_paths(
+ProgramAlignmentAutomata::State start, ProgramAlignmentAutomata::State end) {
   cout << "Calling get_paths with " << start << " and " << end << endl;
 
   vector<vector<Edge>> results;
@@ -448,7 +448,7 @@ DualAutomata::State start, DualAutomata::State end) {
   return results;
 }
 
-void DualAutomata::remove_prefixes() {
+void ProgramAlignmentAutomata::remove_prefixes() {
 
   bool done = false;
 
@@ -482,7 +482,7 @@ void DualAutomata::remove_prefixes() {
   }
 }
 
-std::set<DualAutomata::State> DualAutomata::get_edge_reachable_states() const {
+std::set<ProgramAlignmentAutomata::State> ProgramAlignmentAutomata::get_edge_reachable_states() const {
 
   set<State> global_reachable;
   global_reachable.insert(start_state());
@@ -506,7 +506,7 @@ std::set<DualAutomata::State> DualAutomata::get_edge_reachable_states() const {
   return global_reachable;
 }
 
-std::set<CfgPath> DualAutomata::get_cfg_fringe(const Cfg& cfg, State state, bool is_rewrite) const {
+std::set<CfgPath> ProgramAlignmentAutomata::get_cfg_fringe(const Cfg& cfg, State state, bool is_rewrite) const {
 
   Cfg::id_type starting_block = is_rewrite ? state.rs : state.ts;
   std::set<CfgPath> outputs;
@@ -583,7 +583,7 @@ std::set<CfgPath> DualAutomata::get_cfg_fringe(const Cfg& cfg, State state, bool
   return outputs;
 }
 
-std::vector<DualAutomata::Edge> DualAutomata::compute_failure_edges(const Cfg& target, const Cfg& rewrite) const {
+std::vector<ProgramAlignmentAutomata::Edge> ProgramAlignmentAutomata::compute_failure_edges(const Cfg& target, const Cfg& rewrite) const {
   std::vector<Edge> outputs;
 
   /** for each state */
@@ -595,24 +595,24 @@ std::vector<DualAutomata::Edge> DualAutomata::compute_failure_edges(const Cfg& t
       continue;
 
     /** get the "fringe" points on each of the target and rewrite CFGs */
-    cout << "====== FRINGE FOR TARGET PROGRAM AND STATE " << state << endl;
+    //cout << "====== FRINGE FOR TARGET PROGRAM AND STATE " << state << endl;
     auto target_fringe = get_cfg_fringe(target, state, false);
-    cout << "====== FRINGE FOR TARGET PROGRAM AND STATE " << state << endl;
+    //cout << "====== FRINGE FOR TARGET PROGRAM AND STATE " << state << endl;
     auto rewrite_fringe = get_cfg_fringe(rewrite, state, true);
 
     /** for every pair of fringe points, figure out if the comparison is needed. */
     auto edges = next_edges(state);
     for(auto target_path : target_fringe) {
       for(auto rewrite_path : rewrite_fringe) {
-        cout << "Considering target_path=" << target_path;
-        cout << " rewrite_path=" << rewrite_path << endl;
+        //cout << "Considering target_path=" << target_path;
+        //cout << " rewrite_path=" << rewrite_path << endl;
         bool match = false;
         
         for(auto edge : edges) {
-          cout << "   Considering edge=" << edge << endl;
+         // cout << "   Considering edge=" << edge << endl;
           if(CfgPaths::is_prefix(edge.te, target_path) && 
              CfgPaths::is_prefix(edge.re, rewrite_path)) {
-            cout << "      * match found!" << endl;
+            //cout << "      * match found!" << endl;
             match = true;
             break;
           }
@@ -630,41 +630,41 @@ std::vector<DualAutomata::Edge> DualAutomata::compute_failure_edges(const Cfg& t
     }
   }
 
-  cout << "FAILURE EDGES" << endl;
-  for(auto edge : outputs) {
-    cout << edge << endl;
-  }
+  //cout << "FAILURE EDGES" << endl;
+  //for(auto edge : outputs) {
+  //  cout << edge << endl;
+  //}
 
   return outputs;
 }
 
-void DualAutomata::State::serialize(std::ostream& os) const {
+void ProgramAlignmentAutomata::State::serialize(std::ostream& os) const {
   os << ts << " " << rs << endl;
 }
 
-DualAutomata::State DualAutomata::State::deserialize(std::istream& is) {
+ProgramAlignmentAutomata::State ProgramAlignmentAutomata::State::deserialize(std::istream& is) {
   Cfg::id_type a, b;
   is >> a >> ws >> b >> ws;
-  return DualAutomata::State(a, b);
+  return ProgramAlignmentAutomata::State(a, b);
 }
 
-void DualAutomata::Edge::serialize(std::ostream& os) const {
+void ProgramAlignmentAutomata::Edge::serialize(std::ostream& os) const {
   from.serialize(os);
   to.serialize(os);
   stoke::serialize<CfgPath>(os, te);
   stoke::serialize<CfgPath>(os, re);
 }
 
-DualAutomata::Edge DualAutomata::Edge::deserialize(std::istream& is) {
-  DualAutomata::Edge e;
-  e.from = DualAutomata::State::deserialize(is);
-  e.to = DualAutomata::State::deserialize(is);
+ProgramAlignmentAutomata::Edge ProgramAlignmentAutomata::Edge::deserialize(std::istream& is) {
+  ProgramAlignmentAutomata::Edge e;
+  e.from = ProgramAlignmentAutomata::State::deserialize(is);
+  e.to = ProgramAlignmentAutomata::State::deserialize(is);
   e.te = stoke::deserialize<CfgPath>(is);
   e.re = stoke::deserialize<CfgPath>(is);
   return e;
 }
 
-void DualAutomata::serialize(std::ostream& os) const {
+void ProgramAlignmentAutomata::serialize(std::ostream& os) const {
   stoke::serialize<Cfg>(os, target_);  
   stoke::serialize<Cfg>(os, rewrite_);
   stoke::serialize<map<State, vector<Edge>>>(os, next_edges_);
@@ -673,11 +673,11 @@ void DualAutomata::serialize(std::ostream& os) const {
   stoke::serialize<vector<State>>(os, topological_sort_);
 }
 
-DualAutomata DualAutomata::deserialize(std::istream& is) {
+ProgramAlignmentAutomata ProgramAlignmentAutomata::deserialize(std::istream& is) {
   auto* target = stoke::deserialize<Cfg*>(is);
   auto* rewrite = stoke::deserialize<Cfg*>(is);
 
-  DualAutomata pod(*target, *rewrite);
+  ProgramAlignmentAutomata pod(*target, *rewrite);
   pod.next_edges_ = stoke::deserialize<map<State, vector<Edge>>>(is);
   pod.prev_edges_ = stoke::deserialize<map<State, vector<Edge>>>(is);
   pod.invariants_ = stoke::deserialize<map<State, std::shared_ptr<ConjunctionInvariant>>>(is);
@@ -687,7 +687,7 @@ DualAutomata DualAutomata::deserialize(std::istream& is) {
 
 /** We are searching for cycles where the edges only contain blocks of the target /
    the edges only contain blocks of the rewrite. */
-bool DualAutomata::one_program_cycle(State s, bool is_target)  const {
+bool ProgramAlignmentAutomata::one_program_cycle(State s, bool is_target)  const {
   DEBUG_IN_CYCLE(cout << "[in_cycle] called for " << s << " is_target=" << is_target << endl;)
   map<State, bool> visited;
   visited[s] = true;
@@ -729,7 +729,7 @@ bool DualAutomata::one_program_cycle(State s, bool is_target)  const {
   return false;
 }
 
-bool DualAutomata::in_scc(State s) const {
+bool ProgramAlignmentAutomata::in_scc(State s) const {
   DEBUG_IN_SCC(cout << "[in_scc] called for " << s << endl;)
   map<State, bool> visited;
   visited[s] = true;
@@ -759,7 +759,7 @@ bool DualAutomata::in_scc(State s) const {
 }
 
 /** Remove edges that aren't needed. */
-bool DualAutomata::simplify() {
+bool ProgramAlignmentAutomata::simplify() {
 
   bool changes_made = false;
   /** Step 1: remove nodes that are not contained in a strongly connected component. */
@@ -863,10 +863,10 @@ bool DualAutomata::simplify() {
 
 namespace std {
 
-ostream& operator<<(ostream& os, const DualAutomata::State& s) {
+ostream& operator<<(ostream& os, const ProgramAlignmentAutomata::State& s) {
   return s.print(os);
 }
-ostream& operator<<(ostream& os, const DualAutomata::Edge& s) {
+ostream& operator<<(ostream& os, const ProgramAlignmentAutomata::Edge& s) {
   return s.print(os);
 }
 

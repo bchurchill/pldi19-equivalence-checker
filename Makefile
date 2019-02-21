@@ -181,7 +181,6 @@ SRC_OBJ=\
 	src/validator/bounded.o \
 	src/validator/data_collector.o \
 	src/validator/ddec.o \
-	src/validator/dual.o \
 	src/validator/forking_obligation_checker.o \
 	src/validator/handler.o \
 	src/validator/implication_graph.o \
@@ -192,6 +191,7 @@ SRC_OBJ=\
 	src/validator/md5.o \
 	src/validator/null.o \
 	src/validator/obligation_checker.o \
+	src/validator/paa.o \
 	src/validator/path_unroller.o \
 	src/validator/postgres_obligation_checker.o \
 	src/validator/sage.o \

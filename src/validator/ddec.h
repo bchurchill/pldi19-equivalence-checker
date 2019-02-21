@@ -15,7 +15,7 @@
 #ifndef STOKE_SRC_VALIDATOR_DDEC_H
 #define STOKE_SRC_VALIDATOR_DDEC_H
 
-#include "src/validator/dual.h"
+#include "src/validator/paa.h"
 #include "src/validator/data_collector.h"
 #include "src/validator/invariant.h"
 #include "src/validator/invariants/conjunction.h"
@@ -40,7 +40,6 @@ public:
           alignment_predicate_(),
           training_set_size_(20)
   {
-    set_use_handhold(false);
   }
 
   DdecValidator(const DdecValidator& rhs) :
@@ -50,7 +49,6 @@ public:
     sandbox_(rhs.sandbox_),
     data_collector_(sandbox_),
     invariant_learner_(rhs.invariant_learner_),
-    use_handhold_(rhs.use_handhold_),
     training_set_size_(rhs.training_set_size_) {
 
     target_bound_ = rhs.target_bound_;
@@ -61,11 +59,6 @@ public:
   DdecValidator& set_bound(size_t target_bound, size_t rewrite_bound) {
     target_bound_ = target_bound;
     rewrite_bound_ = rewrite_bound;
-    return *this;
-  }
-
-  DdecValidator& set_use_handhold(bool b) {
-    use_handhold_ = b;
     return *this;
   }
 
@@ -105,17 +98,17 @@ private:
   void warn(std::string s);
 
   /** Compute the initial invariant */
-  std::shared_ptr<ConjunctionInvariant> get_initial_invariant(DualAutomata&) const;
-  std::shared_ptr<ConjunctionInvariant> get_final_invariant(DualAutomata&) const;
+  std::shared_ptr<ConjunctionInvariant> get_initial_invariant(ProgramAlignmentAutomata&) const;
+  std::shared_ptr<ConjunctionInvariant> get_final_invariant(ProgramAlignmentAutomata&) const;
   std::shared_ptr<ConjunctionInvariant> get_fail_invariant() const;
 
-  /** Verify that a dual automata is correct */
-  bool verify_dual(DualAutomata& dual);
+  /** Verify that a paa is correct */
+  bool verify_paa(ProgramAlignmentAutomata& paa);
 
   std::vector<Variable> get_stack_locations(bool is_rewrite);
 
 
-  bool build_dual_for_alignment_predicate(std::shared_ptr<Invariant> inv, DualAutomata&);
+  bool build_paa_for_alignment_predicate(std::shared_ptr<Invariant> inv, ProgramAlignmentAutomata&);
   std::vector<uint64_t> find_alignment_predicate_constants(size_t target_point, size_t rewrite_point, EqualityInvariant inv);
   void get_states_at_cutpoint(size_t trace, size_t target_point, size_t rewrite_point, std::vector<DataCollector::TracePoint>& target_states, std::vector<DataCollector::TracePoint>& rewrite_states, bool bound) const;
   bool test_alignment_predicate(std::shared_ptr<Invariant> inv);
@@ -137,8 +130,6 @@ private:
   size_t callbacks_expected_;
   size_t callbacks_count_;
   size_t verified_;
-
-  bool use_handhold_;
 
   std::shared_ptr<Invariant> alignment_predicate_;
 
