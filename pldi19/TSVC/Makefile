@@ -25,7 +25,7 @@ pdfs: .force
 	./make_pdfs.rb
 
 tcgen:
-	rm -f testcases
+	rm -rf testcases
 	mkdir -p testcases
 	tcgen_tsvc --num_testcases 8 > testcases/8
 	# quad

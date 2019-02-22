@@ -13,7 +13,7 @@ all:
 	stoke debug cfg --target $(REWRITE) -o $(NAME)_vec.pdf
 
 tcgen:
-	stoke testcase --target $(TARGET) --max_attempts 64 --register_max "rdi=8" -o tcs/testcases.combo
+	stoke testcase --target $(TARGET) --max_attempts 64 --register_max "rdi=8" -o testcases
 
 clean:
 	rm -rf opt1* opt3* *.pdf sage* stoke_sage* state* *.tmp opt0*
