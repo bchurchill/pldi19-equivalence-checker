@@ -123,7 +123,16 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  const auto res = verifier.verify(target, rewrite);
+  int *x = new int[1000];
+  bool res;
+  try {
+    res = verifier.verify(target, rewrite);
+  } catch (std::bad_alloc e) {
+    delete x;
+    cerr << "Out of memory!" << endl;
+    exit(1);
+  }
+  delete x;
 
   if (verifier.has_error()) {
     Console::msg() << "Encountered error: " << endl;

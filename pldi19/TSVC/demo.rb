@@ -157,9 +157,9 @@ def validate(compiler1, compiler2, benchmark, dofork=false)
   end
 
   puts "Recording data in traces/#{name}"
-  io = "2> misc/#{name}.err | tee traces/#{name}"
+  io = "2> misc/#{name}.err > traces/#{name}"
   stoke_cmd = "stoke_debug_verify #{stoke_args.join(" ")}"
-  time_cmd = "/usr/bin/time -o times/#{name} #{stoke_cmd} #{io}"
+  time_cmd = "/usr/bin/time -o times/#{name} #{stoke_cmd} #{io} || echo \"error occurred; out of memory?\" >> misc/#{name}.err"
 
   File.open("misc/#{name}.cmd", 'w') do |file|
     file.write(stoke_cmd)
