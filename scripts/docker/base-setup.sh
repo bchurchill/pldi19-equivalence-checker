@@ -57,7 +57,7 @@ sed -i "s/equivalence:.*/equivalence:\$6\$ZfBji33B\$1GZHu6wFBOIjkTgb6DEJRdRYcgjo
 usermod -a -G sudo equivalence
 
 # Compile everything, etc.
-chown -R stoke /home/stoke/base
-cd /home/stoke/base
+chown -R equivalence /home/equivalence/base
+cd /home/equivalence/base
 chmod +x scripts/docker/base-user-setup.sh
 su stoke -c "TRAVIS=$TRAVIS ./scripts/docker/base-user-setup.sh"
