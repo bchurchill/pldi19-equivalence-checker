@@ -6,11 +6,21 @@ This is an implementation of the equivalence checker presented in "Semantic
 Program Alignment for Equivlance Checking" by Berkeley Churchill, Oded Padon,
 Rahul Sharma and Alex Aiken, presented at PLDI 2019.
 
+*Limitations* This artifact can be used to reproduce many of the results of the
+paper, but not all of them.  In particular, the paper describes a system to
+discharge proof obligations concurrently using a large number of systems in the
+cloud.  This artifact only supports discharging proof obligations on one core,
+  and so it is much more limitted.  The artifact can be reliably use to check
+  the strlen benchmark (presented in section 5.3), the running example (section
+      2), the benchmark described in section 5.4, and _some_ of the TSVC
+  benchmarks.
+
+
 Getting Started
 ===============
 
-Initial Setup
--------------
+Initial Setup with Docker
+-------------------------
 
 Prerequisites: You will need root access to a machine (physical or
 virtual) with a Sandy Bridge processor or later. This is true of most
@@ -44,24 +54,19 @@ all docker commands:
 `
 $ sudo docker run hello-world
 `
-
 (should print a message containing "Hello from Docker!")
 
-3. Pull the image from the Google Container Registry. (We obtained
-permission from the Artifact Evaluation co-Chairs for this step,
-rather than uploading the image to a filesharing site)
+3. Pull the image from DockerHub
 
-$ sudo docker pull gcr.io/research-dev-200901/pldi2019-artifact:submission
+$ sudo docker pull bchurchill/pldi19
 
-4. Verify the hash of the docker image.
+4. (Optional) Verify the hash of the docker image.
 
 $ sudo docker image ls --digests
 
-It should be sha256:65761d7024ac4fef9a03fa62255ba2c2d8ac1b5d08d0be305c0cf2e95b45feb1
-
 5. Run the image
 
-$ sudo docker run -d -P --name eqchecker gcr.io/research-dev-200901/pldi2019-artifact:submission
+$ sudo docker run -d -P --name eqchecker bchurchill/pldi19
 
 6. Now you can SSH locally 
 
@@ -77,7 +82,15 @@ $ sudo docker stop eqchecker
 $ sudo docker container rm eqchecker
 $ sudo docker image rm gcr.io/research-dev-200901/pldi2019-artifact:submission
 
-== Running the Example ==
+Alternate Setup Instructions
+----------------------------
+
+For instructions on compiling the code, see `STOKE.md` as found in this
+repository.  For the equivalence checker, you will also need to install
+SageMath. 
+
+Running the Example
+-------------------
 
 1. In ~/equivalence-checker/pldi19 you will find all the benchmarks
 from the paper. For getting started, we will demonstrate running
@@ -130,43 +143,11 @@ debug, these can be ignored.
 To gain a deeper understanding of the PAA, one needs to see how the
 basic blocks of the two programs are numbered.
 
-============================
-==== ABOUT THE ARTIFACT ====
-============================
+STEP BY STEP
+============
 
-We demonstrate that our technique succeeds on all benchmarks described
-in the paper, including:
-
-  - our example (Section 2)
-  - the 56 benchmarks derived from TSVC (Section 5.1 and 5.2)
-  - the strlen benchmark (Section 5.3)
-  - the benchmark from [7] (Section 5.4, lines 1056-1080)
-
-We do not demonstrate the cloud infrastructure for checking proof
-obligations mentioned on lines 894-895, since it is unwieldy to
-package and unrelated to the paper's claims. As a result, this
-artifact does now allow the reviewer to reproduce executions from
-long-running benchmarks. Instead, we include traces from successful
-executions that show all the relevant data.
-
-However, the artifact includes several optimizations not present in
-the original submission. As a result, some, but not all, of the TSVC
-benchmarks can run on a single CPU core in under 10 minutes. We expect
-performance to vary across machines.
-
-The implementation of this system was built upon the STOKE stochastic
-superoptimizer (see stoke.stanford.edu), since it offered a suitable
-platform for dynamic analysis, static analysis and verification of
-x86-64 assembly. As a result, some terminology used throughout this
-artifact borrows from the superoptimization technology. A key example
-is that we refer to the two programs being verified as the "target"
-and "rewrite" program.
-
-======================
-==== STEP BY STEP ====
-======================
-
-== TO RUN OUR EXPERIMENTS ==
+TO RUN OUR EXPERIMENTS
+----------------------
 
 (A) Example presented in Section 2.2
 
@@ -202,7 +183,8 @@ and "rewrite" program.
      In the paper, we have performed the baseline-gcc comparison and
      the baseline-llvm comparison for each benchmark.
 
-     The following benchmarks run in under 10 minutes on our machine:
+     The following benchmarks should be able to run reliably without
+     the cloud infrastructure:
 
         s000-gcc
         s000-llvm
@@ -270,7 +252,8 @@ and "rewrite" program.
   3. Run './demo.sh'.  This one tends to take 30-60 minutes.
 
 
-== To see traces from successful runs of the TSVC benchmarks ==
+To see traces from successful runs of the TSVC benchmarks
+-------------------------
 
 Since some of the TSVC benchmarks take a long time to run, we
 have included in the artifact traces from these benchmarks from
@@ -280,12 +263,11 @@ time of submission -- the exact text in the traces differs a little
 bit from what the tool currently produces.
 
 
-=====================================
-==== RUNNING YOUR OWN BENCHMARKS ====
+Running Your Own Benchmarks
 =====================================
 
 The easiest way to run your own benchmark is to copy the
-'paper_example' folder, run 'make clean', and then update the C code
+`paper_example` folder, run `make clean`, and then update the C code
 for your benchmark. There are a few other things that need to be
 updated as well:
 
