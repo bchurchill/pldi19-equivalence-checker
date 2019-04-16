@@ -10,5 +10,5 @@ ln -s /home/equivalence/base/src/ext/cvc4-1.5-build src/ext/cvc4-1.5-build
 ln -s /home/equivalence/base/src/ext/cvc4-1.5 src/ext/cvc4-1.5
 
 # fix PATH
-echo "PATH=\"\$HOME/stoke/bin:\$PATH\"" >> ~/.bashrc
+echo "PATH=\"\$HOME/equivalence-checker/bin:\$PATH\"" >> ~/.bashrc
 
