@@ -60,4 +60,4 @@ usermod -a -G sudo equivalence
 chown -R equivalence /home/equivalence/base
 cd /home/equivalence/base
 chmod +x scripts/docker/base-user-setup.sh
-su stoke -c "TRAVIS=$TRAVIS ./scripts/docker/base-user-setup.sh"
+su equivalence -c "TRAVIS=$TRAVIS ./scripts/docker/base-user-setup.sh"
