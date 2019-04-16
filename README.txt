@@ -1,0 +1,512 @@
+
+About
+=====
+
+This is an implementation of the equivalence checker presented in "Semantic
+Program Alignment for Equivlance Checking" by Berkeley Churchill, Oded Padon,
+Rahul Sharma and Alex Aiken, presented at PLDI 2019.
+
+Getting Started
+===============
+
+Initial Setup
+-------------
+
+Prerequisites: You will need root access to a machine (physical or
+virtual) with a Sandy Bridge processor or later. This is true of most
+computers with Intel chips released 2012 or later. On linux, you can
+check this by running 'cat /proc/cpuinfo | grep avx'. If there are
+results, then your machine is suitable. We require this because the
+Sandy Bridge architecture adds the "Advanced Vector Extensions" (AVX)
+instructions to x86-64, and our verification benchmarks may use these
+instructions.  
+
+You will need 20GB of disk space and at least 12GB of RAM (more is
+better). Having extra cores and memory allows you to run multiple
+benchmarks in parallel, but is not necessary.
+
+We have tested these instructions on linux with docker version
+18.06.1-ce, but any operating system with a recent docker install
+should be suitable.
+
+1. Install Docker CE.  Follow the instructions for your platform:
+
+Windows - https://hub.docker.com/editions/community/docker-ce-desktop-windows
+Mac     - https://hub.docker.com/editions/community/docker-ce-desktop-mac
+Ubuntu  - https://docs.docker.com/install/linux/docker-ce/ubuntu/
+Debian  - https://docs.docker.com/install/linux/docker-ce/debian/
+Fedora  - https://docs.docker.com/install/linux/docker-ce/fedora/
+CentOS  - https://docs.docker.com/install/linux/docker-ce/centos/
+
+2. Test the docker install. Note that you may need to use 'sudo' for
+all docker commands:
+
+`
+$ sudo docker run hello-world
+`
+
+(should print a message containing "Hello from Docker!")
+
+3. Pull the image from the Google Container Registry. (We obtained
+permission from the Artifact Evaluation co-Chairs for this step,
+rather than uploading the image to a filesharing site)
+
+$ sudo docker pull gcr.io/research-dev-200901/pldi2019-artifact:submission
+
+4. Verify the hash of the docker image.
+
+$ sudo docker image ls --digests
+
+It should be sha256:65761d7024ac4fef9a03fa62255ba2c2d8ac1b5d08d0be305c0cf2e95b45feb1
+
+5. Run the image
+
+$ sudo docker run -d -P --name eqchecker gcr.io/research-dev-200901/pldi2019-artifact:submission
+
+6. Now you can SSH locally 
+
+$ sudo docker port eqchecker 22
+0.0.0.0:XXXXX
+
+$ ssh -pXXXXX equivalence@127.0.0.1
+(password is 'checker')
+
+7. When you're done with the artifact, you can cleanup by running
+
+$ sudo docker stop eqchecker
+$ sudo docker container rm eqchecker
+$ sudo docker image rm gcr.io/research-dev-200901/pldi2019-artifact:submission
+
+== Running the Example ==
+
+1. In ~/equivalence-checker/pldi19 you will find all the benchmarks
+from the paper. For getting started, we will demonstrate running
+our tool on the example from section 2 of the paper. Navigate to
+~/equivalence-checker/pldi19/paper_example.
+
+2. To see the source code for the programs we are comparing, run 'cat
+source.c'. We will prove that bitflip() performs the same computation
+as bitflip_vec().
+
+3. Run 'make' to compile the functions with gcc -O1 and disassemble
+them. The assembly code is written into the folder 'opt1'.
+
+4. Our tool needs test cases to find an alignment between the two
+programs. For this example, we use a symbolic execution tool to
+generate test cases for execution paths up to a bound. Run 'make
+tcgen'. This should finish within 10 seconds. The generated testcases
+can be found in the 'testcases' file; each testcase includes a value
+for each machine register and values for a subset of memory locations.
+
+5. Run './demo.sh | tee trace' to perform verification and save the
+output to the file called 'trace'. If verification succeeds, you will
+see the message 'Equivalent: yes' at the end of the output. This
+should finish in under 30 seconds; it may appear to hang briefly while
+some matrix computations are performed.
+
+6. Review the trace file.  It contains:
+
+ - The assembly of the two programs being compared.
+ - The alignment predicates guessed, in order. e.g. "Trying alignment
+   predicate..."
+ - For some alignment predicates, the PAA that was initially
+   constructed before simplification.
+ - The PAA after simplication.
+ - If the PAA accepts all test cases, there will be output from
+   learning the invariants.  You should see matrices here.
+ - After invariant learning, you will see the discharge of a series of
+   proof obligations.
+ - For our examples, once proof obligations start being checked
+   the proof usually succeeds (but this isn't guaranteed -- another
+   alignment predicate may be tried if they fail).
+ - At the end of the trace, the final PAA along with all the
+   invariants are printed.
+
+Note that the trace file may contain some ANSI-escape codes like
+<E2><89><A4>. These can be used to render colors in the output for
+debugging counterexamples from the SMT solver. If you're not trying to
+debug, these can be ignored.
+
+To gain a deeper understanding of the PAA, one needs to see how the
+basic blocks of the two programs are numbered.
+
+============================
+==== ABOUT THE ARTIFACT ====
+============================
+
+We demonstrate that our technique succeeds on all benchmarks described
+in the paper, including:
+
+  - our example (Section 2)
+  - the 56 benchmarks derived from TSVC (Section 5.1 and 5.2)
+  - the strlen benchmark (Section 5.3)
+  - the benchmark from [7] (Section 5.4, lines 1056-1080)
+
+We do not demonstrate the cloud infrastructure for checking proof
+obligations mentioned on lines 894-895, since it is unwieldy to
+package and unrelated to the paper's claims. As a result, this
+artifact does now allow the reviewer to reproduce executions from
+long-running benchmarks. Instead, we include traces from successful
+executions that show all the relevant data.
+
+However, the artifact includes several optimizations not present in
+the original submission. As a result, some, but not all, of the TSVC
+benchmarks can run on a single CPU core in under 10 minutes. We expect
+performance to vary across machines.
+
+The implementation of this system was built upon the STOKE stochastic
+superoptimizer (see stoke.stanford.edu), since it offered a suitable
+platform for dynamic analysis, static analysis and verification of
+x86-64 assembly. As a result, some terminology used throughout this
+artifact borrows from the superoptimization technology. A key example
+is that we refer to the two programs being verified as the "target"
+and "rewrite" program.
+
+======================
+==== STEP BY STEP ====
+======================
+
+== TO RUN OUR EXPERIMENTS ==
+
+(A) Example presented in Section 2.2
+
+    This is covered in more detail in the 'Getting Started' material.  
+    1. Navigate to ~/equivalence-checker/pldi19/paper_example.
+    2. Run 'make'.
+    3. Run 'make tcgen'.
+    4. Run './demo.sh'.
+
+(B) TSVC benchmarks (Sections 5.1, 5.2)
+
+    1. Navigate to ~/equivalence-checker/pldi19/TSVC
+    2. Run 'make'. This will build the benchmarks in clean.c with each of
+       gcc -O1 ("baseline"), gcc -O3 ("gcc") and clang -O3 ("llvm").
+    3. Run 'make tcgen'. This randomly generates a new set of test
+       cases for the TSVC benchmarks using a utility we have specifically
+       constructed for this purpose.  All benchmarks use the same set
+       of test cases, except s176 uses fewer.
+    4. Run 'cat benchmarks' to see the list of available benchmarks.
+    5. To run a benchmark, use 
+
+      ./demo.rb verify <compiler1> <compiler2> <benchmark-name>
+
+     e.g.
+
+      ./demo.rb verify baseline gcc s000
+
+     The output will be written to a file in the 'traces' folder, any
+     errors to a file in the 'misc' folder, and a report of the time
+     into the 'times' folder. The exact filenames can be seen in the
+     output of the demo.rb script.
+
+     In the paper, we have performed the baseline-gcc comparison and
+     the baseline-llvm comparison for each benchmark.
+
+     The following benchmarks run in under 10 minutes on our machine:
+
+        s000-gcc
+        s000-llvm
+        s1112-gcc
+        s121-gcc
+        s121-llvm
+        s1221-gcc
+        s1221-llvm
+        s1251-gcc
+        s1351-gcc
+        s1351-llvm
+        s173-gcc
+        s2244-gcc
+        s351-llvm
+        vpv-gcc
+        vpvpv-gcc
+        vpvtv-gcc
+        vtv-gcc
+        vtvtv-gcc
+
+  6. If you have several cores and extra memory available, you can use
+    the following commands to run multiple benchmarks in parallel:
+
+    ./demo.rb verify-all <filename>
+    ./demo.rb verify-gcc <filename>
+    ./demo.rb verify-llvm <filename>
+
+    In each case, filename contains a newline-delimited list of
+    benchmarks (e.g. like the 'benchmarks' file). In general it's best
+    to have one core per benchmark running concurrently. verify-all
+    invokes the validator twice for each benchmark, once for gcc and
+    once for llvm, while verify-gcc and verify-llvm just compare the
+    selected compiler with the baseline.
+
+    The file 'benchmarks.1' and 'benchmarks.2' each contain half of
+    the benchmarks (14 each). So, if you have 14+ cores and a lot of
+    RAM, you can try running './demo.rb verify-gcc benchmarks.1' to
+    run 14 of the benchmarks in parallel. However, we haven't tested
+    all of the benchmarks in single-threaded execution, and some could
+    take a very long time to finish.
+
+(iii) strlen
+
+  1. Navigate to ~/equivalence-checker/pldi19/strlen.
+
+  2. Run 'make'
+
+  3. Run './demo.sh'. Depending on your machine, it should finish 
+  within 10 minutes and end with "Equivalent: yes".
+
+  Getting the right test cases for strlen is tricky; in the image we
+  have included a set that will certainly work. We've also provided
+  a script to generate them, but sometimes these test cases don't
+  provide sufficient code coverage. You can try regenerating the test
+  cases using 'make tcgen' and updating 'demo.sh' to point to the
+  'testcases' file rather than 'testcases.good'. It may take a few
+  tries.
+
+(iv) Example from Dahiya's 2017 APLAS paper.
+
+  1. Navigate to ~/equivalence-checker/pldi19/aplas17
+
+  2. Run 'make'
+
+  3. Run './demo.sh'.  This one tends to take 30-60 minutes.
+
+
+== To see traces from successful runs of the TSVC benchmarks ==
+
+Since some of the TSVC benchmarks take a long time to run, we
+have included in the artifact traces from these benchmarks from
+successful runs. These can be found in the home folder in the
+pldi19-traces.tar.gz file. These traces are from the tool around the
+time of submission -- the exact text in the traces differs a little
+bit from what the tool currently produces.
+
+
+=====================================
+==== RUNNING YOUR OWN BENCHMARKS ====
+=====================================
+
+The easiest way to run your own benchmark is to copy the
+'paper_example' folder, run 'make clean', and then update the C code
+for your benchmark. There are a few other things that need to be
+updated as well:
+
+(i) If you have re-named the functions, update the TARGET and REWRITE
+in the 'variables' file with the paths to the generated assembly code.
+
+(ii) If you have changed the parameter types or the return types
+of the function, you will need to update the DEF_INS and LIVE_OUTS
+sets in the 'variables' file. Each of these variables contains a
+set of x86-64 registers. The best way to find the correct setting
+is to lookup the x86-64 System V ABI's calling convention (which
+places integer/pointer parameters in rdi, rsi, rdx, rcx, r8, r9, and
+integer/pointers return values into rax) or to read the assembly code.
+
+(iii) The biggest and most important thing to update are the test
+cases. The simplest thing to try is to just run 'make tcgen'. This
+will try to use a symbolic executor to make test cases. However,
+there are two important caveats. First, the symbolic executor can't
+guarantee code coverage. If verification fails, you should try giving
+the system more test cases (although this slows it down). You can
+(a) increase the number of test cases used for training by supplying
+the --training_set_size parameter (defaults to 20); and/or (b) set a
+higher bound in the Makefile for the symbolic executor.
+
+Second, if your binary contains read-only data (e.g. addressed via
+RIP-offset addressing) you need to do extra work. You need to manually
+create a file called 'rodata' with a test case that contains all the
+read-only memory locations along with values. Then, ./demo.rb needs
+to be updated with a flag "--rodata </path/to/rodata>". An example
+of this file can be found in the ~/equivalence-checker/pldi19/TSVC
+folder. We unfortunately don't have tools to automate this (yet), so
+it's easier to stick with functions that don't require read-only data.
+
+It is important to double-check that your test cases actually work
+for both programs. Problems can come up, for example, when one
+program reads memory locations that the other program doesn't (as in
+the strlen benchmark, see section 5.3, esp. lines 1000-1009). The
+tool will give warnings that appear after "COLLECTING DATA..." if
+the test cases don't work right. The command 'stoke debug sandbox
+--target </path/to/assembly.s> --testcases </path/to/testcases>
+--index <N> --debug' can be used to understand why a particular test
+case is failing. 
+
+For long running loops, you may need to provide the "--max_jumps"
+option to the verification tool, which is used to stop and abort
+any loops that seem to be executing forever when performing dynamic
+analysis (the default value is 1024 iterations). However, this is
+rarely the bottleneck for our benchmarks since the symbolic executor
+doesn't generate test cases that run for so many iterations.
+
+(iv) We have placed bounds on the values of rsi and rdi to avoid
+certain overflow conditions. If you need this for your benchmark, you
+can add them with the '--assume' option in 'demo.sh'. The --assume
+option parses a limited set of expressions where the leaf nodes are
+of the form 'X_%reg', where X is either 't' or 'r' (for 'target' or
+'rewrite') and %reg is an x86-64 register name. The parser and its
+grammar can be found in '~/equivalence-checker/src/expr/expr_parser.h'
+
+(v) It's unlikely you will need to change it, but you can try
+increasing TARGET_BOUND and REWRITE_BOUND to 30 in the 'variables'
+file as a fail-safe option.
+
+=========================
+==== Troubleshooting ====
+=========================
+
+If a benchmark is failing (i.e. execution isn't ending or it returns
+"Equivalent: no") there are a few possible causes:
+
+  #1.  The two programs might not be equivalent.
+  #2.  The correct alignment predicate is not in the search space.
+  #3.  A good alignment predicate is found, but the learned invariants
+       aren't strong enough for a proof.
+  #4.  There aren't enough test cases to create a correct PAA.
+  #5.  The proof obligations are taking a long time -- so long that the
+       search space isn't being explored quickly enough.
+  #6.  There's a bug in the tool.
+
+Some things to try:
+
+  1. Use the bounded validator to see if actually the programs aren't
+  equivalent. The bounded validator is unsound, but for terminating
+  programs it is complete with a sufficiently high bound. Many of the
+  examples come with a ./bounded.sh in their folder for this purpose.
+  Alternatively, you can test the code or stare at it carefully to
+  check that it's really the same.
+
+  2. Try supplying your own alignment predicate. Doing so eliminates
+  failure mode #2 above and also more clearly isolates the problem
+  in all the other cases (it also deals with failure mode #5 in most
+  cases). This can be done by supplying the --alignment_predicate
+  argument along with an expression. It parses a limited set
+  of expressions where the leaf nodes are of the form 'X_%reg',
+  where X is either 't' or 'r' (for 'target' or 'rewrite') and
+  %reg is an x86-64 register name. The parser and its grammar can
+  be found in '~/equivalence-checker/src/expr/expr_parser.h'. For
+  example, you can specify '--alignment_predicate "t_%rax+1=%r_rdx"'
+  to align traces when the target program's value for %rax is
+  one less than the rewrite's value for %rdx. You can also use
+  --alignment_predicate_heap to force the traces to only align when
+  heap states match.
+
+  3. If you have supplied your own alignment predicate but there's
+  still a failure, then there are two possibilities:
+
+  (A) The PAA is constructed successfully and it accepts all the test
+  cases. The proof obligations start to discharge, but ultimately it
+  fails. This suggests failure mode #3 or #4. One needs to inspect
+  the failed proof obligation and SMT counterexample to determine
+  if it's because the PAA is missing an edge (#4) or if the tool is
+  failing to prove a necessary invariant (#3). The tool is generally
+  quite verbose, and in addition to giving a counterexample for failed
+  proof obligations it dynamically executes the counterexample as an
+  error-detecting strategy (to defend against failure mode #6) and
+  reports if the dynamic execution differs from an expected value.
+
+  (B) The PAA can't be built or it doesn't accept all the test cases.
+  Here, the most likely causes are that the alignment predicate is
+  still wrong (#2), you need more test cases (#4), or the programs
+  aren't actually equivalent (#1).
+
+==============================================
+==== UNDERSTANDING AND EXTENDING THE CODE ====
+==============================================
+
+This section is intended as a brief description of the code base for
+anyone who wants to extend the code. The ~/equivalence-checker/src and
+~/equivalence-checker/tools folders contain all the source code for
+our tools. The tools folder has the command line tools which make use
+of the code in the src folder to do all the heavy lifting.
+
+If ever you want to rebuild the code, running 'make' in the top level
+directory should be sufficient. A 'make clean' usually helps if there
+seems to be a problem.
+
+The src folder has a number of subfolders:
+
+  validator - This is where the equivalence checker resides, along
+  with semantics for all the x86-64 instructions, all the code for
+  alignment, building the PAA, discharging proof obligations, etc.
+
+  symstate - Data structures for representing an x86-64 system
+  symbolically, along with abstractions of symbolic bitvectors and
+  arrays that serve as a frontend to the SMT solver.
+
+  solver - Interfaces with SMT solvers.
+
+  state - Data structure for representing the concrete state of an
+  x86-64 system.
+
+  sandbox - Code to execute safely x86-64 code concretely against our
+  internal state representation.
+
+  cfg, tunit - Data structures for representing assembly code as
+  control flow graphs and static analysis.
+
+  expr - An expression parser
+
+  diassembler - The disassembler
+
+  ext - folder for external code. Most notably includes Z3, CVC4 and
+  x64asm (the library used to JIT assembly code and run it for the
+  sandbox).
+
+  serialize, stategen, kerberos, target, unionfind - Other utilities (not relevant)
+
+  cost, search, transform, verifier - Used by the superoptimizer (not relevant)
+
+Within the validator folder:
+
+  ddec.cc - This is where our algorithm is implemented.  It all begins
+    in the verify() function.  (The name DDEC is in reference to
+    "Data-Driven Equivalence Checking" by Sharma et al, which our
+    work extends)
+
+  handlers - semantics for x86-64 instructions
+
+  invariants - data structures to represent different kinds of invariants
+
+  variable.cc - An abstraction to represent registers, memory locations, 
+
+  paa.cc - The representation of the program alignment automata, and some
+    of the important methods.  'learn_state_data' is where the PAA checks that
+    it accepts the test inputs and gathers states to learn invariants.
+
+  learner.cc - Code to learn invariants from concerete executions.
+
+  data_collector.cc - An abstraction on top of the sandbox to collect
+    data from concrete execution traces
+
+  smt_obligation_checker.cc - Code to check the proof obligations.
+
+  int_matrix.cc - Uses sage to compute nullspaces over an integer ring.
+
+  sage.cc - Interface with SageMath
+
+Since the tool is built upon STOKE, consulting the STOKE
+documentation may be helpful too. This can be found at
+https://github.com/StanfordPL/stoke
+
+==== Example: Extending the space of invariants. ====
+
+If you want to add an invariant to the system, there are two things
+you need to do:
+
+1. Add the invariant in the invariants/ folder. This means writing
+code to evaluate whether the invariant holds over a pair of symbolic
+states and over a pair of concrete states.
+
+2. Adjust learner.cc to learn this invariant from a concrete execution.
+
+==== Example: Adding support for new x86-64 instructions. ====
+
+The key step is to add a new "handler" in the "handlers" folder. This
+is discussed in more detail in a README.md file which appears in the
+src/validator folder. (That documentation is a little dataed, but
+correct enough to make progress).
+
+==== Example: Extending the space of alignment predicates. ====
+
+Here, you will want to change the verify() function in ddec.cc to
+construct a different set of alignment predicates to pass to the
+'test_alignment_predicate' function.
+

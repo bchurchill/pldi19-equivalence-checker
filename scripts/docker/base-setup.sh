@@ -1,5 +1,6 @@
 #!/bin/bash
 
+echo "[setup.sh] TRAVIS=$TRAVIS"
 # install packages
 apt-get update
 apt-get install -y software-properties-common
@@ -56,6 +57,7 @@ sed -i "s/equivalence:.*/equivalence:\$6\$ZfBji33B\$1GZHu6wFBOIjkTgb6DEJRdRYcgjo
 usermod -a -G sudo equivalence
 
 # Compile everything, etc.
-cd /home/equivalence
-chmod +x user-setup.sh
-su equivalence -c "./user-setup.sh"
+chown -R stoke /home/stoke/base
+cd /home/stoke/base
+chmod +x scripts/docker/base-user-setup.sh
+su stoke -c "TRAVIS=$TRAVIS ./scripts/docker/base-user-setup.sh"

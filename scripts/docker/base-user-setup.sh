@@ -14,14 +14,13 @@ rm $FILENAME
 # prepare sage
 echo "exit" | /home/equivalence/SageMath/sage
 
-# download stoke
-git clone https://github.com/StanfordPL/stoke.git equivalence-checker
+# compile some dependencies
+cd /home/equivalence/base
 
-# compile stoke
-cd equivalence-checker
-touch bin/envvars
-git checkout artifact
-git reset --hard efd6d6acb15ab77
-./configure.sh
-make
+echo "STOKE_PLATFORM=\"nehalem\"" > .stoke_config
+echo "BUILD_TYPE=release" >> .stoke_config
+echo "MISC_OPTIONS=\"\"" >> .stoke_config
+
+make z3
+make cvc4
 
