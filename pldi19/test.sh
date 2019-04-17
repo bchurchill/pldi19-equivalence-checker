@@ -14,6 +14,7 @@ else
 	echo "EXAMPLE: failed"
 	FAILED=$((FAILED+1))
 fi
+make clean
 cd ..
 
 ## TEST STRLEN
@@ -27,6 +28,7 @@ else
 	echo "STRLEN: failed"
 	FAILED=$((FAILED+1))
 fi
+make clean
 cd ..
 
 echo "$SUCCESS tests passed, $FAILED tests failed"
