@@ -1,6 +1,7 @@
 #!/bin/bash
 
 cd /home/equivalence/equivalence-checker
+touch bin/envvars
 
 rm -rf src/ext/z3
 
