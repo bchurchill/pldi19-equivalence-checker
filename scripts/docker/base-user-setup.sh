@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # download sagemath and unpack
+cd /home/equivalence
 FILENAME=sage-8.5-Ubuntu_14.04-x86_64.tar.bz2
 
 wget --no-verbose http://mirrors.xmission.com/sage/linux/64bit/$FILENAME
