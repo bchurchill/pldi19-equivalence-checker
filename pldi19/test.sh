@@ -6,7 +6,8 @@ SUCCESS=0
 ## TEST EXAMPLE
 cd paper_example
 make
-timeout 10m ./demo.sh | grep "Equivalent: yes"
+time timeout 10m ./demo.sh | tee trace
+grep "Equivalent: yes" trace
 if [ $? -eq "0" ]; then
 	echo "EXAMPLE: passed"
 	SUCCESS=$((SUCCESS+1))
@@ -20,7 +21,8 @@ cd ..
 ## TEST STRLEN
 cd strlen
 make
-timeout 10m ./demo.sh | grep "Equivalent: yes"
+time timeout 10m ./demo.sh | tee trace
+grep "Equivalent: yes" trace
 if [ $? -eq "0" ]; then
 	echo "STRLEN: passed"
 	SUCCESS=$((SUCCESS+1))
