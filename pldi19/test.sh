@@ -21,7 +21,7 @@ cd ..
 ## TEST STRLEN
 cd strlen
 make
-time timeout 10m ./demo.sh | tee trace
+time timeout 20m ./demo.sh | tee trace
 grep "Equivalent: yes" trace
 if [ $? -eq "0" ]; then
 	echo "STRLEN: passed"
