@@ -10,5 +10,7 @@ ln -s /home/equivalence/base/src/ext/cvc4-1.6-build src/ext/cvc4-1.6-build
 ln -s /home/equivalence/base/src/ext/cvc4-1.6 src/ext/cvc4-1.6
 
 # fix PATH
-echo "PATH=\"\$HOME/equivalence-checker/bin:\$PATH\"" >> ~/.bashrc
+echo "export PATH=\"\$HOME/equivalence-checker/bin:\$PATH\"" >> ~/.bashrc
+echo "export PATH=\"\$HOME/SageMath:\$PATH\"" >> ~/.bashrc
+
 
