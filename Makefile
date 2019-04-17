@@ -305,7 +305,7 @@ profile:
 	$(MAKE) -C . -j$(NTHREADS) $(BIN) BUILD_TYPE="profile"
 	echo -e "\a"
 tests: debug
-	$(MAKE) -C . -j$(NTHREADS) bin/stoke_test BUILD_TYPE="debug"
+	$(MAKE) -C . -j$(NTHREADS) bin/stoke_test 
 	echo -e "\a"
 test: tests
 	bin/stoke_test
@@ -313,7 +313,7 @@ test: tests
 ddec_test:
 	./popl19/test.sh
 fast_tests: debug
-	$(MAKE) -C . -j$(NTHREADS) bin/stoke_test BUILD_TYPE="debug" MISC_OPTIONS="-DNO_VERY_SLOW_TESTS $(MISC_OPTIONS)"
+	$(MAKE) -C . -j$(NTHREADS) bin/stoke_test MISC_OPTIONS="-DNO_VERY_SLOW_TESTS $(MISC_OPTIONS)"
 	bin/stoke_test
 	echo -e "\a"
 fast: fast_tests

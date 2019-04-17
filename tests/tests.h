@@ -49,7 +49,7 @@ using namespace x64asm;
 #include "tests/x64asm/instruction.h"
 #include "tests/cfg/cfg_tests.h"
 #include "tests/cost/cost.h"
-#include "tests/expr/expr.h"
+//#include "tests/expr/expr.h"
 #include "tests/cpputil/cpputil.h"
 #include "tests/disassembler/disassembler.h"
 #include "tests/solver/solver.h"
@@ -64,31 +64,31 @@ using namespace x64asm;
 #include "tests/verifier/verifier.h"
 #include "tests/fixture.h"
 
-#if !defined(NO_SLOW_TESTS)
+//#if !defined(NO_SLOW_TESTS)
 
 // medium tests (at most 5 sec per test)
-#include "tests/x64asm/read_write_sets.h"
-#include "tests/x64asm/alt_read_write_sets.h"
-#include "tests/validator/fuzz.h"
-#include "tests/validator/simple.h"
+//#include "tests/x64asm/read_write_sets.h"
+//#include "tests/x64asm/alt_read_write_sets.h"
+//#include "tests/validator/fuzz.h"
+//#include "tests/validator/simple.h"
 //#include "tests/validator/ddec.h"
-#include "tests/validator/bounded.h"
+//#include "tests/validator/bounded.h"
 
-#endif
+//#endif
 
-#if !defined(NO_VERY_SLOW_TESTS) && !defined(NO_SLOW_TESTS)
+//#if !defined(NO_VERY_SLOW_TESTS) && !defined(NO_SLOW_TESTS)
 
 // large tests (anything slower)
 //#include "tests/integration/integration.h"
-#include "tests/validator/bounded_long.h"
+//#include "tests/validator/bounded_long.h"
 // #include "tests/validator/ddec_long.h"
-#include "tests/validator/handlers.h"
-#include "tests/validator/memory.h"
-#include "tests/x64asm/parsing.h"
-#include "tests/transform/transform.h"
-#include "tests/sandbox/sandbox_fuzzer.h"
+//#include "tests/validator/handlers.h"
+//#include "tests/validator/memory.h"
+//#include "tests/x64asm/parsing.h"
+//#include "tests/transform/transform.h"
+//#include "tests/sandbox/sandbox_fuzzer.h"
 
-#endif
+//#endif
 
 
 INSTANTIATE_TEST_CASE_P(

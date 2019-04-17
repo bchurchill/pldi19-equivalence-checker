@@ -48,7 +48,7 @@ TEST(SymBitvectorTest, CanPrintExpressions) {
   std::stringstream ss;
   ss << z;
 
-  EXPECT_EQ("(x + y & (x << 0x3\xE2\x82\x83 \xE2\x8A\x95 !y))[2:1]", ss.str());
+  EXPECT_EQ("(x + y & (x << 0x3\xE2\x82\x83 \xE2\x8A\x95 ~y))[2:1]", ss.str());
 
 }
 
