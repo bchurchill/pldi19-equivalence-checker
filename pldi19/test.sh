@@ -5,6 +5,7 @@ SUCCESS=0
 
 ## TEST EXAMPLE
 cd paper_example
+make
 timeout 10m ./demo.sh | grep "Equivalent: yes"
 if [ $? -eq "0" ]; then
 	echo "EXAMPLE: passed"
@@ -17,6 +18,7 @@ cd ..
 
 ## TEST STRLEN
 cd strlen
+make
 timeout 10m ./demo.sh | grep "Equivalent: yes"
 if [ $? -eq "0" ]; then
 	echo "STRLEN: passed"
