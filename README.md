@@ -118,9 +118,10 @@ $ sudo docker image rm bchurchill/pldi19
 Alternate Setup Instructions
 ----------------------------
 
-For instructions on compiling the code, see `STOKE.md` as found in this
-repository.  For the equivalence checker, you will also need to install
-SageMath. 
+For instructions on building an environment suitable for compiling the code, see `STOKE.md` as found in this
+repository.  For the equivalence checker, you will also need to install SageMath. 
+
+One can also build your own docker images.  You will need to start by building the "base" image by running `sudo docker build -f Dockerfile.base .`, tag it, and then build the real image with `sudo docker build .`.  If you don't want to use Docker at all, you can at least see how the Dockerfile calls different scripts to install packages on an Ubuntu 14.04 image.  You should be able to get the software to run on newer distros, but the main trouble will be getting the compiler to work; `gcc-5` introduces some breaking changes.  Right now this tool works with `gcc-4.9`.
 
 Running the Example
 -------------------
@@ -470,31 +471,31 @@ The src folder has a number of subfolders:
 
 Within the validator folder:
 
-  ddec.cc - This is where our algorithm is implemented.  It all begins
+  `ddec.cc` - This is where our algorithm is implemented.  It all begins
     in the verify() function.  (The name DDEC is in reference to
     "Data-Driven Equivalence Checking" by Sharma et al, which our
     work extends)
 
-  handlers - semantics for x86-64 instructions
+  `handlers` - semantics for x86-64 instructions
 
-  invariants - data structures to represent different kinds of invariants
+  `invariants` - data structures to represent different kinds of invariants
 
-  variable.cc - An abstraction to represent registers, memory locations, 
+  `variable.cc` - An abstraction to represent registers, memory locations, 
 
-  paa.cc - The representation of the program alignment automata, and some
+  `paa.cc` - The representation of the program alignment automata, and some
     of the important methods.  'learn_state_data' is where the PAA checks that
     it accepts the test inputs and gathers states to learn invariants.
 
-  learner.cc - Code to learn invariants from concerete executions.
+  `learner.cc` - Code to learn invariants from concerete executions.
 
-  data_collector.cc - An abstraction on top of the sandbox to collect
+  `data_collector.cc` - An abstraction on top of the sandbox to collect
     data from concrete execution traces
 
-  smt_obligation_checker.cc - Code to check the proof obligations.
+  `smt_obligation_checker.cc` - Code to check the proof obligations.
 
-  int_matrix.cc - Uses sage to compute nullspaces over an integer ring.
+  `int_matrix.cc` - Uses sage to compute nullspaces over an integer ring.
 
-  sage.cc - Interface with SageMath
+  `sage.cc` - Interface with SageMath
 
 Since the tool is built upon STOKE, consulting the STOKE
 documentation may be helpful too. This can be found at
