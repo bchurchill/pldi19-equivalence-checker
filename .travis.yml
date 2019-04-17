@@ -1,0 +1,17 @@
+
+language: minimal
+
+services:
+  - docker
+
+script: 
+  - docker build -t eqc .
+  - docker run eqc /bin/sh -c "cd /home/equivalence/equivalence-checker; ./configure.sh; make; make test;"
+  - IMAGENAME="bchurchill/pldi19:$TRAVIS_BUILD_ID"
+  - if [ "$TRAVIS_BRANCH" = "master" ]; then IMAGENAME="bchurchill/pldi19:latest"; fi
+  - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then 
+        docker tag eqc "$IMAGENAME";  
+        echo "$DOCKER_DEPLOY_PWD" | docker login -u "$DOCKER_DEPLOY_USR" --password-stdin;
+        docker push "$IMAGENAME";
+    fi
+
