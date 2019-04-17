@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/bchurchill/pldi19-equivalence-checker.svg?branch=master)](https://travis-ci.org/bchurchill/pldi19-equivalence-checker)
 
 About
 =====
@@ -6,14 +7,15 @@ This is an implementation of the equivalence checker presented in "Semantic
 Program Alignment for Equivlance Checking" by Berkeley Churchill, Oded Padon,
 Rahul Sharma and Alex Aiken, presented at PLDI 2019.
 
-*Limitations* This artifact can be used to reproduce many of the results of the
+**Limitations** This artifact can be used to reproduce many of the results of the
 paper, but not all of them.  In particular, the paper describes a system to
 discharge proof obligations concurrently using a large number of systems in the
 cloud.  This artifact only supports discharging proof obligations on one core,
-  and so it is much more limitted.  The artifact can be reliably use to check
-  the strlen benchmark (presented in section 5.3), the running example (section
-      2), the benchmark described in section 5.4, and _some_ of the TSVC
-  benchmarks.
+  and so it is much more limitted.  The artifact can be reliably use to check:
+ - the strlen benchmark (section 5.3)
+ - benchmark from [7] described in Section 5.4.
+ - the running example (section 2)
+ - _some_ of the TSVC benchmarks
 
 
 Getting Started
@@ -41,79 +43,110 @@ should be suitable.
 
 1. Install Docker CE.  Follow the instructions for your platform:
 
-Windows - https://hub.docker.com/editions/community/docker-ce-desktop-windows
-Mac     - https://hub.docker.com/editions/community/docker-ce-desktop-mac
-Ubuntu  - https://docs.docker.com/install/linux/docker-ce/ubuntu/
-Debian  - https://docs.docker.com/install/linux/docker-ce/debian/
-Fedora  - https://docs.docker.com/install/linux/docker-ce/fedora/
-CentOS  - https://docs.docker.com/install/linux/docker-ce/centos/
+- Windows https://hub.docker.com/editions/community/docker-ce-desktop-windows
+- Mac https://hub.docker.com/editions/community/docker-ce-desktop-mac
+- Ubuntu https://docs.docker.com/install/linux/docker-ce/ubuntu/
+- Debian https://docs.docker.com/install/linux/docker-ce/debian/
+- Fedora https://docs.docker.com/install/linux/docker-ce/fedora/
+- CentOS https://docs.docker.com/install/linux/docker-ce/centos/
 
 2. Test the docker install. Note that you may need to use 'sudo' for
 all docker commands:
 
-`
+```
 $ sudo docker run hello-world
-`
+```
+
 (should print a message containing "Hello from Docker!")
 
 3. Pull the image from DockerHub
 
+```
 $ sudo docker pull bchurchill/pldi19
+```
 
 4. (Optional) Verify the hash of the docker image.
 
+```
 $ sudo docker image ls --digests
+```
 
 5. Run the image
 
+```
 $ sudo docker run -d -P --name eqchecker bchurchill/pldi19
+```
 
 6. Now you can SSH locally 
 
+```
 $ sudo docker port eqchecker 22
 0.0.0.0:XXXXX
 
 $ ssh -pXXXXX equivalence@127.0.0.1
 (password is 'checker')
+```
 
-7. When you're done with the artifact, you can cleanup by running
+7. Build the code by running,
 
+```
+$ ./configure.sh
+$ make
+```
+
+8. You may optionally run unit-tests
+
+```
+$ make test
+```
+
+9. You may optionally run tests on two benchmarks (strlen and the running example)
+
+```
+cd pldi19
+./test.sh
+```
+
+10. When you're done with the artifact, you can cleanup by running
+
+```
 $ sudo docker stop eqchecker
 $ sudo docker container rm eqchecker
-$ sudo docker image rm gcr.io/research-dev-200901/pldi2019-artifact:submission
+$ sudo docker image rm bchurchill/pldi19
+```
 
 Alternate Setup Instructions
 ----------------------------
 
-For instructions on compiling the code, see `STOKE.md` as found in this
-repository.  For the equivalence checker, you will also need to install
-SageMath. 
+For instructions on building an environment suitable for compiling the code, see `STOKE.md` as found in this
+repository.  For the equivalence checker, you will also need to install SageMath. 
+
+One can also build your own docker images.  You will need to start by building the "base" image by running `sudo docker build -f Dockerfile.base .`, tag it, and then build the real image with `sudo docker build .`.  If you don't want to use Docker at all, you can at least see how the Dockerfile calls different scripts to install packages on an Ubuntu 14.04 image.  You should be able to get the software to run on newer distros, but the main trouble will be getting the compiler to work; `gcc-5` introduces some breaking changes.  Right now this tool works with `gcc-4.9`.
 
 Running the Example
 -------------------
 
-1. In ~/equivalence-checker/pldi19 you will find all the benchmarks
+1. In `~/equivalence-checker/pldi19` you will find all the benchmarks
 from the paper. For getting started, we will demonstrate running
 our tool on the example from section 2 of the paper. Navigate to
-~/equivalence-checker/pldi19/paper_example.
+`~/equivalence-checker/pldi19/paper_example`.
 
-2. To see the source code for the programs we are comparing, run 'cat
-source.c'. We will prove that bitflip() performs the same computation
-as bitflip_vec().
+2. To see the source code for the programs we are comparing, run `cat source.c`. 
+We will prove that `bitflip()` performs the same computation as `bitflip_vec()`.
 
-3. Run 'make' to compile the functions with gcc -O1 and disassemble
-them. The assembly code is written into the folder 'opt1'.
+3. Run `make` to compile the functions with `gcc -O1` and disassemble
+them. The assembly code is written into the folder `opt1`.
 
 4. Our tool needs test cases to find an alignment between the two
 programs. For this example, we use a symbolic execution tool to
-generate test cases for execution paths up to a bound. Run 'make
-tcgen'. This should finish within 10 seconds. The generated testcases
+generate test cases for execution paths up to a bound. Run 
+`make tcgen`. This should finish within 10 seconds. The generated testcases
 can be found in the 'testcases' file; each testcase includes a value
 for each machine register and values for a subset of memory locations.
 
-5. Run './demo.sh | tee trace' to perform verification and save the
-output to the file called 'trace'. If verification succeeds, you will
-see the message 'Equivalent: yes' at the end of the output. This
+5. Run `./demo.sh | tee trace` to perform verification and save the
+output to the file called `trace`. If verification succeeds, you will
+see the message `Equivalent: yes` at the end of the output. This
 should finish in under 30 seconds; it may appear to hang briefly while
 some matrix computations are performed.
 
@@ -136,7 +169,7 @@ some matrix computations are performed.
    invariants are printed.
 
 Note that the trace file may contain some ANSI-escape codes like
-<E2><89><A4>. These can be used to render colors in the output for
+`<E2><89><A4>`. These can be used to render colors in the output for
 debugging counterexamples from the SMT solver. If you're not trying to
 debug, these can be ignored.
 
@@ -438,31 +471,31 @@ The src folder has a number of subfolders:
 
 Within the validator folder:
 
-  ddec.cc - This is where our algorithm is implemented.  It all begins
+  `ddec.cc` - This is where our algorithm is implemented.  It all begins
     in the verify() function.  (The name DDEC is in reference to
     "Data-Driven Equivalence Checking" by Sharma et al, which our
     work extends)
 
-  handlers - semantics for x86-64 instructions
+  `handlers` - semantics for x86-64 instructions
 
-  invariants - data structures to represent different kinds of invariants
+  `invariants` - data structures to represent different kinds of invariants
 
-  variable.cc - An abstraction to represent registers, memory locations, 
+  `variable.cc` - An abstraction to represent registers, memory locations, 
 
-  paa.cc - The representation of the program alignment automata, and some
+  `paa.cc` - The representation of the program alignment automata, and some
     of the important methods.  'learn_state_data' is where the PAA checks that
     it accepts the test inputs and gathers states to learn invariants.
 
-  learner.cc - Code to learn invariants from concerete executions.
+  `learner.cc` - Code to learn invariants from concerete executions.
 
-  data_collector.cc - An abstraction on top of the sandbox to collect
+  `data_collector.cc` - An abstraction on top of the sandbox to collect
     data from concrete execution traces
 
-  smt_obligation_checker.cc - Code to check the proof obligations.
+  `smt_obligation_checker.cc` - Code to check the proof obligations.
 
-  int_matrix.cc - Uses sage to compute nullspaces over an integer ring.
+  `int_matrix.cc` - Uses sage to compute nullspaces over an integer ring.
 
-  sage.cc - Interface with SageMath
+  `sage.cc` - Interface with SageMath
 
 Since the tool is built upon STOKE, consulting the STOKE
 documentation may be helpful too. This can be found at

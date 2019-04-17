@@ -696,11 +696,7 @@ private:
 
 
   /* The solver we're using */
-#ifndef NOCVC4
-  Cvc4Solver s_;
-#else
   Z3Solver s_;
-#endif
 
   /* The validator we're using */
   ComboHandler handler_;

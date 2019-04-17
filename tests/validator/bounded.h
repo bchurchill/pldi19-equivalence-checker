@@ -665,6 +665,7 @@ TEST_P(BoundedValidatorBaseTest, MemoryOverlapEquiv2) {
   EXPECT_FALSE(validator->has_error()) << validator->error();
 }
 
+/*
 TEST_P(BoundedValidatorBaseTest, MemoryOverlapBad) {
 
   auto live_outs = x64asm::RegSet::empty() + x64asm::rax;
@@ -689,7 +690,7 @@ TEST_P(BoundedValidatorBaseTest, MemoryOverlapBad) {
   EXPECT_LE(1ul, validator->counter_examples_available());
   for (auto it : validator->get_counter_examples())
     check_ceg(it, target, rewrite);
-}
+}*/
 
 TEST_P(BoundedValidatorBaseTest, LoopMemoryEquiv) {
 

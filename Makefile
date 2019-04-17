@@ -54,13 +54,13 @@ endif
 # Set platform-specific compiler options to use
 ifndef ARCH_OPT
 	ifeq ($(STOKE_PLATFORM), "haswell")
-		ARCH_OPT=-march=core-avx2 -DHASWELL_BUILD
+		ARCH_OPT=-DHASWELL_BUILD
 	endif
 	ifeq ($(STOKE_PLATFORM), "sandybridge")
-		ARCH_OPT=-march=corei7-avx -DSANDYBRIDGE_BUILD
+		ARCH_OPT=-DSANDYBRIDGE_BUILD
 	endif
 	ifeq ($(STOKE_PLATFORM), "nehalem")
-		ARCH_OPT=-march=corei7 -DNEHALEM_BUILD
+		ARCH_OPT=-DNEHALEM_BUILD
 	endif
 endif
 ifndef ARCH_OPT
@@ -305,7 +305,7 @@ profile:
 	$(MAKE) -C . -j$(NTHREADS) $(BIN) BUILD_TYPE="profile"
 	echo -e "\a"
 tests: debug
-	$(MAKE) -C . -j$(NTHREADS) bin/stoke_test BUILD_TYPE="debug"
+	$(MAKE) -C . -j$(NTHREADS) bin/stoke_test 
 	echo -e "\a"
 test: tests
 	bin/stoke_test
@@ -313,7 +313,7 @@ test: tests
 ddec_test:
 	./popl19/test.sh
 fast_tests: debug
-	$(MAKE) -C . -j$(NTHREADS) bin/stoke_test BUILD_TYPE="debug" MISC_OPTIONS="-DNO_VERY_SLOW_TESTS $(MISC_OPTIONS)"
+	$(MAKE) -C . -j$(NTHREADS) bin/stoke_test MISC_OPTIONS="-DNO_VERY_SLOW_TESTS $(MISC_OPTIONS)"
 	bin/stoke_test
 	echo -e "\a"
 fast: fast_tests
@@ -480,7 +480,7 @@ tests/validator/handlers.h: .FORCE
 tests/%.o: tests/%.cc tests/%.h
 	$(STOKE_CXX) $(TARGET) $(OPT) $(ARCH_OPT) $(INC) -c $< -o $@ $(TEST_LIBS)
 
-bin/stoke_test: tools/apps/stoke_test.cc $(DEPS) $(SRC_OBJ) $(TEST_OBJ) $(TOOL_NON_ARG_OBJ) $(wildcard src/*/*.h) $(wildcard tests/*.h) $(wildcard tests/*/*.h) $(wildcard tests/*/*/*.h) tests/validator/handlers.h .git-version.inc
+bin/stoke_test: tools/apps/stoke_test.cc $(DEPS) $(SRC_OBJ) $(TEST_OBJ) $(TOOL_NON_ARG_OBJ) $(wildcard src/*/*.h) $(wildcard tests/*.h) $(wildcard tests/*/*.h) $(wildcard tests/*/*/*.h) tests/validator/handlers.h git-version.inc
 	$(STOKE_CXX) $(TARGET) $(OPT) $(ARCH_OPT) $(INC) $< -o $@ $(SRC_OBJ) $(TEST_OBJ) $(TOOL_NON_ARG_OBJ) $(LIB) $(LDFLAGS) $(TEST_LIBS)
 
 ## MISC
