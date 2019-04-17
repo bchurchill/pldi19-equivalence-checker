@@ -53,36 +53,67 @@ should be suitable.
 2. Test the docker install. Note that you may need to use 'sudo' for
 all docker commands:
 
-`
+```
 $ sudo docker run hello-world
-`
+```
+
 (should print a message containing "Hello from Docker!")
 
 3. Pull the image from DockerHub
 
+```
 $ sudo docker pull bchurchill/pldi19
+```
 
 4. (Optional) Verify the hash of the docker image.
 
+```
 $ sudo docker image ls --digests
+```
 
 5. Run the image
 
+```
 $ sudo docker run -d -P --name eqchecker bchurchill/pldi19
+```
 
 6. Now you can SSH locally 
 
+```
 $ sudo docker port eqchecker 22
 0.0.0.0:XXXXX
 
 $ ssh -pXXXXX equivalence@127.0.0.1
 (password is 'checker')
+```
 
-7. When you're done with the artifact, you can cleanup by running
+7. Build the code by running,
 
+```
+$ ./configure.sh
+$ make
+```
+
+8. You may optionally run unit-tests
+
+```
+$ make test
+```
+
+9. You may optionally run tests on two benchmarks (strlen and the running example)
+
+```
+cd pldi19
+./test.sh
+```
+
+10. When you're done with the artifact, you can cleanup by running
+
+```
 $ sudo docker stop eqchecker
 $ sudo docker container rm eqchecker
-$ sudo docker image rm gcr.io/research-dev-200901/pldi2019-artifact:submission
+$ sudo docker image rm bchurchill/pldi19
+```
 
 Alternate Setup Instructions
 ----------------------------
@@ -94,28 +125,27 @@ SageMath.
 Running the Example
 -------------------
 
-1. In ~/equivalence-checker/pldi19 you will find all the benchmarks
+1. In `~/equivalence-checker/pldi19` you will find all the benchmarks
 from the paper. For getting started, we will demonstrate running
 our tool on the example from section 2 of the paper. Navigate to
-~/equivalence-checker/pldi19/paper_example.
+`~/equivalence-checker/pldi19/paper_example`.
 
-2. To see the source code for the programs we are comparing, run 'cat
-source.c'. We will prove that bitflip() performs the same computation
-as bitflip_vec().
+2. To see the source code for the programs we are comparing, run `cat source.c`. 
+We will prove that `bitflip()` performs the same computation as `bitflip_vec()`.
 
-3. Run 'make' to compile the functions with gcc -O1 and disassemble
-them. The assembly code is written into the folder 'opt1'.
+3. Run `make` to compile the functions with `gcc -O1` and disassemble
+them. The assembly code is written into the folder `opt1`.
 
 4. Our tool needs test cases to find an alignment between the two
 programs. For this example, we use a symbolic execution tool to
-generate test cases for execution paths up to a bound. Run 'make
-tcgen'. This should finish within 10 seconds. The generated testcases
+generate test cases for execution paths up to a bound. Run 
+`make tcgen`. This should finish within 10 seconds. The generated testcases
 can be found in the 'testcases' file; each testcase includes a value
 for each machine register and values for a subset of memory locations.
 
-5. Run './demo.sh | tee trace' to perform verification and save the
-output to the file called 'trace'. If verification succeeds, you will
-see the message 'Equivalent: yes' at the end of the output. This
+5. Run `./demo.sh | tee trace` to perform verification and save the
+output to the file called `trace`. If verification succeeds, you will
+see the message `Equivalent: yes` at the end of the output. This
 should finish in under 30 seconds; it may appear to hang briefly while
 some matrix computations are performed.
 
@@ -138,7 +168,7 @@ some matrix computations are performed.
    invariants are printed.
 
 Note that the trace file may contain some ANSI-escape codes like
-<E2><89><A4>. These can be used to render colors in the output for
+`<E2><89><A4>`. These can be used to render colors in the output for
 debugging counterexamples from the SMT solver. If you're not trying to
 debug, these can be ignored.
 
