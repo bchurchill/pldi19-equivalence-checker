@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/bchurchill/pldi19-equivalence-checker.svg?branch=master)](https://travis-ci.org/bchurchill/pldi19-equivalence-checker)
 
 About
 =====
@@ -6,14 +7,15 @@ This is an implementation of the equivalence checker presented in "Semantic
 Program Alignment for Equivlance Checking" by Berkeley Churchill, Oded Padon,
 Rahul Sharma and Alex Aiken, presented at PLDI 2019.
 
-*Limitations* This artifact can be used to reproduce many of the results of the
+**Limitations** This artifact can be used to reproduce many of the results of the
 paper, but not all of them.  In particular, the paper describes a system to
 discharge proof obligations concurrently using a large number of systems in the
 cloud.  This artifact only supports discharging proof obligations on one core,
-  and so it is much more limitted.  The artifact can be reliably use to check
-  the strlen benchmark (presented in section 5.3), the running example (section
-      2), the benchmark described in section 5.4, and _some_ of the TSVC
-  benchmarks.
+  and so it is much more limitted.  The artifact can be reliably use to check:
+ - the strlen benchmark (section 5.3)
+ - benchmark from [7] described in Section 5.4.
+ - the running example (section 2)
+ - _some_ of the TSVC benchmarks
 
 
 Getting Started
@@ -41,12 +43,12 @@ should be suitable.
 
 1. Install Docker CE.  Follow the instructions for your platform:
 
-Windows - https://hub.docker.com/editions/community/docker-ce-desktop-windows
-Mac     - https://hub.docker.com/editions/community/docker-ce-desktop-mac
-Ubuntu  - https://docs.docker.com/install/linux/docker-ce/ubuntu/
-Debian  - https://docs.docker.com/install/linux/docker-ce/debian/
-Fedora  - https://docs.docker.com/install/linux/docker-ce/fedora/
-CentOS  - https://docs.docker.com/install/linux/docker-ce/centos/
+- Windows https://hub.docker.com/editions/community/docker-ce-desktop-windows
+- Mac https://hub.docker.com/editions/community/docker-ce-desktop-mac
+- Ubuntu https://docs.docker.com/install/linux/docker-ce/ubuntu/
+- Debian https://docs.docker.com/install/linux/docker-ce/debian/
+- Fedora https://docs.docker.com/install/linux/docker-ce/fedora/
+- CentOS https://docs.docker.com/install/linux/docker-ce/centos/
 
 2. Test the docker install. Note that you may need to use 'sudo' for
 all docker commands:
