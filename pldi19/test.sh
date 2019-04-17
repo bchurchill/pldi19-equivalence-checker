@@ -29,4 +29,4 @@ cd ..
 
 echo "$SUCCESS tests passed, $FAILED tests failed"
 
-return $FAILED
+exit $FAILED
