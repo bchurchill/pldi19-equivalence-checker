@@ -25,18 +25,24 @@ cloud.  This artifact only supports discharging proof obligations on one core,
     1. [Manual Setup](#Manual-Setup)
     1. [Running the Example](#Running-the-Example)
  3. [Step-by-Step Instructions](#Step-by-Step-Instructions)
-    1. [Running Example](#Running-Example)
-    1. [Strlen Benchmark](#Strlen)
-    1. [TSVC Benchmarks](#TSVC-Benchmarks)
-    1. [APLAS17 Example](#Aplas17-Example)
+    1. [Running Example](#Running-Example-Section-2)
+    1. [Strlen Benchmark](#Strlen-benchmark)
+    1. [TSVC Benchmarks](#tsvc-benchmarks-sections-51-52)
+    1. [APLAS17 Example](#example-from-dahiyas-2017-aplas-paper)
  4. [Running Your Own Benchmarks](#Running-Your-Own-Benchmarks)
+    1. [Troubleshooting](#troubleshooting)
  5. [Understanding and Extending the Code](#Understanding-and-Extending-the-Code)
+    1. [Extending the Space of Invariants](#example-extend-the-space-of-invariants)
+    1. [Supporting more x86-64 Instructions](#example-add-support-for-new-x86-64-instructions)
+    1. [Extending the Space of Alignment Predicates](#example-extend-the-space-of-alignment-predicates)
+ 6. [Archived Execution Traces](#archived-execution-traces)
+
 
 # Getting Started
 
-## Prerequisistes
+## Prerequisites
 
-Prerequisites: You will need root access to a machine (physical or
+You will need root access to a machine (physical or
 virtual) with a Sandy Bridge processor or later. This is true of most
 computers with Intel chips released 2012 or later. On linux, you can
 check this by running 'cat /proc/cpuinfo | grep avx'. If there are
@@ -509,7 +515,7 @@ Since the tool is built upon STOKE, consulting the STOKE
 documentation may be helpful too. This can be found at
 https://github.com/StanfordPL/stoke
 
-## Example: Extending the space of invariants.
+## Example: Extend the space of invariants.
 
 If you want to add an invariant to the system, there are two things
 you need to do:
@@ -520,20 +526,20 @@ states and over a pair of concrete states.
 
 2. Adjust `learner.cc` to learn this invariant from a concrete execution.
 
-## Example: Adding support for new x86-64 instructions.
+## Example: Add support for new x86-64 instructions.
 
 The key step is to add a new "handler" in the "handlers" folder. This
 is discussed in more detail in a `README.md` file which appears in the
 `src/validator` folder. (That documentation is a little dataed, but
 correct enough to make progress).
 
-## Example: Extending the space of alignment predicates.
+## Example: Extend the space of alignment predicates.
 
 Here, you will want to change the `verify()` function in `ddec.cc` to
 construct a different set of alignment predicates to pass to the
 `test_alignment_predicate` function.
 
-# To see traces from successful runs of the TSVC benchmarks
+# Archived Execution Traces
 
 Since some of the TSVC benchmarks take a long time to run, we
 have included in the artifact traces from these benchmarks from
