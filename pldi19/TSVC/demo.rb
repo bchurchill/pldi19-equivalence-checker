@@ -24,7 +24,7 @@ require 'fileutils'
   "testing"   => ["baseline", "gcc", "llvm"],
 }
 
-@default_def_ins = "\"{ %rdi %rbp %rsp %rbx %r12 %r13 %r14 %r15 }\""
+@default_def_ins = "\"{ %rdi %rsi %rdx %rcx %rbp %rsp %rbx %r12 %r13 %r14 %r15 %xmm0 %xmm1 %xmm2 }\""
 @default_live_outs = "\"{ %rbx %rsp %rbp %r12 %r13 %r14 %r15 }\""
 
 def print_usage
