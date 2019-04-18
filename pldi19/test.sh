@@ -6,7 +6,13 @@ SUCCESS=0
 ## TEST EXAMPLE
 cd paper_example
 make
+echo "[debug] disk space"
+df -h
+echo "[debug] running example"
 time timeout 10m ./demo.sh | tee trace
+echo "[debug] trace size"
+du -hs trace
+echo "[debug] grepping"
 grep "Equivalent: yes" trace
 if [ $? -eq "0" ]; then
 	echo "EXAMPLE: passed"
