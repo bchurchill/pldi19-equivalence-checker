@@ -52,7 +52,7 @@ There are a few reasons why the system described in the paper that uses cloud in
 You will need root access to a machine (physical or
 virtual) with a Sandy Bridge processor or later. This is true of most
 computers with Intel chips released 2012 or later. On linux, you can
-check this by running 'cat /proc/cpuinfo | grep avx'. If there are
+check this by running `cat /proc/cpuinfo | grep avx`. If there are
 results, then your machine is suitable. We require this because the
 Sandy Bridge architecture adds the "Advanced Vector Extensions" (AVX)
 instructions to x86-64, and our verification benchmarks may use these
@@ -77,7 +77,7 @@ should be suitable.
 - Fedora https://docs.docker.com/install/linux/docker-ce/fedora/
 - CentOS https://docs.docker.com/install/linux/docker-ce/centos/
 
-2. Test the docker install. Note that you may need to use 'sudo' for
+2. Test the docker install. Note that you may need to use `sudo` for
 all docker commands:
 
 ```
@@ -172,7 +172,7 @@ them. The assembly code is written into the folder `opt1`.
 programs. For this example, we use a symbolic execution tool to
 generate test cases for execution paths up to a bound. Run 
 `make tcgen`. This should finish within 10 seconds. The generated testcases
-can be found in the 'testcases' file; each testcase includes a value
+can be found in the `testcases` file; each testcase includes a value
 for each machine register and values for a subset of memory locations.
 
 6. Run `./demo.sh | tee trace` to perform verification and save the
@@ -210,7 +210,7 @@ basic blocks of the two programs are numbered.
 # Step-by-Step Instructions
 
 ## Running example (Section 2)  
-(see also the 'Getting Started' material)
+(see also [Getting Started](getting-started))
 
  1. Navigate to `~/equivalence-checker/pldi19/paper_example`
  2. Run `make`
@@ -256,9 +256,9 @@ for example:
 $ ./demo.rb verify baseline gcc s000
 ```
 
- The output will be written to a file in the 'traces' folder, any
- errors to a file in the 'misc' folder, and a report of the time
- into the 'times' folder. The exact filenames can be seen in the
+ The output will be written to a file in the `traces` folder, any
+ errors to a file in the `misc` folder, and a report of the time
+ into the `times` folder. The exact filenames can be seen in the
  output of the demo.rb script.
 
  In the paper, we have performed the baseline-gcc comparison and
@@ -329,11 +329,11 @@ for your benchmark. There are a few other things that need to be
 updated as well:
 
 1. If you have re-named the functions, update the TARGET and REWRITE
-in the 'variables' file with the paths to the generated assembly code.
+in the `variables` file with the paths to the generated assembly code.
 
 2. If you have changed the parameter types or the return types
 of the function, you will need to update the DEF_INS and LIVE_OUTS
-sets in the 'variables' file. Each of these variables contains a
+sets in the `variables` file. Each of these variables contains a
 set of x86-64 registers. The best way to find the correct setting
 is to lookup the x86-64 System V ABI's calling convention (which
 places integer/pointer parameters in rdi, rsi, rdx, rcx, r8, r9, and
@@ -384,7 +384,7 @@ of the form `X_%reg`, where `X` is either `t` or `r` (for `target` or
 grammar can be found in `~/equivalence-checker/src/expr/expr_parser.h`
 
 (v) It's unlikely you will need to change it, but you can try
-increasing `TARGET_BOUND` and `REWRITE_BOUND` to 30 in the 'variables'
+increasing `TARGET_BOUND` and `REWRITE_BOUND` to 30 in the `variables`
 file as a fail-safe option.
 
 ## Troubleshooting
@@ -453,8 +453,8 @@ anyone who wants to extend the code. The `~/equivalence-checker/src` and
 our tools. The tools folder has the command line tools which make use
 of the code in the src folder to do all the heavy lifting.
 
-If ever you want to rebuild the code, running 'make' in the top level
-directory should be sufficient. A 'make clean' usually helps if there
+If ever you want to rebuild the code, running `make` in the top level
+directory should be sufficient. A `make clean` usually helps if there
 seems to be a problem.
 
 The src folder has a number of subfolders:
