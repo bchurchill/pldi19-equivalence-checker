@@ -6,7 +6,7 @@ services:
 
 script: 
   - docker build -t eqc .
-  - docker run eqc su -c "export PATH=\$PATH:\$HOME/equivalence-checker/bin:\$HOME/SageMath; echo \$PATH; cd /home/equivalence/equivalence-checker; ./configure.sh; make; make test; cd pldi19; ./test.sh" equivalence
+  - docker run eqc su -c /home/equivalence/equivalence-checker/scripts/travis/buildtest.sh" equivalence
   - IMAGENAME="bchurchill/pldi19:$TRAVIS_BUILD_ID"
   - if [ "$TRAVIS_BRANCH" = "master" ]; then IMAGENAME="bchurchill/pldi19:latest"; fi
   - if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then 
