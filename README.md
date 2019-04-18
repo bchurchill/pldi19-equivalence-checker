@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/bchurchill/pldi19-equivalence-checker.svg?branch=master)](https://travis-ci.org/bchurchill/pldi19-equivalence-checker) [![DOI](https://zenodo.org/badge/170968857.svg)](https://zenodo.org/badge/latestdoi/170968857)
 
 
-# About
+# Semantic Alignment Equivalence Checker
 
 This is an implementation of the equivalence checker presented in "Semantic
 Program Alignment for Equivlance Checking" by Berkeley Churchill, Oded Padon,
