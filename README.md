@@ -1,7 +1,6 @@
 [![Build Status](https://travis-ci.org/bchurchill/pldi19-equivalence-checker.svg?branch=master)](https://travis-ci.org/bchurchill/pldi19-equivalence-checker)
 
-About
-=====
+# About
 
 This is an implementation of the equivalence checker presented in "Semantic
 Program Alignment for Equivlance Checking" by Berkeley Churchill, Oded Padon,
@@ -18,11 +17,9 @@ cloud.  This artifact only supports discharging proof obligations on one core,
  - _some_ of the TSVC benchmarks
 
 
-Getting Started
-===============
+# Getting Started
 
-Initial Setup with Docker
--------------------------
+## Initial Setup with Docker
 
 Prerequisites: You will need root access to a machine (physical or
 virtual) with a Sandy Bridge processor or later. This is true of most
@@ -94,13 +91,13 @@ $ ./configure.sh
 $ make
 ```
 
-8. You may optionally run unit-tests
+8. You may optionally run unit tests:
 
 ```
 $ make test
 ```
 
-9. You may optionally run tests on two benchmarks (strlen and the running example)
+9. Further a test script is available that ensures that our example benchmark works:
 
 ```
 cd pldi19
@@ -115,42 +112,43 @@ $ sudo docker container rm eqchecker
 $ sudo docker image rm bchurchill/pldi19
 ```
 
-Alternate Setup Instructions
-----------------------------
+## Alternate Setup Instructions
 
 For instructions on building an environment suitable for compiling the code, see `STOKE.md` as found in this
 repository.  For the equivalence checker, you will also need to install SageMath. 
 
 One can also build your own docker images.  You will need to start by building the "base" image by running `sudo docker build -f Dockerfile.base .`, tag it, and then build the real image with `sudo docker build .`.  If you don't want to use Docker at all, you can at least see how the Dockerfile calls different scripts to install packages on an Ubuntu 14.04 image.  You should be able to get the software to run on newer distros, but the main trouble will be getting the compiler to work; `gcc-5` introduces some breaking changes.  Right now this tool works with `gcc-4.9`.
 
-Running the Example
--------------------
+## Running the Example
 
-1. In `~/equivalence-checker/pldi19` you will find all the benchmarks
+1. Be sure that you've compiled the code as described in the setup
+instructions; run the tests for added assurances.
+
+2. In `~/equivalence-checker/pldi19` you will find all the benchmarks
 from the paper. For getting started, we will demonstrate running
 our tool on the example from section 2 of the paper. Navigate to
 `~/equivalence-checker/pldi19/paper_example`.
 
-2. To see the source code for the programs we are comparing, run `cat source.c`. 
+3. To see the source code for the programs we are comparing, run `cat source.c`. 
 We will prove that `bitflip()` performs the same computation as `bitflip_vec()`.
 
-3. Run `make` to compile the functions with `gcc -O1` and disassemble
+4. Run `make` to compile the functions with `gcc -O1` and disassemble
 them. The assembly code is written into the folder `opt1`.
 
-4. Our tool needs test cases to find an alignment between the two
+5. Our tool needs test cases to find an alignment between the two
 programs. For this example, we use a symbolic execution tool to
 generate test cases for execution paths up to a bound. Run 
 `make tcgen`. This should finish within 10 seconds. The generated testcases
 can be found in the 'testcases' file; each testcase includes a value
 for each machine register and values for a subset of memory locations.
 
-5. Run `./demo.sh | tee trace` to perform verification and save the
+6. Run `./demo.sh | tee trace` to perform verification and save the
 output to the file called `trace`. If verification succeeds, you will
 see the message `Equivalent: yes` at the end of the output. This
 should finish in under 30 seconds; it may appear to hang briefly while
 some matrix computations are performed.
 
-6. Review the trace file.  It contains:
+7. Review the trace file.  It contains:
 
  - The assembly of the two programs being compared.
  - The alignment predicates guessed, in order. e.g. "Trying alignment
@@ -176,107 +174,109 @@ debug, these can be ignored.
 To gain a deeper understanding of the PAA, one needs to see how the
 basic blocks of the two programs are numbered.
 
-STEP BY STEP
-============
+# STEP BY STEP
 
-TO RUN OUR EXPERIMENTS
-----------------------
+## Running example (Section 2)  
+(see also the 'Getting Started' material)
 
-(A) Example presented in Section 2.2
+ 1. Navigate to `~/equivalence-checker/pldi19/paper_example`
+ 2. Run `make`
+ 3. Run `make tcgen`
+ 4. Run `./demo.sh`
 
-    This is covered in more detail in the 'Getting Started' material.  
-    1. Navigate to ~/equivalence-checker/pldi19/paper_example.
-    2. Run 'make'.
-    3. Run 'make tcgen'.
-    4. Run './demo.sh'.
+## TSVC benchmarks (Sections 5.1, 5.2)
 
-(B) TSVC benchmarks (Sections 5.1, 5.2)
+ 1. Navigate to ~/equivalence-checker/pldi19/TSVC
+ 2. Run 'make'. This will build the benchmarks in clean.c with each of
+    gcc -O1 ("baseline"), gcc -O3 ("gcc") and clang -O3 ("llvm").
+ 3. Run 'make tcgen'. This randomly generates a new set of test
+    cases for the TSVC benchmarks using a utility we have specifically
+    constructed for this purpose.  All benchmarks use the same set
+    of test cases, except s176 uses fewer.
+ 4. Run 'cat benchmarks' to see the list of available benchmarks.
+ 5. To run a benchmark, use 
 
-    1. Navigate to ~/equivalence-checker/pldi19/TSVC
-    2. Run 'make'. This will build the benchmarks in clean.c with each of
-       gcc -O1 ("baseline"), gcc -O3 ("gcc") and clang -O3 ("llvm").
-    3. Run 'make tcgen'. This randomly generates a new set of test
-       cases for the TSVC benchmarks using a utility we have specifically
-       constructed for this purpose.  All benchmarks use the same set
-       of test cases, except s176 uses fewer.
-    4. Run 'cat benchmarks' to see the list of available benchmarks.
-    5. To run a benchmark, use 
+```
+$ ./demo.rb verify <compiler1> <compiler2> <benchmark-name>
+```
 
-      ./demo.rb verify <compiler1> <compiler2> <benchmark-name>
+for example:
 
-     e.g.
+```
+$ ./demo.rb verify baseline gcc s000
+```
 
-      ./demo.rb verify baseline gcc s000
+ The output will be written to a file in the 'traces' folder, any
+ errors to a file in the 'misc' folder, and a report of the time
+ into the 'times' folder. The exact filenames can be seen in the
+ output of the demo.rb script.
 
-     The output will be written to a file in the 'traces' folder, any
-     errors to a file in the 'misc' folder, and a report of the time
-     into the 'times' folder. The exact filenames can be seen in the
-     output of the demo.rb script.
+ In the paper, we have performed the baseline-gcc comparison and
+ the baseline-llvm comparison for each benchmark.
 
-     In the paper, we have performed the baseline-gcc comparison and
-     the baseline-llvm comparison for each benchmark.
+ The following benchmarks should be able to run reliably without
+ the cloud infrastructure:
 
-     The following benchmarks should be able to run reliably without
-     the cloud infrastructure:
+ - s000-gcc
+ - s000-llvm
+ - s1112-gcc
+ - s121-gcc
+ - s121-llvm
+ - s1221-gcc
+ - s1221-llvm
+ - s1251-gcc
+ - s1351-gcc
+ - s1351-llvm
+ - s173-gcc
+ - s2244-gcc
+ - s351-llvm
+ - vpv-gcc
+ - vpvpv-gcc
+ - vpvtv-gcc
+ - vtv-gcc
+ - vtvtv-gcc
 
-        s000-gcc
-        s000-llvm
-        s1112-gcc
-        s121-gcc
-        s121-llvm
-        s1221-gcc
-        s1221-llvm
-        s1251-gcc
-        s1351-gcc
-        s1351-llvm
-        s173-gcc
-        s2244-gcc
-        s351-llvm
-        vpv-gcc
-        vpvpv-gcc
-        vpvtv-gcc
-        vtv-gcc
-        vtvtv-gcc
+ 6. If you have several cores and extra memory available, you can use
+the following commands to run multiple benchmarks in parallel:
 
-  6. If you have several cores and extra memory available, you can use
-    the following commands to run multiple benchmarks in parallel:
+```
+./demo.rb verify-all <filename>
+./demo.rb verify-gcc <filename>
+./demo.rb verify-llvm <filename>
+```
 
-    ./demo.rb verify-all <filename>
-    ./demo.rb verify-gcc <filename>
-    ./demo.rb verify-llvm <filename>
+In each case, filename contains a newline-delimited list of
+benchmarks (e.g. like the 'benchmarks' file). In general it's best
+to have one core per benchmark running concurrently. verify-all
+invokes the validator twice for each benchmark, once for gcc and
+once for llvm, while verify-gcc and verify-llvm just compare the
+selected compiler with the baseline.
 
-    In each case, filename contains a newline-delimited list of
-    benchmarks (e.g. like the 'benchmarks' file). In general it's best
-    to have one core per benchmark running concurrently. verify-all
-    invokes the validator twice for each benchmark, once for gcc and
-    once for llvm, while verify-gcc and verify-llvm just compare the
-    selected compiler with the baseline.
+The files `benchmarks.1` and `benchmarks.2` each list half of
+the benchmarks functions (14 each). So, if you have 14+ cores and a lot of
+RAM (e.g. 256GB), you can try running './demo.rb verify-gcc benchmarks.1' to
+run 14 of the benchmarks in parallel. However, we haven't tested
+all of the benchmarks in single-threaded execution, and some could
+take a very long time to finish.
 
-    The file 'benchmarks.1' and 'benchmarks.2' each contain half of
-    the benchmarks (14 each). So, if you have 14+ cores and a lot of
-    RAM, you can try running './demo.rb verify-gcc benchmarks.1' to
-    run 14 of the benchmarks in parallel. However, we haven't tested
-    all of the benchmarks in single-threaded execution, and some could
-    take a very long time to finish.
+## strlen
 
-(iii) strlen
+  1. Navigate to `~/equivalence-checker/pldi19/strlen`.
 
-  1. Navigate to ~/equivalence-checker/pldi19/strlen.
+  2. Run `make`
 
-  2. Run 'make'
-
-  3. Run './demo.sh'. Depending on your machine, it should finish 
+  3. Run `./demo.sh`. Depending on your machine, it should finish 
   within 10 minutes and end with "Equivalent: yes".
 
-  Getting the right test cases for strlen is tricky; in the image we
-  have included a set that will certainly work. We've also provided
-  a script to generate them, but sometimes these test cases don't
-  provide sufficient code coverage. You can try regenerating the test
-  cases using 'make tcgen' and updating 'demo.sh' to point to the
-  'testcases' file rather than 'testcases.good'. It may take a few
-  tries.
+Getting the right test cases for strlen is tricky; in the image we
+have included a set that will certainly work. We've also provided
+a script to generate them, but sometimes these test cases don't
+provide sufficient code coverage. You can try regenerating the test
+cases using 'make tcgen' and updating 'demo.sh' to point to the
+'testcases' file rather than 'testcases.good'. It may take a few
+tries.
 
-(iv) Example from Dahiya's 2017 APLAS paper.
+## Example from Dahiya's 2017 APLAS paper.
 
   1. Navigate to ~/equivalence-checker/pldi19/aplas17
 
@@ -284,20 +284,11 @@ TO RUN OUR EXPERIMENTS
 
   3. Run './demo.sh'.  This one tends to take 30-60 minutes.
 
+For this benchmark, a working set of test cases is provided in the repository
+(and the Docker image).  However, one can also copy a randomly generated
+testcase file from the TSVC benchmarks into this folder and use those instead.
 
-To see traces from successful runs of the TSVC benchmarks
--------------------------
-
-Since some of the TSVC benchmarks take a long time to run, we
-have included in the artifact traces from these benchmarks from
-successful runs. These can be found in the home folder in the
-pldi19-traces.tar.gz file. These traces are from the tool around the
-time of submission -- the exact text in the traces differs a little
-bit from what the tool currently produces.
-
-
-Running Your Own Benchmarks
-=====================================
+# Running Your Own Benchmarks
 
 The easiest way to run your own benchmark is to copy the
 `paper_example` folder, run `make clean`, and then update the C code
@@ -363,72 +354,69 @@ grammar can be found in '~/equivalence-checker/src/expr/expr_parser.h'
 increasing TARGET_BOUND and REWRITE_BOUND to 30 in the 'variables'
 file as a fail-safe option.
 
-=========================
-==== Troubleshooting ====
-=========================
+## Troubleshooting
 
 If a benchmark is failing (i.e. execution isn't ending or it returns
 "Equivalent: no") there are a few possible causes:
 
-  #1.  The two programs might not be equivalent.
-  #2.  The correct alignment predicate is not in the search space.
-  #3.  A good alignment predicate is found, but the learned invariants
-       aren't strong enough for a proof.
-  #4.  There aren't enough test cases to create a correct PAA.
-  #5.  The proof obligations are taking a long time -- so long that the
-       search space isn't being explored quickly enough.
-  #6.  There's a bug in the tool.
+  1.  The two programs might not be equivalent.
+  2.  The correct alignment predicate is not in the search space.
+  3.  A good alignment predicate is found, but the learned invariants
+      aren't strong enough for a proof.
+  4.  There aren't enough test cases to create a correct PAA or learn correct
+  invariants.  That is, the test cases might not cover all program behaviors.
+  5.  The proof obligations are taking a long time -- so long that the search
+  space isn't being explored quickly enough.
+  6.  There's a bug in the tool.
 
 Some things to try:
 
-  1. Use the bounded validator to see if actually the programs aren't
-  equivalent. The bounded validator is unsound, but for terminating
-  programs it is complete with a sufficiently high bound. Many of the
-  examples come with a ./bounded.sh in their folder for this purpose.
-  Alternatively, you can test the code or stare at it carefully to
-  check that it's really the same.
+  1. Use the bounded validator to see if actually the programs are not
+equivalent. The bounded validator is unsound, but for terminating programs it
+is complete with a sufficiently high bound. Many of the examples come with a
+`./bounded.sh` in their folder for this purpose.  The `stoke_debug_verify`
+tool can be told to use the bounded validator by provided `--strategy
+bounded`, along with a `--bound <N>` parameter.  Alternatively, you can test
+the code or check the correctness by hand.
 
   2. Try supplying your own alignment predicate. Doing so eliminates
-  failure mode #2 above and also more clearly isolates the problem
-  in all the other cases (it also deals with failure mode #5 in most
-  cases). This can be done by supplying the --alignment_predicate
-  argument along with an expression. It parses a limited set
-  of expressions where the leaf nodes are of the form 'X_%reg',
-  where X is either 't' or 'r' (for 'target' or 'rewrite') and
-  %reg is an x86-64 register name. The parser and its grammar can
-  be found in '~/equivalence-checker/src/expr/expr_parser.h'. For
-  example, you can specify '--alignment_predicate "t_%rax+1=%r_rdx"'
-  to align traces when the target program's value for %rax is
-  one less than the rewrite's value for %rdx. You can also use
-  --alignment_predicate_heap to force the traces to only align when
-  heap states match.
+failure mode #2 above and also more clearly isolates the problem
+in all the other cases (it sometimes resolves failure modes #5 and #6). This can be done by supplying the `--alignment_predicate`
+argument along with an expression. It parses a limited set
+of expressions where the leaf nodes are of the form `X_%reg`,
+where X is either `t` or `r` (for 'target' or 'rewrite') and
+`%reg` is an x86-64 register name. The parser and its grammar can
+be found in `~/equivalence-checker/src/expr/expr_parser.h`. For
+example, you can specify `--alignment_predicate "t_%rax+1=%r_rdx"`
+to align traces when the target program's value for `%rax` is
+one less than the rewrite's value for `%rdx`. You can also use
+`--alignment_predicate_heap` to force the traces to only align when
+heap states match.
 
   3. If you have supplied your own alignment predicate but there's
-  still a failure, then there are two possibilities:
+still a failure, then there are two possibilities:
 
-  (A) The PAA is constructed successfully and it accepts all the test
-  cases. The proof obligations start to discharge, but ultimately it
-  fails. This suggests failure mode #3 or #4. One needs to inspect
-  the failed proof obligation and SMT counterexample to determine
-  if it's because the PAA is missing an edge (#4) or if the tool is
-  failing to prove a necessary invariant (#3). The tool is generally
-  quite verbose, and in addition to giving a counterexample for failed
-  proof obligations it dynamically executes the counterexample as an
-  error-detecting strategy (to defend against failure mode #6) and
-  reports if the dynamic execution differs from an expected value.
+(A) The PAA is constructed successfully and it accepts all the test
+cases. The proof obligations start to discharge, but ultimately it
+fails. This suggests failure mode #3 or #4. One needs to inspect
+the failed proof obligation and SMT counterexample to determine
+if it's because the PAA is missing an edge (#4) or if the tool is
+failing to prove a necessary invariant (#3). The tool is generally
+quite verbose, and in addition to giving a counterexample for failed
+proof obligations it dynamically executes the counterexample as an
+error-detecting strategy (to defend against failure mode #6) and
+reports if the dynamic execution differs from an expected value.
 
-  (B) The PAA can't be built or it doesn't accept all the test cases.
-  Here, the most likely causes are that the alignment predicate is
-  still wrong (#2), you need more test cases (#4), or the programs
-  aren't actually equivalent (#1).
+(B) The PAA can't be built or it doesn't accept all the test cases.
+Here, the most likely causes are that the alignment predicate is
+still wrong (#2), you need more test cases (#4), or the programs
+aren't actually equivalent (#1).
 
-==============================================
-==== UNDERSTANDING AND EXTENDING THE CODE ====
-==============================================
+# Understanding and Extending the Code
 
 This section is intended as a brief description of the code base for
-anyone who wants to extend the code. The ~/equivalence-checker/src and
-~/equivalence-checker/tools folders contain all the source code for
+anyone who wants to extend the code. The `~/equivalence-checker/src` and
+`~/equivalence-checker/tools` folders contain all the source code for
 our tools. The tools folder has the command line tools which make use
 of the code in the src folder to do all the heavy lifting.
 
@@ -524,4 +512,15 @@ correct enough to make progress).
 Here, you will want to change the verify() function in ddec.cc to
 construct a different set of alignment predicates to pass to the
 'test_alignment_predicate' function.
+
+# To see traces from successful runs of the TSVC benchmarks
+
+Since some of the TSVC benchmarks take a long time to run, we
+have included in the artifact traces from these benchmarks from
+successful runs. These can be found in the home folder in the
+pldi19-traces.tar.gz file. These traces are from the tool around the
+time of submission -- the exact text in the traces differs a little
+bit from what the tool currently produces.
+
+
 
