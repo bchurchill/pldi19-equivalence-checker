@@ -26,7 +26,7 @@ There are a few reasons why the system described in the paper that uses cloud in
 
  1. [About](#About)
  2. [Getting Started](#Getting-Started)
-    1. [Prerequisites](#Preprequisites)
+    1. [Prerequisites](#Prerequisites)
     1. [Using Docker](#Using-Docker)
     1. [Manual Setup](#Manual-Setup)
     1. [Running the Example](#Running-the-Example)
