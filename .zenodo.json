@@ -1,0 +1,38 @@
+{
+    "language": "eng", 
+    "license": "other-open", 
+    "title": "Semantic Alignment Equivalence Checker", 
+    "related_identifiers": [
+        {
+            "scheme": "url", 
+            "identifier": "https://github.com/bchurchill/pldi19-equivalence-checker/tree/v1.0", 
+            "relation": "isSupplementTo"
+        }, 
+        {
+            "scheme": "doi", 
+            "identifier": "10.5281/zenodo.2646657", 
+            "relation": "isVersionOf"
+        }
+    ], 
+    "upload_type": "software", 
+    "creators": [
+        {
+            "affiliation": "Stanford University", 
+            "name": "Churchill, Berkeley"
+        }, 
+        {
+            "affiliation": "Stanford University", 
+            "name": "Padon, Oded"
+        }, 
+        {
+            "affiliation": "Microsoft Research India", 
+            "name": "Sharma, Rahul"
+        }, 
+        {
+            "affiliation": "Stanford University", 
+            "name": "Aiken, Alex"
+        }
+    ], 
+    "access_right": "open", 
+    "description": "An equivalence checker for x86-64 using semantic program alignment."
+}
