@@ -16,10 +16,25 @@ cloud.  This artifact only supports discharging proof obligations on one core,
  - the running example (section 2)
  - _some_ of the TSVC benchmarks
 
+# Table of Contents
+
+ 1. [About](#About)
+ 2. [Getting Started](#Getting-Started)
+    1. [Prerequisites](#Preprequisites)
+    1. [Using Docker](#Using-Docker)
+    1. [Manual Setup](#Manual-Setup)
+    1. [Running the Example](#Running-the-Example)
+ 3. [Step-by-Step Instructions](#Step-by-Step-Instructions)
+    1. [Running Example](#Running-Example)
+    1. [Strlen Benchmark](#Strlen)
+    1. [TSVC Benchmarks](#TSVC-Benchmarks)
+    1. [APLAS17 Example](#Aplas17-Example)
+ 4. [Running Your Own Benchmarks](#Running-Your-Own-Benchmarks)
+ 5. [Understanding and Extending the Code](#Understanding-and-Extending-the-Code)
 
 # Getting Started
 
-## Initial Setup with Docker
+## Prerequisistes
 
 Prerequisites: You will need root access to a machine (physical or
 virtual) with a Sandy Bridge processor or later. This is true of most
@@ -33,6 +48,8 @@ instructions.
 You will need 20GB of disk space and at least 12GB of RAM (more is
 better). Having extra cores and memory allows you to run multiple
 benchmarks in parallel, but is not necessary.
+
+## Using Docker
 
 We have tested these instructions on linux with docker version
 18.06.1-ce, but any operating system with a recent docker install
@@ -112,12 +129,15 @@ $ sudo docker container rm eqchecker
 $ sudo docker image rm bchurchill/pldi19
 ```
 
-## Alternate Setup Instructions
+### Building Docker Images
 
-For instructions on building an environment suitable for compiling the code, see `STOKE.md` as found in this
-repository.  For the equivalence checker, you will also need to install SageMath. 
+You can also build your own docker images.  You will need to start by building the "base" image by running `sudo docker build -f Dockerfile.base .`, tag it, and then build the real image with `sudo docker build .`.  
 
-One can also build your own docker images.  You will need to start by building the "base" image by running `sudo docker build -f Dockerfile.base .`, tag it, and then build the real image with `sudo docker build .`.  If you don't want to use Docker at all, you can at least see how the Dockerfile calls different scripts to install packages on an Ubuntu 14.04 image.  You should be able to get the software to run on newer distros, but the main trouble will be getting the compiler to work; `gcc-5` introduces some breaking changes.  Right now this tool works with `gcc-4.9`.
+## Manual Setup
+
+We highly recommend using Docker because it ensures that all the right libraries and packages are installed.  A particular difficulty is getting the right version of `gcc` and related system libraries.  You should be able to get the software to run on newer distros, but the main trouble will be getting the compiler to work; `gcc-5` introduces some breaking changes.  Right now this tool works with `gcc-4.9`.
+
+If you don't want to use Docker at all, there are instructions on building an environment suitable for compiling the code in `STOKE.md`.  In addition to those steps you will need to install `SageMath`.  You can also take a look at `Dockerfile` and `Dockerfile.base` to see how we build the environment.
 
 ## Running the Example
 
@@ -174,7 +194,7 @@ debug, these can be ignored.
 To gain a deeper understanding of the PAA, one needs to see how the
 basic blocks of the two programs are numbered.
 
-# STEP BY STEP
+# Step-by-Step Instructions
 
 ## Running example (Section 2)  
 (see also the 'Getting Started' material)
@@ -183,6 +203,23 @@ basic blocks of the two programs are numbered.
  2. Run `make`
  3. Run `make tcgen`
  4. Run `./demo.sh`
+
+## Strlen Benchmark
+
+  1. Navigate to `~/equivalence-checker/pldi19/strlen`.
+
+  2. Run `make`
+
+  3. Run `./demo.sh`. Depending on your machine, it should finish 
+  within 10 minutes and end with "Equivalent: yes".
+
+Getting the right test cases for strlen is tricky; in the image we
+have included a set that will certainly work. We've also provided
+a script to generate them, but sometimes these test cases don't
+provide sufficient code coverage. You can try regenerating the test
+cases using `make tcgen` and updating `demo.sh` to point to the
+`testcases` file rather than `testcases.good`. It may take a few
+tries.
 
 ## TSVC benchmarks (Sections 5.1, 5.2)
 
@@ -259,30 +296,13 @@ run 14 of the benchmarks in parallel. However, we haven't tested
 all of the benchmarks in single-threaded execution, and some could
 take a very long time to finish.
 
-## strlen
-
-  1. Navigate to `~/equivalence-checker/pldi19/strlen`.
-
-  2. Run `make`
-
-  3. Run `./demo.sh`. Depending on your machine, it should finish 
-  within 10 minutes and end with "Equivalent: yes".
-
-Getting the right test cases for strlen is tricky; in the image we
-have included a set that will certainly work. We've also provided
-a script to generate them, but sometimes these test cases don't
-provide sufficient code coverage. You can try regenerating the test
-cases using 'make tcgen' and updating 'demo.sh' to point to the
-'testcases' file rather than 'testcases.good'. It may take a few
-tries.
-
 ## Example from Dahiya's 2017 APLAS paper.
 
-  1. Navigate to ~/equivalence-checker/pldi19/aplas17
+1. Navigate to `~/equivalence-checker/pldi19/aplas17`
 
-  2. Run 'make'
+2. Run `make`
 
-  3. Run './demo.sh'.  This one tends to take 30-60 minutes.
+3. Run `./demo.sh`.  This one tends to take 30-60 minutes.
 
 For this benchmark, a working set of test cases is provided in the repository
 (and the Docker image).  However, one can also copy a randomly generated
@@ -295,10 +315,10 @@ The easiest way to run your own benchmark is to copy the
 for your benchmark. There are a few other things that need to be
 updated as well:
 
-(i) If you have re-named the functions, update the TARGET and REWRITE
+1. If you have re-named the functions, update the TARGET and REWRITE
 in the 'variables' file with the paths to the generated assembly code.
 
-(ii) If you have changed the parameter types or the return types
+2. If you have changed the parameter types or the return types
 of the function, you will need to update the DEF_INS and LIVE_OUTS
 sets in the 'variables' file. Each of these variables contains a
 set of x86-64 registers. The best way to find the correct setting
@@ -306,8 +326,8 @@ is to lookup the x86-64 System V ABI's calling convention (which
 places integer/pointer parameters in rdi, rsi, rdx, rcx, r8, r9, and
 integer/pointers return values into rax) or to read the assembly code.
 
-(iii) The biggest and most important thing to update are the test
-cases. The simplest thing to try is to just run 'make tcgen'. This
+3. The biggest and most important thing to update are the test
+cases. The simplest thing to try is to just run `make tcgen`. This
 will try to use a symbolic executor to make test cases. However,
 there are two important caveats. First, the symbolic executor can't
 guarantee code coverage. If verification fails, you should try giving
@@ -318,10 +338,10 @@ higher bound in the Makefile for the symbolic executor.
 
 Second, if your binary contains read-only data (e.g. addressed via
 RIP-offset addressing) you need to do extra work. You need to manually
-create a file called 'rodata' with a test case that contains all the
+create a file called `rodata` with a test case that contains all the
 read-only memory locations along with values. Then, ./demo.rb needs
-to be updated with a flag "--rodata </path/to/rodata>". An example
-of this file can be found in the ~/equivalence-checker/pldi19/TSVC
+to be updated with a flag `--rodata </path/to/rodata>`. An example
+of this file can be found in the `~/equivalence-checker/pldi19/TSVC`
 folder. We unfortunately don't have tools to automate this (yet), so
 it's easier to stick with functions that don't require read-only data.
 
@@ -330,28 +350,28 @@ for both programs. Problems can come up, for example, when one
 program reads memory locations that the other program doesn't (as in
 the strlen benchmark, see section 5.3, esp. lines 1000-1009). The
 tool will give warnings that appear after "COLLECTING DATA..." if
-the test cases don't work right. The command 'stoke debug sandbox
+the test cases don't work right. The command `stoke debug sandbox
 --target </path/to/assembly.s> --testcases </path/to/testcases>
---index <N> --debug' can be used to understand why a particular test
+--index <N> --debug` can be used to understand why a particular test
 case is failing. 
 
-For long running loops, you may need to provide the "--max_jumps"
+For long running loops, you may need to provide the `--max_jumps`
 option to the verification tool, which is used to stop and abort
 any loops that seem to be executing forever when performing dynamic
 analysis (the default value is 1024 iterations). However, this is
 rarely the bottleneck for our benchmarks since the symbolic executor
 doesn't generate test cases that run for so many iterations.
 
-(iv) We have placed bounds on the values of rsi and rdi to avoid
+4. We have placed bounds on the values of `rsi` and `rdi` to avoid
 certain overflow conditions. If you need this for your benchmark, you
-can add them with the '--assume' option in 'demo.sh'. The --assume
+can add them with the `--assume` option in `demo.sh`. The `--assume`
 option parses a limited set of expressions where the leaf nodes are
-of the form 'X_%reg', where X is either 't' or 'r' (for 'target' or
-'rewrite') and %reg is an x86-64 register name. The parser and its
-grammar can be found in '~/equivalence-checker/src/expr/expr_parser.h'
+of the form `X_%reg`, where `X` is either `t` or `r` (for `target` or
+`rewrite`) and `%reg` is an x86-64 register name. The parser and its
+grammar can be found in `~/equivalence-checker/src/expr/expr_parser.h`
 
 (v) It's unlikely you will need to change it, but you can try
-increasing TARGET_BOUND and REWRITE_BOUND to 30 in the 'variables'
+increasing `TARGET_BOUND` and `REWRITE_BOUND` to 30 in the 'variables'
 file as a fail-safe option.
 
 ## Troubleshooting
@@ -426,36 +446,36 @@ seems to be a problem.
 
 The src folder has a number of subfolders:
 
-  validator - This is where the equivalence checker resides, along
-  with semantics for all the x86-64 instructions, all the code for
-  alignment, building the PAA, discharging proof obligations, etc.
+  `validator` - This is where the equivalence checker resides, along
+with semantics for all the x86-64 instructions, all the code for
+alignment, building the PAA, discharging proof obligations, etc.
 
-  symstate - Data structures for representing an x86-64 system
-  symbolically, along with abstractions of symbolic bitvectors and
-  arrays that serve as a frontend to the SMT solver.
+  `symstate` - Data structures for representing an x86-64 system
+symbolically, along with abstractions of symbolic bitvectors and
+arrays that serve as a frontend to the SMT solver.
 
-  solver - Interfaces with SMT solvers.
+  `solver` - Interfaces with SMT solvers.
 
-  state - Data structure for representing the concrete state of an
-  x86-64 system.
+  `state` - Data structure for representing the concrete state of an
+x86-64 system.
 
-  sandbox - Code to execute safely x86-64 code concretely against our
-  internal state representation.
+  `sandbox` - Code to execute safely x86-64 code concretely against our
+internal state representation.
 
-  cfg, tunit - Data structures for representing assembly code as
-  control flow graphs and static analysis.
+  `cfg`, `tunit` - Data structures for representing assembly code as
+control flow graphs and static analysis.
 
-  expr - An expression parser
+  `expr` - An expression parser
 
-  diassembler - The disassembler
+  `diassembler` - The disassembler
 
-  ext - folder for external code. Most notably includes Z3, CVC4 and
-  x64asm (the library used to JIT assembly code and run it for the
-  sandbox).
+  `ext` - folder for external code. Most notably includes Z3, CVC4 and
+x64asm (the library used to JIT assembly code and run it for the
+sandbox).
 
-  serialize, stategen, kerberos, target, unionfind - Other utilities (not relevant)
+  `serialize, stategen, kerberos, target, unionfind` - Other utilities (not relevant)
 
-  cost, search, transform, verifier - Used by the superoptimizer (not relevant)
+  `cost, search, transform, verifier` - Used by the superoptimizer (not relevant)
 
 Within the validator folder:
 
@@ -471,13 +491,13 @@ Within the validator folder:
   `variable.cc` - An abstraction to represent registers, memory locations, 
 
   `paa.cc` - The representation of the program alignment automata, and some
-    of the important methods.  'learn_state_data' is where the PAA checks that
-    it accepts the test inputs and gathers states to learn invariants.
+of the important methods.  `learn_state_data` is where the PAA checks that
+it accepts the test inputs and gathers states to learn invariants.
 
   `learner.cc` - Code to learn invariants from concerete executions.
 
   `data_collector.cc` - An abstraction on top of the sandbox to collect
-    data from concrete execution traces
+data from concrete execution traces
 
   `smt_obligation_checker.cc` - Code to check the proof obligations.
 
@@ -489,38 +509,38 @@ Since the tool is built upon STOKE, consulting the STOKE
 documentation may be helpful too. This can be found at
 https://github.com/StanfordPL/stoke
 
-==== Example: Extending the space of invariants. ====
+## Example: Extending the space of invariants.
 
 If you want to add an invariant to the system, there are two things
 you need to do:
 
-1. Add the invariant in the invariants/ folder. This means writing
+1. Add the invariant in the `invariants` folder. This means writing
 code to evaluate whether the invariant holds over a pair of symbolic
 states and over a pair of concrete states.
 
-2. Adjust learner.cc to learn this invariant from a concrete execution.
+2. Adjust `learner.cc` to learn this invariant from a concrete execution.
 
-==== Example: Adding support for new x86-64 instructions. ====
+## Example: Adding support for new x86-64 instructions.
 
 The key step is to add a new "handler" in the "handlers" folder. This
-is discussed in more detail in a README.md file which appears in the
-src/validator folder. (That documentation is a little dataed, but
+is discussed in more detail in a `README.md` file which appears in the
+`src/validator` folder. (That documentation is a little dataed, but
 correct enough to make progress).
 
-==== Example: Extending the space of alignment predicates. ====
+## Example: Extending the space of alignment predicates.
 
-Here, you will want to change the verify() function in ddec.cc to
+Here, you will want to change the `verify()` function in `ddec.cc` to
 construct a different set of alignment predicates to pass to the
-'test_alignment_predicate' function.
+`test_alignment_predicate` function.
 
 # To see traces from successful runs of the TSVC benchmarks
 
 Since some of the TSVC benchmarks take a long time to run, we
 have included in the artifact traces from these benchmarks from
-successful runs. These can be found in the home folder in the
-pldi19-traces.tar.gz file. These traces are from the tool around the
-time of submission -- the exact text in the traces differs a little
-bit from what the tool currently produces.
+successful runs using the cloud instances. These can be found in the 
+`pldi19-traces.tar.xz` file. These traces are from the tool around the
+time of submission -- the exact text in the traces differs from what 
+the tool currently produces.
 
 
 
