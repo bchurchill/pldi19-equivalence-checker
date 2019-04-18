@@ -6,7 +6,7 @@ This is an implementation of the equivalence checker presented in "Semantic
 Program Alignment for Equivlance Checking" by Berkeley Churchill, Oded Padon,
 Rahul Sharma and Alex Aiken, presented at PLDI 2019.
 
-**Limitations** This artifact can be used to reproduce many of the results of the
+**Limitations.** This artifact can be used to reproduce many of the results of the
 paper, but not all of them.  In particular, the paper describes a system to
 discharge proof obligations concurrently using a large number of systems in the
 cloud.  This artifact only supports discharging proof obligations on one core,
@@ -15,6 +15,12 @@ cloud.  This artifact only supports discharging proof obligations on one core,
  - benchmark from [7] described in Section 5.4.
  - the running example (section 2)
  - _some_ of the TSVC benchmarks
+
+There are a few reasons why the system described in the paper that uses cloud instances can verify more of the TSVC benchmarks than the artifact here:
+
+ - The cloud system supports discharging proof obligations with multiple SMT solvers, e.g., both Z3 and CVC4, and choosing the fastest one.  The same goes for the choice of memory model.  Often a particular benchmark will have several difficult proof obligations, and different solvers are needed for each one.
+ - This artifact does not implement a timeout for SMT solvers, so if a solver gets stuck, the whole problem gets stuck.
+ - When multiple solvers and a timeout is available, a few of the benchmarks need a large amount of compute time -- e.g. 1000 CPU-hours.  The artifact runs each benchmark in a process that only utilizes 1 CPU core.
 
 # Table of Contents
 
@@ -229,14 +235,14 @@ tries.
 
 ## TSVC benchmarks (Sections 5.1, 5.2)
 
- 1. Navigate to ~/equivalence-checker/pldi19/TSVC
- 2. Run 'make'. This will build the benchmarks in clean.c with each of
+ 1. Navigate to `~/equivalence-checker/pldi19/TSVC`
+ 2. Run `make`. This will build the benchmarks in clean.c with each of
     gcc -O1 ("baseline"), gcc -O3 ("gcc") and clang -O3 ("llvm").
- 3. Run 'make tcgen'. This randomly generates a new set of test
+ 3. Run `make tcgen`. This randomly generates a new set of test
     cases for the TSVC benchmarks using a utility we have specifically
     constructed for this purpose.  All benchmarks use the same set
     of test cases, except s176 uses fewer.
- 4. Run 'cat benchmarks' to see the list of available benchmarks.
+ 4. Run `cat benchmarks` to see the list of available benchmarks.
  5. To run a benchmark, use 
 
 ```
@@ -308,7 +314,7 @@ take a very long time to finish.
 
 2. Run `make`
 
-3. Run `./demo.sh`.  This one tends to take 30-60 minutes.
+3. Run `./demo.sh`.
 
 For this benchmark, a working set of test cases is provided in the repository
 (and the Docker image).  However, one can also copy a randomly generated
