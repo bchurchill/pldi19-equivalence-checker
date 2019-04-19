@@ -277,7 +277,6 @@ $ ./demo.rb verify baseline gcc s000
  - s1351-llvm
  - s173-gcc
  - s2244-gcc
- - s351-llvm
  - vpv-gcc
  - vpvpv-gcc
  - vpvtv-gcc
