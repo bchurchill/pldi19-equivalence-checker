@@ -259,8 +259,11 @@ $ ./demo.rb verify baseline gcc s000
  In the paper, we have performed the baseline-gcc comparison and
  the baseline-llvm comparison for each benchmark.
 
- The following benchmarks should be able to run reliably without
- the cloud infrastructure:
+ The benchmarks below should be able to run reliably without
+ the cloud infrastructure.  Others may work too, depending on
+ your hardware (and patience!).  By default these run using Z3
+ and the flat memory model.  One can also try CVC4 by editing
+ `demo.rb`
 
  - s000-gcc
  - s000-llvm
@@ -280,6 +283,7 @@ $ ./demo.rb verify baseline gcc s000
  - vpvtv-gcc
  - vtv-gcc
  - vtvtv-gcc
+ 
 
  6. If you have several cores and extra memory available, you can use
 the following commands to run multiple benchmarks in parallel:
