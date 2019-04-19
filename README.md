@@ -92,19 +92,13 @@ $ sudo docker run hello-world
 $ sudo docker pull bchurchill/pldi19
 ```
 
-4. (Optional) Verify the hash of the docker image.
-
-```
-$ sudo docker image ls --digests
-```
-
-5. Run the image
+4. Run the image
 
 ```
 $ sudo docker run -d -P --name eqchecker bchurchill/pldi19
 ```
 
-6. Now you can SSH locally 
+5. Now you can SSH locally 
 
 ```
 $ sudo docker port eqchecker 22
@@ -114,27 +108,27 @@ $ ssh -pXXXXX equivalence@127.0.0.1
 (password is 'checker')
 ```
 
-7. Build the code by running,
+6. Build the code by running,
 
 ```
 $ ./configure.sh
 $ make
 ```
 
-8. You may optionally run unit tests:
+7. You may optionally run unit tests:
 
 ```
 $ make test
 ```
 
-9. Further a test script is available that ensures that our example benchmark works:
+8. Further a test script is available that ensures that our example benchmark works:
 
 ```
 cd pldi19
 ./test.sh
 ```
 
-10. When you're done with the artifact, you can cleanup by running
+9. When you're done with the artifact, you can cleanup by running
 
 ```
 $ sudo docker stop eqchecker
