@@ -2,19 +2,6 @@
     "language": "eng", 
     "license": "other-open", 
     "title": "Semantic Alignment Equivalence Checker", 
-    "related_identifiers": [
-        {
-            "scheme": "url", 
-            "identifier": "https://github.com/bchurchill/pldi19-equivalence-checker/tree/v1.0", 
-            "relation": "isSupplementTo"
-        }, 
-        {
-            "scheme": "doi", 
-            "identifier": "10.5281/zenodo.2646657", 
-            "relation": "isVersionOf"
-        }
-    ], 
-    "upload_type": "software", 
     "creators": [
         {
             "affiliation": "Stanford University", 
