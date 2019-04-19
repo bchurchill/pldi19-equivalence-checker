@@ -111,6 +111,7 @@ $ ssh -pXXXXX equivalence@127.0.0.1
 6. Build the code by running,
 
 ```
+$ cd equivalence-checker
 $ ./configure.sh
 $ make
 ```
