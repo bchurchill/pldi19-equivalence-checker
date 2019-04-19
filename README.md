@@ -205,7 +205,7 @@ basic blocks of the two programs are numbered.
 # Step-by-Step Instructions
 
 ## Running example (Section 2)  
-(see also [Getting Started](getting-started))
+(see also [Getting Started](#Running-the-example))
 
  1. Navigate to `~/equivalence-checker/pldi19/paper_example`
  2. Run `make`
