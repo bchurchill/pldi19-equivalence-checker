@@ -5,7 +5,7 @@
 
 This is an implementation of the equivalence checker presented in "Semantic
 Program Alignment for Equivlance Checking" by Berkeley Churchill, Oded Padon,
-Rahul Sharma and Alex Aiken, presented at PLDI 2019.  [Preprint PDF](https://raw.githubusercontent.com/bchurchill/pldi19-equivalence-checker/master/pldi2019.pdf).
+Rahul Sharma and Alex Aiken, presented at PLDI 2019.  [Preprint PDF](https://raw.githubusercontent.com/bchurchill/pldi19-equivalence-checker/master/pldi2019.pdf).  This software is based on [STOKE](https://github.com/StanfordPL/stoke).
 
 **Limitations.** This artifact can be used to reproduce many of the results of the
 paper, but not all of them.  In particular, the paper describes a system to
