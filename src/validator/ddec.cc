@@ -771,6 +771,42 @@ bool DdecValidator::test_alignment_predicate(shared_ptr<Invariant> invariant) {
   return works;
 }
 
+set<Mem> DdecValidator::get_dereferences(const Cfg& cfg) {
+  
+  set<Mem> derefs;
+  auto code = cfg.get_code();
+  for(auto instr : code) {
+    if(instr.is_explicit_memory_dereference()) {
+      auto mem = instr.get_operand<Mem>(instr.mem_index());
+      if(!mem.rip_offset())
+        derefs.insert(mem);
+    }
+  }
+  return derefs;
+}
+
+vector<shared_ptr<Invariant>> DdecValidator::make_alignment_predicates(const Cfg& target, const Cfg& rewrite) {
+
+  auto target_derefs = get_dereferences(target);
+  auto rewrite_derefs = get_dereferences(rewrite);
+
+  vector<shared_ptr<Invariant>> predicates;
+
+  for(auto td : target_derefs) {
+    auto v1 = Variable::lea_variable(td, false);
+
+    for(auto rd : rewrite_derefs) {
+      auto v2 = Variable::lea_variable(rd, true);
+      v2.coefficient = -1;
+      vector<Variable> vs = {v1,v2};
+      auto invariant = make_shared<EqualityInvariant>(vs, 0);
+      predicates.push_back(invariant);
+    }
+  }
+
+  return predicates;
+}
+
 bool DdecValidator::verify(const Cfg& init_target, const Cfg& init_rewrite) {
 
   benchmark_proof_succeeded_ = false;
@@ -802,6 +838,7 @@ bool DdecValidator::verify(const Cfg& init_target, const Cfg& init_rewrite) {
   /** For every pair of program points in both programs, we try and
     guess an alignment predicate.  By choosing a pair of program points
     we can see which registers/stack locations ("variables") are defined. */
+
   for (size_t target_block = target_.get_entry(); target_block < target_.get_exit(); ++target_block) {
     if (!target_sccs.in_scc(target_block))
       continue;

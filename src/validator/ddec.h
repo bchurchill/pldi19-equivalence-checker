@@ -131,6 +131,12 @@ private:
   size_t callbacks_count_;
   size_t verified_;
 
+  /** Find alignment predicates. */
+  std::vector<std::shared_ptr<Invariant>> make_alignment_predicates(const Cfg& target, const Cfg& rewrite);
+
+  /** Get dereferences from a CFG (to build alignment predicates) */
+  std::set<x64asm::Mem> get_dereferences(const Cfg& cfg);
+
   std::shared_ptr<Invariant> alignment_predicate_;
 
   std::chrono::time_point<std::chrono::system_clock> benchmark_starttime_;

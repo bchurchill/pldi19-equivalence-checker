@@ -33,6 +33,7 @@ struct Variable {
 
   // For registers and memory
   x64asm::Operand operand;
+  bool is_lea;        // variable refers to address, not actual value.
 
   // For ghosts
   bool is_ghost;
@@ -101,16 +102,18 @@ struct Variable {
   /** Get basic block from ghost variable. */
   size_t get_ghost_bb();
 
+  static Variable lea_variable(x64asm::Mem m, bool is_rewrite);
+
   Variable(x64asm::Operand op, bool rewrite) : is_rewrite(rewrite), size(op.size()/8), offset(0),
-    coefficient(1), operand(op), is_ghost(false), name("") { }
+    coefficient(1), operand(op), is_lea(false), is_ghost(false), name("") { }
 
   Variable(x64asm::Operand op, bool rewrite, size_t sz, int32_t off) : is_rewrite(rewrite), size(sz),
-    offset(off), coefficient(1), operand(op), is_ghost(false), name("") { }
+    offset(off), coefficient(1), operand(op), is_lea(false), is_ghost(false), name("") { }
 
   Variable(std::string var, bool rewrite, size_t sz=8) : is_rewrite(rewrite), size(sz),
-    offset(0), coefficient(1), operand(x64asm::rax), is_ghost(true), name(var) { }
+    offset(0), coefficient(1), operand(x64asm::rax), is_lea(false), is_ghost(true), name(var) { }
 
-  Variable(std::istream& is) : operand(x64asm::rax) {
+  Variable(std::istream& is) : operand(x64asm::rax), is_lea(false) {
     deserialize(is);
   }
 

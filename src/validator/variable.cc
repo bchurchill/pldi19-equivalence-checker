@@ -30,9 +30,15 @@ SymBitVector Variable::from_state(SymState& target, SymState& rewrite) const {
   */
 
   if (!is_ghost) {
-    SymBitVector original_bv = prog[operand];
-    SymBitVector extracted = original_bv[size*8+offset*8-1][offset*8];
-    return extracted;
+
+    if(is_lea) {
+      return get_addr(target, rewrite);
+    } else {
+      SymBitVector original_bv = prog[operand];
+      SymBitVector extracted = original_bv[size*8+offset*8-1][offset*8];
+      return extracted;
+    }
+
   } else {
     return prog.shadow[name];
   }
@@ -42,7 +48,7 @@ bool Variable::is_valid(const CpuState& target, const CpuState& rewrite) const {
 
   auto& cs = is_rewrite ? rewrite : target;
 
-  if (operand.is_typical_memory()) {
+  if (operand.is_typical_memory() && !is_lea) {
     auto mem = static_cast<const x64asm::Mem&>(operand);
     auto addr = cs.get_addr(mem);
     for (size_t i = 0; i < mem.size()/8; ++i) {
@@ -75,10 +81,16 @@ cpputil::BitVector Variable::from_state_vector(const CpuState& target, const Cpu
   if (!is_ghost) {
 
     if (operand.is_typical_memory()) {
-      auto mem = static_cast<const x64asm::Mem&>(operand);
-      if (!cs.is_valid(mem)) {
-        cpputil::BitVector v(mem.size());
-        return v; // it would really be a segfault
+      if(is_lea) {
+        cpputil::BitVector v(64);
+        v.get_fixed_quad(0) = get_addr(target, rewrite);
+        return v;
+      } else {
+        auto mem = static_cast<const x64asm::Mem&>(operand);
+        if (!cs.is_valid(mem)) {
+          cpputil::BitVector v(mem.size());
+          return v; // it would really be a segfault
+        }
       }
     }
 
@@ -168,6 +180,8 @@ uint64_t Variable::from_state(const CpuState& target, const CpuState& rewrite) c
 bool Variable::is_dereference() const {
   if (is_ghost)
     return false;
+  if (is_lea)
+    return false;
   return operand.is_typical_memory();
 }
 
@@ -187,6 +201,14 @@ SymBitVector Variable::get_addr(const SymState& target, const SymState& rewrite)
   } else {
     return target.get_addr(mem);
   }
+}
+
+Variable Variable::lea_variable(x64asm::Mem m, bool is_rewrite) {
+  Variable v(m, is_rewrite);
+  v.is_lea = true;
+  v.size = 8;
+  v.offset = 0;
+  return v;
 }
 
 Variable Variable::bb_ghost(size_t n, bool is_rewrite) {
@@ -210,6 +232,7 @@ ostream& Variable::serialize(ostream& out) const {
       << size << " "
       << offset << " "
       << coefficient << " "
+      << is_lea << " "
       << is_ghost << endl;
   if (is_ghost) {
     out << name << endl;
@@ -225,6 +248,7 @@ istream& Variable::deserialize(istream& in) {
      >> size >> ws
      >> offset >> ws
      >> coefficient >> ws
+     >> is_lea >> ws
      >> is_ghost >> ws;
   CHECK_STREAM(in);
   if (is_ghost) {
