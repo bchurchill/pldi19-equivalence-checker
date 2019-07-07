@@ -772,13 +772,13 @@ bool DdecValidator::test_alignment_predicate(shared_ptr<Invariant> invariant) {
 }
 
 set<Mem> DdecValidator::get_dereferences(const Cfg& cfg) {
-  
+
   set<Mem> derefs;
   auto code = cfg.get_code();
-  for(auto instr : code) {
-    if(instr.is_explicit_memory_dereference()) {
+  for (auto instr : code) {
+    if (instr.is_explicit_memory_dereference()) {
       auto mem = instr.get_operand<Mem>(instr.mem_index());
-      if(!mem.rip_offset())
+      if (!mem.rip_offset())
         derefs.insert(mem);
     }
   }
@@ -792,10 +792,10 @@ vector<shared_ptr<Invariant>> DdecValidator::make_alignment_predicates(const Cfg
 
   vector<shared_ptr<Invariant>> predicates;
 
-  for(auto td : target_derefs) {
+  for (auto td : target_derefs) {
     auto v1 = Variable::lea_variable(td, false);
 
-    for(auto rd : rewrite_derefs) {
+    for (auto rd : rewrite_derefs) {
       auto v2 = Variable::lea_variable(rd, true);
       v2.coefficient = -1;
       vector<Variable> vs = {v1,v2};

@@ -31,7 +31,7 @@ SymBitVector Variable::from_state(SymState& target, SymState& rewrite) const {
 
   if (!is_ghost) {
 
-    if(is_lea) {
+    if (is_lea) {
       return get_addr(target, rewrite);
     } else {
       SymBitVector original_bv = prog[operand];
@@ -81,7 +81,7 @@ cpputil::BitVector Variable::from_state_vector(const CpuState& target, const Cpu
   if (!is_ghost) {
 
     if (operand.is_typical_memory()) {
-      if(is_lea) {
+      if (is_lea) {
         cpputil::BitVector v(64);
         v.get_fixed_quad(0) = get_addr(target, rewrite);
         return v;
