@@ -317,6 +317,8 @@ std::ostream& operator<<(std::ostream& os, const stoke::Variable& v) {
     size_t total_size = v.operand.size()/8;
     size_t sub_size = v.size;
 
+    if (v.is_lea)
+      os << "lea:";
     os << v.operand;
     if (v.operand.is_typical_memory())
       os << dec << "(" << v.size*8 <<  ")";

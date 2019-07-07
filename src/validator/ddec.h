@@ -132,7 +132,7 @@ private:
   size_t verified_;
 
   /** Find alignment predicates. */
-  std::vector<std::shared_ptr<Invariant>> make_alignment_predicates(const Cfg& target, const Cfg& rewrite);
+  std::vector<std::shared_ptr<Invariant>> make_alignment_predicates();
 
   /** Get dereferences from a CFG (to build alignment predicates) */
   std::set<x64asm::Mem> get_dereferences(const Cfg& cfg);

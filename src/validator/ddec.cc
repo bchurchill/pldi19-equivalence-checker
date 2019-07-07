@@ -785,11 +785,12 @@ set<Mem> DdecValidator::get_dereferences(const Cfg& cfg) {
   return derefs;
 }
 
-vector<shared_ptr<Invariant>> DdecValidator::make_alignment_predicates(const Cfg& target, const Cfg& rewrite) {
+vector<shared_ptr<Invariant>> DdecValidator::make_alignment_predicates() {
 
-  auto target_derefs = get_dereferences(target);
-  auto rewrite_derefs = get_dereferences(rewrite);
+  auto target_derefs = get_dereferences(target_);
+  auto rewrite_derefs = get_dereferences(rewrite_);
 
+  auto memequ = make_shared<MemoryEqualityInvariant>();
   vector<shared_ptr<Invariant>> predicates;
 
   for (auto td : target_derefs) {
@@ -801,8 +802,20 @@ vector<shared_ptr<Invariant>> DdecValidator::make_alignment_predicates(const Cfg
       vector<Variable> vs = {v1,v2};
       auto invariant = make_shared<EqualityInvariant>(vs, 0);
       predicates.push_back(invariant);
+
+      auto conj = make_shared<ConjunctionInvariant>();
+      conj->add_invariant(invariant);
+      conj->add_invariant(memequ);
+      predicates.push_back(conj);
     }
   }
+
+  predicates.push_back(memequ);
+
+  auto true_pred = make_shared<TrueInvariant>();
+  predicates.push_back(true_pred);
+
+  // TODO: filter out semantically equal pairs
 
   return predicates;
 }
@@ -828,112 +841,17 @@ bool DdecValidator::verify(const Cfg& init_target, const Cfg& init_rewrite) {
     return test_alignment_predicate(alignment_predicate_);
   }
 
-  CfgSccs target_sccs(target_);
-  CfgSccs rewrite_sccs(rewrite_);
+  cout << "Candidate Predicates" << endl;
+  auto alignment_predicates = make_alignment_predicates();
+  for(auto& p : alignment_predicates)
+    cout << *p << endl;
+  cout << "EOL" << endl;
 
-  auto memequ = make_shared<MemoryEqualityInvariant>();
-  set<EqualityInvariant> tried_invariants;
-  vector<shared_ptr<EqualityInvariant>> try_again_predicates;
-
-  /** For every pair of program points in both programs, we try and
-    guess an alignment predicate.  By choosing a pair of program points
-    we can see which registers/stack locations ("variables") are defined. */
-
-  for (size_t target_block = target_.get_entry(); target_block < target_.get_exit(); ++target_block) {
-    if (!target_sccs.in_scc(target_block))
-      continue;
-
-    for (size_t rewrite_block = rewrite_.get_entry(); rewrite_block < rewrite_.get_exit(); ++rewrite_block) {
-      if (!rewrite_sccs.in_scc(rewrite_block))
-        continue;
-
-      /** This gets registers that are defined for each program. */
-      auto target_defined_registers = target_.def_outs(target_block);
-      auto rewrite_defined_registers = rewrite_.def_outs(rewrite_block);
-
-      vector<Variable> target_variables;
-      vector<Variable> rewrite_variables;
-
-      for (auto target_reg = target_defined_registers.gp_begin();
-           target_reg != target_defined_registers.gp_end();
-           ++target_reg) {
-        target_variables.push_back(Variable(*target_reg, false));
-      }
-
-      for (auto rewrite_reg = rewrite_defined_registers.gp_begin();
-           rewrite_reg != rewrite_defined_registers.gp_end();
-           ++rewrite_reg) {
-        rewrite_variables.push_back(Variable(*rewrite_reg, true));
-      }
-
-      auto target_stack_locations = get_stack_locations(false);
-      auto rewrite_stack_locations = get_stack_locations(true);
-
-      target_variables.insert(target_variables.begin(), target_stack_locations.begin(), target_stack_locations.end());
-      rewrite_variables.insert(rewrite_variables.begin(), rewrite_stack_locations.begin(), rewrite_stack_locations.end());
-
-      /** Here we consider all pairs of registers/stack locations of the two programs. */
-      for (auto v1 : target_variables) {
-        //cout << "TARGET VARIABLE " << v1 << endl;
-
-        for (auto v2 : rewrite_variables) {
-          //cout << "REWRITE VARIABLE " << v2 << endl;
-
-          /** Now we consider a power of two for each of the variables selected */
-          size_t power2bound = 5;
-          for (size_t i = 0; i < power2bound*2-1; ++i) {
-            if (i < power2bound) {
-              v1.coefficient = (1 << i);
-              v2.coefficient = -1;
-            } else {
-              v1.coefficient = 1;
-              v2.coefficient = -(1 << (i-power2bound+1));
-            }
-            EqualityInvariant inv({v1, v2}, 0);
-
-            /** Here we invoke the heruistic to pick a constant to make the alignment
-              predicate */
-            vector<uint64_t> constants;
-            constants = find_alignment_predicate_constants(target_block, rewrite_block, inv);
-
-            for (auto constant : constants) {
-              auto specific = make_shared<EqualityInvariant>(inv.get_terms(), constant);
-              if (tried_invariants.count(*specific))
-                continue;
-              tried_invariants.insert(*specific);
-              try_again_predicates.push_back(specific);
-
-              auto conj = make_shared<ConjunctionInvariant>();
-              conj->add_invariant(specific);
-              conj->add_invariant(memequ);
-
-              /** test_alignment_predicate does all the work in checking the alignment
-                predicate; if it returns true, we have succeeded! */
-              bool success = test_alignment_predicate(conj);
-              if (success)
-                return true;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  /** Now we try alignment predicates that don't assert equivalence. */
-  for (auto inv : try_again_predicates) {
-    bool success = test_alignment_predicate(inv);
-    if (success)
+  for(auto& ap : alignment_predicates) {
+    if(test_alignment_predicate(ap))
       return true;
   }
 
-  auto now = system_clock::now();
-  auto diff = duration_cast<microseconds>(now - benchmark_searchstart_).count();
-  benchmark_total_search_time_ += diff;
-  //cout << "[benchmark] BAD SEARCH TOOK " << diff << endl;
-  //cout << "[benchmark] TOTAL SEARCH TIME " << benchmark_total_search_time_ << endl;
-
-
-  //return benchmark_proof_succeeded_;
   return false;
 }
 
