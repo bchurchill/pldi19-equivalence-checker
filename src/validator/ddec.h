@@ -108,7 +108,8 @@ private:
   std::vector<Variable> get_stack_locations(bool is_rewrite);
 
 
-  bool build_paa_for_alignment_predicate(std::shared_ptr<Invariant> inv, ProgramAlignmentAutomata&);
+  bool build_paa_for_alignment_predicate_without_data(std::shared_ptr<Invariant> inv, ProgramAlignmentAutomata&);
+  bool build_paa_for_alignment_predicate_with_data(std::shared_ptr<Invariant> inv, ProgramAlignmentAutomata&);
   std::vector<uint64_t> find_alignment_predicate_constants(size_t target_point, size_t rewrite_point, EqualityInvariant inv);
   void get_states_at_cutpoint(size_t trace, size_t target_point, size_t rewrite_point, std::vector<DataCollector::TracePoint>& target_states, std::vector<DataCollector::TracePoint>& rewrite_states, bool bound) const;
   bool test_alignment_predicate(std::shared_ptr<Invariant> inv);

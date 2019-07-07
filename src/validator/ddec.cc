@@ -47,7 +47,7 @@
 
 #define DDEC_TC_DEBUG(X) { }
 #define DEBUG_ALIGN_PRED_CONSTANTS(X) { if(0) { X } }
-#define DEBUG_PAA_CONSTRUCTION(X) { if(0) { X } }
+#define DEBUG_PAA_CONSTRUCTION(X) { if(1) { X } }
 
 using namespace std;
 using namespace std::chrono;
@@ -190,8 +190,67 @@ bool pair_below(pair<DataCollector::TracePoint, DataCollector::TracePoint>& pair
   return true;
 }
 
+bool DdecValidator::build_paa_for_alignment_predicate_without_data(std::shared_ptr<Invariant> ap, ProgramAlignmentAutomata& paa) {
 
-bool DdecValidator::build_paa_for_alignment_predicate(std::shared_ptr<Invariant> inv, ProgramAlignmentAutomata& paa) {
+  auto start_state = paa.start_state();
+  auto end_state = paa.exit_state();
+  auto fail_state = paa.fail_state();
+  paa.set_invariant(start_state, get_initial_invariant(paa));
+  paa.set_invariant(end_state, get_final_invariant(paa));
+  paa.set_invariant(fail_state, get_fail_invariant());
+
+  vector<ProgramAlignmentAutomata::State> worklist;
+  worklist.push_back(start_state);
+
+  while(worklist.size()) {
+    auto node = worklist[0];
+    auto invariant = paa.get_invariant(node);
+
+    auto target_paths = CfgPaths::enumerate_paths(target_, target_bound_, node.ts);
+    auto rewrite_paths = CfgPaths::enumerate_paths(rewrite_, rewrite_bound_, node.rs);
+
+    for(auto& p : target_paths) {
+      for(auto& q : rewrite_paths) {
+
+        DEBUG_PAA_CONSTRUCTION(
+          cout << " [build_paa_for_alignment_predicate_with_data] Testing " 
+               << p << " / " << q << endl;)
+
+        auto result = checker_.check_wait( target_, rewrite_,
+                                          node.ts, node.rs,
+                                          p, q,
+                                          invariant,
+                                          ap,
+                                          {},
+                                          false);
+
+        if(result.verified) {
+          ProgramAlignmentAutomata::Edge e(node, p, q);   
+          paa.add_edge(e);
+          DEBUG_PAA_CONSTRUCTION(
+            cout << " [build_paa_for_alignment_predicate_with_data] Adding edge " 
+                 << e << endl;)
+
+          //auto target = e.to;
+          //if(find(worklist.begin(), worklist.end(), target) == worklist.end()) {
+          //  worklist.push_back(target);
+          //}
+        }
+      }
+    }
+  }
+
+  // list = { (0, 0) }
+  // for n in list:
+  //   edges = find_edges_from_node( n, ap )
+  //   add edges to PAA
+  //   learn and prove invariants for each edge
+  //   add new nodes n to the list
+
+  return false;
+}
+
+bool DdecValidator::build_paa_for_alignment_predicate_with_data(std::shared_ptr<Invariant> inv, ProgramAlignmentAutomata& paa) {
 
   bool found_loop = false;
   for (size_t i = 0; i < target_traces_.size(); ++i) {
@@ -748,9 +807,15 @@ vector<Variable> DdecValidator::get_stack_locations(bool is_rewrite) {
 }
 
 bool DdecValidator::test_alignment_predicate(shared_ptr<Invariant> invariant) {
-  ProgramAlignmentAutomata paa(target_, rewrite_);
+  ProgramAlignmentAutomata paa2(target_, rewrite_);
   cout << "[test_alignment_predicate] Trying alignment predicate " << *invariant << endl;
-  bool success = build_paa_for_alignment_predicate(invariant, paa);
+  bool nodata_success = build_paa_for_alignment_predicate_without_data(invariant, paa2);
+  cout << "   ... got this: " << endl;
+  paa2.print_all();
+
+  cout << "[test_alignment_predicate] Now building with data" << endl;
+  ProgramAlignmentAutomata paa(target_, rewrite_);
+  bool success = build_paa_for_alignment_predicate_with_data(invariant, paa);
   if (!success)
     return false;
 
@@ -843,12 +908,12 @@ bool DdecValidator::verify(const Cfg& init_target, const Cfg& init_rewrite) {
 
   cout << "Candidate Predicates" << endl;
   auto alignment_predicates = make_alignment_predicates();
-  for(auto& p : alignment_predicates)
+  for (auto& p : alignment_predicates)
     cout << *p << endl;
   cout << "EOL" << endl;
 
-  for(auto& ap : alignment_predicates) {
-    if(test_alignment_predicate(ap))
+  for (auto& ap : alignment_predicates) {
+    if (test_alignment_predicate(ap))
       return true;
   }
 

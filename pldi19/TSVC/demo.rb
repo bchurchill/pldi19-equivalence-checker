@@ -3,8 +3,8 @@
 require 'fileutils'
 
 @options = { 
-  :target_bound => 30,
-  :rewrite_bound => 30,
+  :target_bound => 4,
+  :rewrite_bound => 8,
   :shadow => false,
 }
 
