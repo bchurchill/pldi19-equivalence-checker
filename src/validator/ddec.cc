@@ -199,37 +199,69 @@ bool DdecValidator::build_paa_for_alignment_predicate_without_data(std::shared_p
   paa.set_invariant(end_state, get_final_invariant(paa));
   paa.set_invariant(fail_state, get_fail_invariant());
 
+  auto false_invariant = make_shared<FalseInvariant>();
+
   vector<ProgramAlignmentAutomata::State> worklist;
   worklist.push_back(start_state);
 
-  while(worklist.size()) {
+  while (worklist.size()) {
     auto node = worklist[0];
     auto invariant = paa.get_invariant(node);
 
-    auto target_paths = CfgPaths::enumerate_paths(target_, target_bound_, node.ts);
-    auto rewrite_paths = CfgPaths::enumerate_paths(rewrite_, rewrite_bound_, node.rs);
+    auto target_paths = CfgPaths::enumerate_paths_to_any(target_, target_bound_, node.ts);
+    auto rewrite_paths = CfgPaths::enumerate_paths_to_any(rewrite_, rewrite_bound_, node.rs);
 
-    for(auto& p : target_paths) {
-      for(auto& q : rewrite_paths) {
+    for (auto p : target_paths) {
+      cout << "CONSIDERING P=" << p << endl;
+      if(p[0] == 0)
+        p.erase(p.begin());
+
+      auto p_end = p[p.size()-1];
+      p.erase(p.begin() + p.size() - 1);
+      if(p.size() == 0)
+        continue;
+
+      for (auto q : rewrite_paths) {
+        cout << "   CONSIDERING Q=" << q << endl;
+        if(q[0] == 0)
+          q.erase(q.begin());
+
+        auto q_end = q[q.size()-1];
+        q.erase(q.begin() + q.size() - 1);
+        if(q.size() == 0)
+          continue;
+
+        ProgramAlignmentAutomata::State end_state(p_end, q_end);
 
         DEBUG_PAA_CONSTRUCTION(
-          cout << " [build_paa_for_alignment_predicate_with_data] Testing " 
-               << p << " / " << q << endl;)
+          cout << " [build_paa_for_alignment_predicate_with_data] Testing "
+          << p << " / " << q << endl;)
 
-        auto result = checker_.check_wait( target_, rewrite_,
-                                          node.ts, node.rs,
-                                          p, q,
-                                          invariant,
-                                          ap,
-                                          {},
-                                          false);
+        auto infeasible = checker_.check_wait( target_, rewrite_,
+                                           p_end, q_end,
+                                           p, q,
+                                           invariant,
+                                           false_invariant,
+                                           {},
+                                           false);
 
-        if(result.verified) {
-          ProgramAlignmentAutomata::Edge e(node, p, q);   
+        if(infeasible.verified)
+          continue;
+
+        auto ap_holds = checker_.check_wait( target_, rewrite_,
+                                           p_end, q_end,
+                                           p, q,
+                                           invariant,
+                                           ap,
+                                           {},
+                                           false);
+
+        if (ap_holds.verified) {
+          ProgramAlignmentAutomata::Edge e(end_state, p, q);
           paa.add_edge(e);
           DEBUG_PAA_CONSTRUCTION(
-            cout << " [build_paa_for_alignment_predicate_with_data] Adding edge " 
-                 << e << endl;)
+            cout << " [build_paa_for_alignment_predicate_with_data] Adding edge "
+            << e << endl;)
 
           //auto target = e.to;
           //if(find(worklist.begin(), worklist.end(), target) == worklist.end()) {
@@ -811,6 +843,9 @@ bool DdecValidator::test_alignment_predicate(shared_ptr<Invariant> invariant) {
   cout << "[test_alignment_predicate] Trying alignment predicate " << *invariant << endl;
   bool nodata_success = build_paa_for_alignment_predicate_without_data(invariant, paa2);
   cout << "   ... got this: " << endl;
+  paa2.print_all();
+  cout << "   ... simplified: " << endl;
+  paa2.simplify();
   paa2.print_all();
 
   cout << "[test_alignment_predicate] Now building with data" << endl;

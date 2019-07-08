@@ -55,6 +55,8 @@ public:
    * 'nopass' (optionally) has a vector of blocks that may not be passed through. */
 
   static std::vector<CfgPath> enumerate_paths(const Cfg& cfg, size_t max_loops, Cfg::id_type start = -1, Cfg::id_type end = -1, std::vector<Cfg::id_type>* nopass = NULL);
+  /** Like the above, but paths may end anywhere, not just the end block. */
+  static std::vector<CfgPath> enumerate_paths_to_any(const Cfg& cfg, size_t max_loops, Cfg::id_type start = -1);
 
   /** Returns true if first path is a prefix of the second. */
   static bool is_prefix(const CfgPath& p, const CfgPath& q);
@@ -92,9 +94,11 @@ private:
   static void enumerate_paths_helper(const Cfg& cfg,
                                      std::vector<Cfg::id_type> path_so_far,
                                      Cfg::id_type end_block,
+                                     bool ignore_end_block,
+                                     size_t min_count,
                                      size_t max_count,
                                      std::map<Cfg::id_type, size_t> counts,
-                                     std::vector<std::vector<Cfg::id_type>>& results,
+                                     std::set<std::vector<Cfg::id_type>>& results,
                                      std::vector<Cfg::id_type>*);
 
 };
