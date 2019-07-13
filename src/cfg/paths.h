@@ -98,9 +98,11 @@ private:
                                      size_t min_count,
                                      size_t max_count,
                                      std::map<Cfg::id_type, size_t> counts,
-                                     std::set<std::vector<Cfg::id_type>>& results,
+                                     std::vector<std::vector<Cfg::id_type>>& results,
                                      std::vector<Cfg::id_type>*);
 
+  /** Add a path to a vector of paths, avoiding duplicates. */
+  static void add_to_vector(const std::vector<Cfg::id_type>& path, std::vector<std::vector<Cfg::id_type>>& list);
 };
 
 } // namespace stoke

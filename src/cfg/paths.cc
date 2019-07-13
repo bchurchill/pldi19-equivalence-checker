@@ -27,7 +27,7 @@ vector<vector<Cfg::id_type>> CfgPaths::enumerate_paths_to_any(const Cfg& cfg, si
   if (start == (Cfg::id_type)-1)
     start = cfg.get_entry();
 
-  set<vector<Cfg::id_type>> results;
+  vector<vector<Cfg::id_type>> results;
 
   vector<Cfg::id_type> path_so_far;
   path_so_far.push_back(start);
@@ -39,10 +39,7 @@ vector<vector<Cfg::id_type>> CfgPaths::enumerate_paths_to_any(const Cfg& cfg, si
     enumerate_paths_helper(cfg, path_so_far, -1, true, 2, max_len, node_counts, results, nullptr);
   }
 
-  vector<vector<Cfg::id_type>> outputs;
-  outputs.insert(outputs.begin(), results.begin(), results.end());
-
-  return outputs;
+  return results;
 
 }
 
@@ -54,7 +51,7 @@ vector<vector<Cfg::id_type>> CfgPaths::enumerate_paths(const Cfg& cfg, size_t ma
   if (end == (Cfg::id_type)-1)
     end = cfg.get_exit();
 
-  set<vector<Cfg::id_type>> results;
+  vector<vector<Cfg::id_type>> results;
 
   vector<Cfg::id_type> path_so_far;
   path_so_far.push_back(start);
@@ -66,10 +63,15 @@ vector<vector<Cfg::id_type>> CfgPaths::enumerate_paths(const Cfg& cfg, size_t ma
     enumerate_paths_helper(cfg, path_so_far, end, false, 0, max_len, node_counts, results, nopass);
   }
 
-  vector<vector<Cfg::id_type>> outputs;
-  outputs.insert(outputs.begin(), results.begin(), results.end());
+  return results;
+}
 
-  return outputs;
+void CfgPaths::add_to_vector(const std::vector<Cfg::id_type>& path, std::vector<std::vector<Cfg::id_type>>& list) {
+  for(const auto& it : list) {
+    if(it == path)
+      return;
+  }
+  list.push_back(path);
 }
 
 void CfgPaths::enumerate_paths_helper(const Cfg& cfg,
@@ -79,7 +81,7 @@ void CfgPaths::enumerate_paths_helper(const Cfg& cfg,
                                       size_t min_count,
                                       size_t max_count,
                                       std::map<Cfg::id_type, size_t> counts,
-                                      std::set<std::vector<Cfg::id_type>>& results,
+                                      std::vector<std::vector<Cfg::id_type>>& results,
                                       std::vector<Cfg::id_type>* nopass) {
 
   size_t len = path_so_far.size();
@@ -97,7 +99,7 @@ void CfgPaths::enumerate_paths_helper(const Cfg& cfg,
 #endif
 
   // check for end
-  if(!ignore_end_block) {
+  if (!ignore_end_block) {
     if (last_block == end_block) {
 #ifdef DEBUG_PATH_ENUM
       for (size_t i = 0; i < len; ++i) {
@@ -105,11 +107,11 @@ void CfgPaths::enumerate_paths_helper(const Cfg& cfg,
       }
       cout << "* Adding solution!" << endl;
 #endif
-      results.insert(path_so_far);
+      add_to_vector(path_so_far, results);
     }
   } else {
-    if(len >= min_count)
-      results.insert(path_so_far);
+    if (len >= min_count)
+      add_to_vector(path_so_far, results);
   }
 
   if (nopass && path_so_far.size() > 1 && find(nopass->begin(), nopass->end(), last_block) != nopass->end()) {

@@ -207,28 +207,29 @@ bool DdecValidator::build_paa_for_alignment_predicate_without_data(std::shared_p
   while (worklist.size()) {
     auto node = worklist[0];
     auto invariant = paa.get_invariant(node);
+    cout << "WORKLIST size=" << worklist.size() << " node=" << node << " invariant=" << invariant << endl;
 
     auto target_paths = CfgPaths::enumerate_paths_to_any(target_, target_bound_, node.ts);
     auto rewrite_paths = CfgPaths::enumerate_paths_to_any(rewrite_, rewrite_bound_, node.rs);
 
     for (auto p : target_paths) {
       cout << "CONSIDERING P=" << p << endl;
-      if(p[0] == 0)
+      if (p[0] == 0)
         p.erase(p.begin());
 
       auto p_end = p[p.size()-1];
       p.erase(p.begin() + p.size() - 1);
-      if(p.size() == 0)
+      if (p.size() == 0)
         continue;
 
       for (auto q : rewrite_paths) {
         cout << "   CONSIDERING Q=" << q << endl;
-        if(q[0] == 0)
+        if (q[0] == 0)
           q.erase(q.begin());
 
         auto q_end = q[q.size()-1];
         q.erase(q.begin() + q.size() - 1);
-        if(q.size() == 0)
+        if (q.size() == 0)
           continue;
 
         ProgramAlignmentAutomata::State end_state(p_end, q_end);
@@ -238,23 +239,25 @@ bool DdecValidator::build_paa_for_alignment_predicate_without_data(std::shared_p
           << p << " / " << q << endl;)
 
         auto infeasible = checker_.check_wait( target_, rewrite_,
-                                           p_end, q_end,
-                                           p, q,
-                                           invariant,
-                                           false_invariant,
-                                           {},
-                                           false);
+                                               p_end, q_end,
+                                               p, q,
+                                               invariant,
+                                               false_invariant,
+                                               {},
+                                               false);
 
-        if(infeasible.verified)
+        if (infeasible.verified) {
+          cout << "              INFEASIBLE" << endl;
           continue;
+        }
 
         auto ap_holds = checker_.check_wait( target_, rewrite_,
-                                           p_end, q_end,
-                                           p, q,
-                                           invariant,
-                                           ap,
-                                           {},
-                                           false);
+                                             p_end, q_end,
+                                             p, q,
+                                             invariant,
+                                             ap,
+                                             {},
+                                             false);
 
         if (ap_holds.verified) {
           ProgramAlignmentAutomata::Edge e(end_state, p, q);
@@ -264,12 +267,21 @@ bool DdecValidator::build_paa_for_alignment_predicate_without_data(std::shared_p
             << e << endl;)
 
           //auto target = e.to;
+          //now, learn invariants at e.to.
           //if(find(worklist.begin(), worklist.end(), target) == worklist.end()) {
           //  worklist.push_back(target);
           //}
         }
       }
     }
+
+    // remove node from worklist
+    vector<ProgramAlignmentAutomata::State> new_worklist;
+    for(auto it : worklist) {
+      if(it != node)
+        new_worklist.push_back(it);
+    }
+    worklist = move(new_worklist);
   }
 
   // list = { (0, 0) }
