@@ -235,15 +235,20 @@ public:
   /** Get edges on each path from start to end. */
   std::vector<std::vector<Edge>> get_paths(State start, State end);
 
-  bool test_paa(DataCollector&);
+  bool test_paa(DataCollector&, bool ignore_failures=false);
   /** Learn invariants.  Returns 'true' if no error. */
-  bool learn_invariants(InvariantLearner&, ImplicationGraph&);
+  bool learn_invariants(InvariantLearner&, ImplicationGraph&, std::vector<State> states = {});
+
+  /** Check if there's an invariant set at a state */
+  bool has_invariant(const State& state) const {
+    return invariants_.count(state);
+  }
 
   /** Get invariant at state. */
   std::shared_ptr<ConjunctionInvariant> get_invariant(const State& state) const {
-    if (invariants_.count(state))
+    if (has_invariant(state)) {
       return invariants_.at(state);
-    else {
+    } else {
       auto conj = std::make_shared<ConjunctionInvariant>();
       auto false_ = std::make_shared<FalseInvariant>();
       conj->add_invariant(false_);
@@ -286,6 +291,12 @@ public:
   void set_invariant(State& state, std::shared_ptr<ConjunctionInvariant> inv) {
     invariants_[state] = inv;
   }
+
+  /** Forcibly unset invariant. */
+  void unset_invariant(State& state) {
+    invariants_.erase(state);
+  }
+
 
   /** Get set of reachable states (from data). */
   std::set<State> get_data_reachable_states() const {
@@ -337,6 +348,8 @@ public:
   /** Remove states and edges that aren't needed.
     Returns false if nothing was done. */
   bool simplify();
+  /** Just remove extra edges. */
+  bool simplify_edges();
 
   void serialize(std::ostream& os) const;
   static ProgramAlignmentAutomata deserialize(std::istream& is);

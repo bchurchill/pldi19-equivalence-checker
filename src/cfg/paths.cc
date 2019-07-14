@@ -67,8 +67,8 @@ vector<vector<Cfg::id_type>> CfgPaths::enumerate_paths(const Cfg& cfg, size_t ma
 }
 
 void CfgPaths::add_to_vector(const std::vector<Cfg::id_type>& path, std::vector<std::vector<Cfg::id_type>>& list) {
-  for(const auto& it : list) {
-    if(it == path)
+  for (const auto& it : list) {
+    if (it == path)
       return;
   }
   list.push_back(path);

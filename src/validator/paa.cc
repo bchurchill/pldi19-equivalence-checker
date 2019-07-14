@@ -23,7 +23,7 @@
 using namespace stoke;
 using namespace std;
 
-#define DEBUG_LEARN_STATE_DATA(X) { if(0) { X } }
+#define DEBUG_LEARN_STATE_DATA(X) { if(1) { X } }
 #define DEBUG_IS_PREFIX(X) { if(0) { X } }
 #define DEBUG_CFG_FRINGE(X) { if(0) { cout << "[cfg_fringe] " << X;} }
 #define DEBUG_IN_SCC(X) { if(0) { X } }
@@ -268,10 +268,9 @@ bool ProgramAlignmentAutomata::learn_state_data(const DataCollector::Trace& orig
 
 }
 
-bool ProgramAlignmentAutomata::test_paa(DataCollector& dc) {
+bool ProgramAlignmentAutomata::test_paa(DataCollector& dc, bool ignore_failures) {
 
   data_reachable_states_.clear();
-  invariants_.clear();
   target_state_data_.clear();
   rewrite_state_data_.clear();
 
@@ -301,7 +300,7 @@ bool ProgramAlignmentAutomata::test_paa(DataCollector& dc) {
 
 
     bool ok = learn_state_data(target_trace, rewrite_trace);
-    if (!ok) {
+    if (!ok && !ignore_failures) {
       cout << "[learn_invariants] PAA doesn't accept test inputs" << endl;
       return false;
     }
@@ -310,20 +309,16 @@ bool ProgramAlignmentAutomata::test_paa(DataCollector& dc) {
   return true;
 }
 
-bool ProgramAlignmentAutomata::learn_invariants(InvariantLearner& learner, ImplicationGraph& graph) {
+bool ProgramAlignmentAutomata::learn_invariants(InvariantLearner& learner, ImplicationGraph& graph, vector<State> states) {
 
   // Step 2: learn the invariants
   target_.recompute();
   rewrite_.recompute();
 
-  cout << "drs: ";
-  for (auto it : data_reachable_states_) {
-    cout << it << "    ";
-  }
-  cout << endl;
+  if(states.size() == 0)
+    states.insert(states.begin(), data_reachable_states_.begin(), data_reachable_states_.end());
 
-
-  for (auto state : data_reachable_states_) {
+  for (auto state : states) {
     cout << "[learn_invariants] Learning invariants at " << state << endl;
     if (state == exit_state() || state == start_state() || state == fail_state())
       continue;
@@ -376,7 +371,10 @@ void ProgramAlignmentAutomata::compute_topological_sort(CfgSccs& target_scc, Cfg
   // get all the relevant blocks from target/rewrite
   vector<ProgramAlignmentAutomata::State> nodes;
   for (auto pair : invariants_) {
-    nodes.push_back(pair.first);
+    auto node = pair.first;
+    if(node == start_state() || node == exit_state() || node == fail_state())
+      continue;
+    nodes.push_back(node);
   }
 
   // sort the nodes by SCC (which should already be topolically sorted)
@@ -828,8 +826,20 @@ bool ProgramAlignmentAutomata::simplify() {
   }
 
   //cout << "[simplify] proceeding to second step" << endl;
+  changes_made |= simplify_edges();
 
-  /** Step 2: Remove edges where another edge is a prefix. */
+  // redo until fixpoint
+  if (changes_made)
+    simplify();
+
+  return changes_made;
+}
+
+
+/** Remove edges where another edge is a prefix.
+  * Returns true if changes are made. */
+bool ProgramAlignmentAutomata::simplify_edges() {
+  bool changes_made = false;
   auto states = get_edge_reachable_states();
   for (auto s : states) {
     // check for any edges which are the prefix of another
@@ -867,10 +877,6 @@ bool ProgramAlignmentAutomata::simplify() {
     for (auto e : edges_to_remove)
       remove_edge(e);
   }
-
-  // redo until fixpoint
-  if (changes_made)
-    simplify();
 
   return changes_made;
 }

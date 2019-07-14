@@ -711,7 +711,7 @@ void SmtObligationChecker::check(
     auto sat_start = system_clock::now();
     //simplifier_.simplify(constraints);
     if (!solver_.is_sat(constraints) && !solver_.has_error()) {
-      cout << "We've finished early without modeling memory!" << endl;
+      //cout << "We've finished early without modeling memory!" << endl;
       /** we're done, yo. */
       uint64_t smt_duration = duration_cast<microseconds>(system_clock::now() - sat_start).count();
       uint64_t gen_duration = duration_cast<microseconds>(sat_start - start_time).count();
@@ -730,7 +730,7 @@ void SmtObligationChecker::check(
       callback(result, optional);
       return;
     } else {
-      cout << "Couldn't take short-circuit option without memory." << endl;
+      //cout << "Couldn't take short-circuit option without memory." << endl;
     }
 
   }

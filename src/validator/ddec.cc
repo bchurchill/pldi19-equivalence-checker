@@ -195,44 +195,121 @@ bool DdecValidator::build_paa_for_alignment_predicate_without_data(std::shared_p
   auto start_state = paa.start_state();
   auto end_state = paa.exit_state();
   auto fail_state = paa.fail_state();
+  cout << "Start state=" << start_state << endl;
   paa.set_invariant(start_state, get_initial_invariant(paa));
   paa.set_invariant(end_state, get_final_invariant(paa));
   paa.set_invariant(fail_state, get_fail_invariant());
+  cout << "Invariant at start state: [0]" << *paa.get_invariant(start_state) << endl;
 
   auto false_invariant = make_shared<FalseInvariant>();
 
   vector<ProgramAlignmentAutomata::State> worklist;
   worklist.push_back(start_state);
+  cout << "PAA Before doing anything" << endl;
+  paa.print_all();
 
   while (worklist.size()) {
+    cout << "----------------- WORKLIST ITERATION ------------------------" << endl;
+    // todo: topo sort the worklist
+
     auto node = worklist[0];
+    worklist.erase(worklist.begin());
+    cout << "Working on node " << node << endl;
+    cout << "remaining worklist size: " << worklist.size() << endl;
+
+    auto reachable = paa.get_edge_reachable_states();
+    if(!reachable.count(node) || node == end_state) {
+      cout << "Node " << node << " unreachable... must have been simplified away..." << endl;
+      continue;
+    }
+
+    cout << "PAA Before outer loop:" << endl;
+    paa.print_all();
+    cout << "PAA simplified:" << endl;
+    paa.simplify_edges();
+    paa.print_all();
+
+    if(!paa.has_invariant(node)) {
+      cout << "Relearning invariant at " << node << endl;
+      bool paa_ok = paa.test_paa(data_collector_, true);
+      cout << "[build_paa_for_alignment_predicate_without_data] paa_ok=" << paa_ok << endl;
+
+      ImplicationGraph graph(target_, rewrite_);
+      bool learn_success = paa.learn_invariants(invariant_learner_, graph, { node });
+      if (!learn_success) {
+        cout << "[build_paa_for_alignment_predicate_without_data] Learning invariants failed." << endl;
+        return false;
+      }
+
+      // verify these invariants hold for the paths that exist.
+      auto inv = paa.get_invariant(node);
+      cout << "PAA Before Cutting Down Candidate Invariants" << endl;
+      paa.print_all();
+      bool fixpoint_reached = false;
+      while(!fixpoint_reached) {
+        cout << "beginning fixpoint iteration with " << inv->size() << " clauses" << endl;
+        fixpoint_reached = true;
+        auto prev_edges = paa.prev_edges(node);
+        vector<size_t> clauses_to_remove;
+        for(size_t i = 0; i < inv->size(); ++i) {
+          auto clause = (*inv)[i];
+          bool clause_invalidated = false;
+          for(auto e : prev_edges) {
+            auto from_inv = paa.get_invariant(e.from);
+            cout << "processing edge " << e << " from=" << e.from << " inv=" << *from_inv << endl;
+            auto clause_holds = checker_.check_wait( target_, rewrite_,
+                                                     e.to.ts, e.to.rs,
+                                                     e.te, e.re,
+                                                     from_inv,
+                                                     clause,
+                                                     {},
+                                                     false );
+
+            if(!clause_holds.verified) {
+              clause_invalidated = true;
+              fixpoint_reached = false;
+              clauses_to_remove.push_back(i);
+              cout << " === removing clause " << i << ": " << *clause << endl;
+              break;
+            }
+          }
+          if(!clause_invalidated)
+            cout << " === clause " << i << " holds: " << *clause << endl;
+        }
+        sort(clauses_to_remove.begin(), clauses_to_remove.end());
+        reverse(clauses_to_remove.begin(), clauses_to_remove.end());
+        for(auto index : clauses_to_remove) {
+          cout << " ===== removing index " << index << endl;
+          inv->remove(index);
+        }
+      }
+    }
+
     auto invariant = paa.get_invariant(node);
-    cout << "WORKLIST size=" << worklist.size() << " node=" << node << " invariant=" << invariant << endl;
+    cout << "ENUMERATING EDGES WORKLIST size=" << worklist.size() << " node=" << node << " invariant=" << *invariant << endl;
+    cout << "Invariant at start state: [2]" << *paa.get_invariant(start_state) << endl;
 
     auto target_paths = CfgPaths::enumerate_paths_to_any(target_, target_bound_, node.ts);
     auto rewrite_paths = CfgPaths::enumerate_paths_to_any(rewrite_, rewrite_bound_, node.rs);
 
     for (auto p : target_paths) {
       cout << "CONSIDERING P=" << p << endl;
-      if (p[0] == 0)
-        p.erase(p.begin());
 
       auto p_end = p[p.size()-1];
       p.erase(p.begin() + p.size() - 1);
-      if (p.size() == 0)
+      if (p.size() == 1 && p[0] == 0)
         continue;
 
       for (auto q : rewrite_paths) {
         cout << "   CONSIDERING Q=" << q << endl;
-        if (q[0] == 0)
-          q.erase(q.begin());
 
         auto q_end = q[q.size()-1];
         q.erase(q.begin() + q.size() - 1);
-        if (q.size() == 0)
+        if (q.size() == 1 && q[0] == 0)
           continue;
 
-        ProgramAlignmentAutomata::State end_state(p_end, q_end);
+        ProgramAlignmentAutomata::State tail_state(p_end, q_end);
+        bool do_align = false;
 
         DEBUG_PAA_CONSTRUCTION(
           cout << " [build_paa_for_alignment_predicate_with_data] Testing "
@@ -251,37 +328,43 @@ bool DdecValidator::build_paa_for_alignment_predicate_without_data(std::shared_p
           continue;
         }
 
-        auto ap_holds = checker_.check_wait( target_, rewrite_,
-                                             p_end, q_end,
-                                             p, q,
-                                             invariant,
-                                             ap,
-                                             {},
-                                             false);
 
-        if (ap_holds.verified) {
-          ProgramAlignmentAutomata::Edge e(end_state, p, q);
+        if(tail_state != end_state) {
+          auto ap_holds = checker_.check_wait( target_, rewrite_,
+                                               p_end, q_end,
+                                               p, q,
+                                               invariant,
+                                               ap,
+                                               {},
+                                               false);
+          do_align = ap_holds.verified;
+        } else {
+          do_align = true; // if the path is feasible, we always consider paths to exit aligned.
+        }
+
+        if (do_align) {
+          cout << "Invariant at start state: [3]" << *paa.get_invariant(start_state) << endl;
+          ProgramAlignmentAutomata::Edge e(tail_state, p, q);
           paa.add_edge(e);
           DEBUG_PAA_CONSTRUCTION(
-            cout << " [build_paa_for_alignment_predicate_with_data] Adding edge "
+            cout << " [build_paa_for_alignment_predicate_without_data] Adding edge "
             << e << endl;)
 
-          //auto target = e.to;
-          //now, learn invariants at e.to.
-          //if(find(worklist.begin(), worklist.end(), target) == worklist.end()) {
-          //  worklist.push_back(target);
-          //}
+          if(tail_state != end_state) {
+            // invalidate any existing invariant
+            paa.unset_invariant(tail_state);
+            cout << "Invariant at start state: [4]" << *paa.get_invariant(start_state) << endl;
+
+            // add target to worklist, if it's not already there
+            cout << " [build_paa_for_alignment_predicate_without_data] ADDING " << tail_state << " TO WORKLIST" << endl;
+            if(find(worklist.begin(), worklist.end(), tail_state) == worklist.end()) {
+              worklist.push_back(tail_state);
+            }
+          }
         }
       }
     }
 
-    // remove node from worklist
-    vector<ProgramAlignmentAutomata::State> new_worklist;
-    for(auto it : worklist) {
-      if(it != node)
-        new_worklist.push_back(it);
-    }
-    worklist = move(new_worklist);
   }
 
   // list = { (0, 0) }
