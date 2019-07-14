@@ -125,7 +125,7 @@ public:
     return fail;
   }
 
-  /** Add a feastible edge.  Returns true if not already present. */
+  /** Add a feastible edge.  Returns false if already present. */
   bool add_edge(Edge path) {
 
     if (next_edges_.count(path.from)) {
@@ -295,6 +295,10 @@ public:
   /** Forcibly unset invariant. */
   void unset_invariant(State& state) {
     invariants_.erase(state);
+  }
+
+  void unset_all_invariants() {
+    invariants_.clear();
   }
 
 

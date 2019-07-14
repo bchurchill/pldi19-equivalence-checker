@@ -218,7 +218,7 @@ bool DdecValidator::build_paa_for_alignment_predicate_without_data(std::shared_p
     cout << "remaining worklist size: " << worklist.size() << endl;
 
     auto reachable = paa.get_edge_reachable_states();
-    if(!reachable.count(node) || node == end_state) {
+    if (!reachable.count(node) || node == end_state) {
       cout << "Node " << node << " unreachable... must have been simplified away..." << endl;
       continue;
     }
@@ -229,7 +229,7 @@ bool DdecValidator::build_paa_for_alignment_predicate_without_data(std::shared_p
     paa.simplify_edges();
     paa.print_all();
 
-    if(!paa.has_invariant(node)) {
+    if (!paa.has_invariant(node)) {
       cout << "Relearning invariant at " << node << endl;
       bool paa_ok = paa.test_paa(data_collector_, true);
       cout << "[build_paa_for_alignment_predicate_without_data] paa_ok=" << paa_ok << endl;
@@ -246,26 +246,26 @@ bool DdecValidator::build_paa_for_alignment_predicate_without_data(std::shared_p
       cout << "PAA Before Cutting Down Candidate Invariants" << endl;
       paa.print_all();
       bool fixpoint_reached = false;
-      while(!fixpoint_reached) {
+      while (!fixpoint_reached) {
         cout << "beginning fixpoint iteration with " << inv->size() << " clauses" << endl;
         fixpoint_reached = true;
         auto prev_edges = paa.prev_edges(node);
         vector<size_t> clauses_to_remove;
-        for(size_t i = 0; i < inv->size(); ++i) {
+        for (size_t i = 0; i < inv->size(); ++i) {
           auto clause = (*inv)[i];
           bool clause_invalidated = false;
-          for(auto e : prev_edges) {
+          for (auto e : prev_edges) {
             auto from_inv = paa.get_invariant(e.from);
             cout << "processing edge " << e << " from=" << e.from << " inv=" << *from_inv << endl;
             auto clause_holds = checker_.check_wait( target_, rewrite_,
-                                                     e.to.ts, e.to.rs,
-                                                     e.te, e.re,
-                                                     from_inv,
-                                                     clause,
-                                                     {},
-                                                     false );
+                                e.to.ts, e.to.rs,
+                                e.te, e.re,
+                                from_inv,
+                                clause,
+                                {},
+                                false );
 
-            if(!clause_holds.verified) {
+            if (!clause_holds.verified) {
               clause_invalidated = true;
               fixpoint_reached = false;
               clauses_to_remove.push_back(i);
@@ -273,12 +273,12 @@ bool DdecValidator::build_paa_for_alignment_predicate_without_data(std::shared_p
               break;
             }
           }
-          if(!clause_invalidated)
+          if (!clause_invalidated)
             cout << " === clause " << i << " holds: " << *clause << endl;
         }
         sort(clauses_to_remove.begin(), clauses_to_remove.end());
         reverse(clauses_to_remove.begin(), clauses_to_remove.end());
-        for(auto index : clauses_to_remove) {
+        for (auto index : clauses_to_remove) {
           cout << " ===== removing index " << index << endl;
           inv->remove(index);
         }
@@ -329,7 +329,7 @@ bool DdecValidator::build_paa_for_alignment_predicate_without_data(std::shared_p
         }
 
 
-        if(tail_state != end_state) {
+        if (tail_state != end_state) {
           auto ap_holds = checker_.check_wait( target_, rewrite_,
                                                p_end, q_end,
                                                p, q,
@@ -345,21 +345,25 @@ bool DdecValidator::build_paa_for_alignment_predicate_without_data(std::shared_p
         if (do_align) {
           cout << "Invariant at start state: [3]" << *paa.get_invariant(start_state) << endl;
           ProgramAlignmentAutomata::Edge e(tail_state, p, q);
-          paa.add_edge(e);
+          paa.simplify_edges();
+          bool redundant = false;
+          redundant = !paa.add_edge(e);
+          redundant |= paa.simplify_edges();
+
           DEBUG_PAA_CONSTRUCTION(
             cout << " [build_paa_for_alignment_predicate_without_data] Adding edge "
             << e << endl;)
 
-          if(tail_state != end_state) {
+          if (!redundant && tail_state != end_state) {
             // invalidate any existing invariant
             paa.unset_invariant(tail_state);
-            cout << "Invariant at start state: [4]" << *paa.get_invariant(start_state) << endl;
-
             // add target to worklist, if it's not already there
             cout << " [build_paa_for_alignment_predicate_without_data] ADDING " << tail_state << " TO WORKLIST" << endl;
-            if(find(worklist.begin(), worklist.end(), tail_state) == worklist.end()) {
+            if (find(worklist.begin(), worklist.end(), tail_state) == worklist.end()) {
               worklist.push_back(tail_state);
             }
+          } else {
+            cout << "    ... looks reundant, not adding to worklist." << endl;
           }
         }
       }
@@ -534,6 +538,7 @@ bool DdecValidator::build_paa_for_alignment_predicate_with_data(std::shared_ptr<
 }
 
 bool DdecValidator::verify_paa(ProgramAlignmentAutomata& paa) {
+
 
   // check if there are any cycles with only edges in target / only edges in rewrite
   auto edge_reachable = paa.get_edge_reachable_states();
@@ -934,26 +939,14 @@ vector<Variable> DdecValidator::get_stack_locations(bool is_rewrite) {
 }
 
 bool DdecValidator::test_alignment_predicate(shared_ptr<Invariant> invariant) {
-  ProgramAlignmentAutomata paa2(target_, rewrite_);
-  cout << "[test_alignment_predicate] Trying alignment predicate " << *invariant << endl;
-  bool nodata_success = build_paa_for_alignment_predicate_without_data(invariant, paa2);
-  cout << "   ... got this: " << endl;
-  paa2.print_all();
-  cout << "   ... simplified: " << endl;
-  paa2.simplify();
-  paa2.print_all();
-
-  cout << "[test_alignment_predicate] Now building with data" << endl;
   ProgramAlignmentAutomata paa(target_, rewrite_);
-  bool success = build_paa_for_alignment_predicate_with_data(invariant, paa);
-  if (!success)
-    return false;
-
-  ProgramAlignmentAutomata unsimplified = paa;
-  cout << "BEFORE SIMPLIFY PAA!" << endl;
+  cout << "[test_alignment_predicate] Trying alignment predicate " << *invariant << endl;
+  bool nodata_success = build_paa_for_alignment_predicate_without_data(invariant, paa);
+  cout << "   ... got this: " << endl;
   paa.print_all();
+  cout << "   ... simplified: " << endl;
+  paa.simplify();
 
-  bool simplify_ok = paa.simplify();
   /*
   if(!simplify_ok) {
     cout << "[test_alignment_predicate] Aborting. Simplify returned false" << endl;
@@ -962,6 +955,7 @@ bool DdecValidator::test_alignment_predicate(shared_ptr<Invariant> invariant) {
 
   cout << "TRYING THIS PAA!" << endl;
   paa.print_all();
+  paa.unset_all_invariants();
   bool works = verify_paa(paa);
   return works;
 }

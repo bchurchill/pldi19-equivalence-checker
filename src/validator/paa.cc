@@ -315,7 +315,7 @@ bool ProgramAlignmentAutomata::learn_invariants(InvariantLearner& learner, Impli
   target_.recompute();
   rewrite_.recompute();
 
-  if(states.size() == 0)
+  if (states.size() == 0)
     states.insert(states.begin(), data_reachable_states_.begin(), data_reachable_states_.end());
 
   for (auto state : states) {
@@ -372,7 +372,7 @@ void ProgramAlignmentAutomata::compute_topological_sort(CfgSccs& target_scc, Cfg
   vector<ProgramAlignmentAutomata::State> nodes;
   for (auto pair : invariants_) {
     auto node = pair.first;
-    if(node == start_state() || node == exit_state() || node == fail_state())
+    if (node == start_state() || node == exit_state() || node == fail_state())
       continue;
     nodes.push_back(node);
   }
