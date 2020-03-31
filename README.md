@@ -553,5 +553,9 @@ successful runs using the cloud instances. These can be found in the
 time of submission -- the exact text in the traces differs from what 
 the tool currently produces.
 
+# Post Publication Erata and Acknowledgements
 
+Special thanks to the following who have helped find and fix bugs in our software:
+
+ * Nikhil Durgam of IIT Bombay discovered a soundness bug when using the flat memory model.  Our tool would generate incorrect constraints to check that the final memory states were equal. (Mar 31, 2020) 
 
