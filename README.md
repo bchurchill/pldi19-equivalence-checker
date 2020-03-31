@@ -25,25 +25,24 @@ There are a few reasons why the system described in the paper that uses cloud in
 
 # Table of Contents
 
- 1. [About](#About)
- 2. [Getting Started](#Getting-Started)
-    1. [Prerequisites](#Prerequisites)
-    1. [Using Docker](#Using-Docker)
-    1. [Manual Setup](#Manual-Setup)
-    1. [Running the Example](#Running-the-Example)
- 3. [Step-by-Step Instructions](#Step-by-Step-Instructions)
-    1. [Running Example](#Running-Example-Section-2)
-    1. [Strlen Benchmark](#Strlen-benchmark)
+ 1. [Getting Started](#getting-started)
+    1. [Prerequisites](#prerequisites)
+    1. [Using Docker](#using-docker)
+    1. [Manual Setup](#manual-setup)
+    1. [Running the Example](#running-the-example)
+ 2. [Step-by-Step Instructions](#step-by-step-instructions)
+    1. [Running Example](#running-example-section-2)
+    1. [Strlen Benchmark](#strlen-benchmark)
     1. [TSVC Benchmarks](#tsvc-benchmarks-sections-51-52)
     1. [APLAS17 Example](#example-from-dahiyas-2017-aplas-paper)
- 4. [Running Your Own Benchmarks](#Running-Your-Own-Benchmarks)
+ 3. [Running Your Own Benchmarks](#running-your-own-benchmarks)
     1. [Troubleshooting](#troubleshooting)
- 5. [Understanding and Extending the Code](#Understanding-and-Extending-the-Code)
+ 4. [Understanding and Extending the Code](#understanding-and-extending-the-code)
     1. [Extending the Space of Invariants](#example-extend-the-space-of-invariants)
     1. [Supporting more x86-64 Instructions](#example-add-support-for-new-x86-64-instructions)
     1. [Extending the Space of Alignment Predicates](#example-extend-the-space-of-alignment-predicates)
- 6. [Archived Execution Traces](#archived-execution-traces)
- 7. [Post Publication Erata and Acknowledgements](#post-publication-erata-and-acknowlegements)
+ 5. [Archived Execution Traces](#archived-execution-traces)
+ 6. [Post Publication Erata and Acknowledgements](#post-publication-erata-and-acknowledgements)
 
 # Getting Started
 
