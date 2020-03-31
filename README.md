@@ -43,7 +43,7 @@ There are a few reasons why the system described in the paper that uses cloud in
     1. [Supporting more x86-64 Instructions](#example-add-support-for-new-x86-64-instructions)
     1. [Extending the Space of Alignment Predicates](#example-extend-the-space-of-alignment-predicates)
  6. [Archived Execution Traces](#archived-execution-traces)
-
+ 7. [Post Publication Erata and Acknowledgements](#post-publication-erata-and-acknowlegements)
 
 # Getting Started
 
