@@ -30,19 +30,15 @@ class FlatMemory : public SymMemory {
 public:
 
   FlatMemory(bool separate_stack) : SymMemory(separate_stack) {
-    variable_ = SymArray::tmp_var(64, 8);
-    start_variable_ = variable_;
-    heap_ = variable_;
-    variable_up_to_date_ = true;
+    heap_ = SymArray::tmp_var(64, 8);
+    start_variable_ = heap_;
 
   }
 
   FlatMemory(FlatMemory& other) : SymMemory(other.separate_stack_) {
-    variable_ = other.variable_;
     start_variable_ = other.start_variable_;
     heap_ = other.heap_;
     stack_ = other.stack_;
-    variable_up_to_date_ = other.variable_up_to_date_;
   }
 
   /** Updates the memory with a write.
@@ -56,13 +52,6 @@ public:
   SymBool equality_constraint(FlatMemory& other);
 
   std::vector<SymBool> get_constraints() {
-    if (!variable_up_to_date_) {
-      variable_ = SymArray::tmp_var(64, 8);
-      variable_up_to_date_ = true;
-      constraints_.push_back(variable_ == heap_);
-    }
-
-
     std::vector<SymBool> output = constraints_;
     auto stack_constraints = stack_.get_constraints();
     output.insert(output.begin(), stack_constraints.begin(), stack_constraints.end());
@@ -71,13 +60,7 @@ public:
 
   /** Get a variable representing the memory at this state. */
   SymArray get_variable() {
-    if (!variable_up_to_date_) {
-      variable_ = SymArray::tmp_var(64, 8);
-      variable_up_to_date_ = true;
-      constraints_.push_back(variable_ == heap_);
-    }
-
-    return variable_;
+    return heap_;
   }
 
   SymArray get_start_variable() {
@@ -108,8 +91,6 @@ public:
 private:
 
   /** A variable that represents the heap state */
-  bool variable_up_to_date_;
-  SymArray variable_;
   SymArray start_variable_;
 
   /** map of (symbolic address, size) pairs accessed. */

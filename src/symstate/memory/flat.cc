@@ -48,7 +48,6 @@ SymBool FlatMemory::write(SymBitVector address, SymBitVector value, uint16_t siz
   auto constr = heap_ == new_arr;
   constraints_.push_back(constr);
   heap_ = new_arr;
-  variable_up_to_date_ = false;
 
   return SymBool::_false();
 }
