@@ -10,3 +10,4 @@ aliasing
 .DS_Store
 git-version.inc
 .git-version.inc
+bin/sage_harness.sage.py

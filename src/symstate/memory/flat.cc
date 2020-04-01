@@ -40,18 +40,15 @@ SymBool FlatMemory::write(SymBitVector address, SymBitVector value, uint16_t siz
 
   // Update the access list
   auto access_var = SymBitVector::tmp_var(64);
-  if (!no_constraints_)
-    constraints_.push_back(access_var == address);
+  constraints_.push_back(access_var == address);
   access_list_[access_var.ptr] = size;
 
   // Get a new array variable and update the heap
-  if (!no_constraints_) {
-    auto new_arr = SymArray::tmp_var(64, 8);
-    auto constr = heap_ == new_arr;
-    constraints_.push_back(constr);
-    heap_ = new_arr;
-    variable_up_to_date_ = false;
-  }
+  auto new_arr = SymArray::tmp_var(64, 8);
+  auto constr = heap_ == new_arr;
+  constraints_.push_back(constr);
+  heap_ = new_arr;
+  variable_up_to_date_ = false;
 
   return SymBool::_false();
 }

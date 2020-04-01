@@ -29,12 +29,11 @@ class FlatMemory : public SymMemory {
 
 public:
 
-  FlatMemory(bool separate_stack, bool no_constraints = false) : SymMemory(separate_stack) {
+  FlatMemory(bool separate_stack) : SymMemory(separate_stack) {
     variable_ = SymArray::tmp_var(64, 8);
     start_variable_ = variable_;
     heap_ = variable_;
     variable_up_to_date_ = true;
-    no_constraints_ = no_constraints;
 
   }
 
@@ -44,7 +43,6 @@ public:
     heap_ = other.heap_;
     stack_ = other.stack_;
     variable_up_to_date_ = other.variable_up_to_date_;
-    no_constraints_ = other.no_constraints_;
   }
 
   /** Updates the memory with a write.
@@ -58,6 +56,13 @@ public:
   SymBool equality_constraint(FlatMemory& other);
 
   std::vector<SymBool> get_constraints() {
+    if (!variable_up_to_date_) {
+      variable_ = SymArray::tmp_var(64, 8);
+      variable_up_to_date_ = true;
+      constraints_.push_back(variable_ == heap_);
+    }
+
+
     std::vector<SymBool> output = constraints_;
     auto stack_constraints = stack_.get_constraints();
     output.insert(output.begin(), stack_constraints.begin(), stack_constraints.end());
@@ -109,8 +114,6 @@ private:
 
   /** map of (symbolic address, size) pairs accessed. */
   std::map<const SymBitVectorAbstract*, uint64_t> access_list_;
-
-  bool no_constraints_;
 
 };
 
